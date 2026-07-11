@@ -1,0 +1,74 @@
+@{
+    var orgName = "همراه کلیه";
+}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] is null ? orgName : $"{ViewData["Title"]} — {orgName}")</title>
+    <meta name="description" content="@(ViewData["MetaDescription"] ?? "مؤسسه خیریه حمایت از بیماران کلیوی و دیالیزی مناطق محروم و روستایی")" />
+    <link rel="icon" href="~/img/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@@v33.003/Vazirmatn-font-face.css" />
+    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <header class="site-header">
+        <div class="container navbar">
+            <a class="brand" asp-controller="Home" asp-action="Index">
+                <img class="brand-logo" src="~/img/logo.svg" alt="لوگوی @orgName" />
+                <span class="brand-name">@orgName<small>حمایت از بیماران دیالیزی</small></span>
+            </a>
+            <button class="nav-toggle" aria-label="منو" onclick="document.getElementById('navmenu').classList.toggle('open')">☰</button>
+            <ul class="nav-menu" id="navmenu">
+                <li><a asp-controller="Home" asp-action="Index">صفحه اصلی</a></li>
+                <li><a asp-controller="Home" asp-action="About">درباره ما</a></li>
+                <li><a asp-controller="Home" asp-action="Services">خدمات حمایتی</a></li>
+                <li><a asp-controller="Home" asp-action="Campaigns">کمپین‌ها</a></li>
+                <li><a asp-controller="Home" asp-action="Contact">تماس با ما</a></li>
+                <li><a class="btn btn-primary" asp-controller="Home" asp-action="Donate">❤ حمایت مالی</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <div class="ribbon">
+        «هیچ مسیر سختی، با همراهی شما دور خواهد بود…»
+    </div>
+
+    <footer class="site-footer">
+        <div class="container footer-grid">
+            <div>
+                <div class="footer-title">@orgName</div>
+                <p class="mb-0">سامانه حمایت از بیماران دیالیزی و خانواده‌های آنان، با تمرکز بر مناطق محروم و روستایی. مسیر یک بیمار از روستا تا زندگی را با هم هموار می‌کنیم.</p>
+            </div>
+            <div>
+                <div class="footer-title">دسترسی سریع</div>
+                <ul class="footer-links">
+                    <li><a asp-controller="Home" asp-action="About">درباره مؤسسه</a></li>
+                    <li><a asp-controller="Home" asp-action="Services">خدمات حمایتی</a></li>
+                    <li><a asp-controller="Home" asp-action="Campaigns">کمپین‌ها</a></li>
+                    <li><a asp-controller="Home" asp-action="Contact">تماس با ما</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="footer-title">همراهی</div>
+                <ul class="footer-links">
+                    <li><a asp-controller="Home" asp-action="Donate">حمایت مالی</a></li>
+                    <li><a asp-controller="Account" asp-action="Login">ورود مدیران</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            © @DateTime.Now.Year — @orgName. تمامی حقوق محفوظ است.
+        </div>
+    </footer>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

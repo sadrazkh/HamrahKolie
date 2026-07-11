@@ -1,0 +1,26 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+artifacts/
+publish/
+
+# Logs
+logs/
+*.log
+
+# Frontend
+node_modules/
+# خروجی Build فرانت‌اند؛ با «npm run build» بازتولید می‌شود.
+src/HamrahKolie.Web/wwwroot/dist/
+
+# Secrets / محیط
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+
+# OS
+Thumbs.db
+.DS_Store

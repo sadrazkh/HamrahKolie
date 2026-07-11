@@ -1,0 +1,49 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "ورود";
+}
+<section class="section">
+    <div class="container" style="max-width:440px">
+        <div class="card">
+            <div class="text-center" style="margin-bottom:1.5rem">
+                <img src="~/img/logo.svg" alt="لوگو" style="width:56px" />
+                <h1 style="font-size:1.5rem;margin-top:.5rem">ورود به پنل مدیریت</h1>
+                <p class="text-muted mb-0">همراه کلیه</p>
+            </div>
+
+            <form asp-action="Login" method="post">
+                <input type="hidden" asp-for="ReturnUrl" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Email"></label>
+                    <input class="form-control" asp-for="Email" autocomplete="username" dir="ltr" />
+                    <span class="field-validation-error" asp-validation-for="Email"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" asp-for="Password"></label>
+                    <input class="form-control" asp-for="Password" autocomplete="current-password" dir="ltr" />
+                    <span class="field-validation-error" asp-validation-for="Password"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="d-flex items-center gap-2" style="font-weight:600">
+                        <input type="checkbox" asp-for="RememberMe" /> مرا به خاطر بسپار
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg">ورود</button>
+            </form>
+        </div>
+        <p class="text-center text-muted" style="margin-top:1rem">
+            <a asp-controller="Home" asp-action="Index">بازگشت به سایت</a>
+        </p>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+}

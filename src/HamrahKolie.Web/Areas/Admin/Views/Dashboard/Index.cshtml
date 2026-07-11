@@ -1,0 +1,57 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "داشبورد";
+    string Fa(int n) => n.ToString("N0", new System.Globalization.CultureInfo("fa-IR"));
+}
+
+<div class="grid grid-4">
+    <div class="card tile">
+        <div class="tile-icon">👥</div>
+        <div><div class="tile-value">@Fa(Model.UsersCount)</div><div class="tile-label">کاربران</div></div>
+    </div>
+    <div class="card tile">
+        <div class="tile-icon">🛡️</div>
+        <div><div class="tile-value">@Fa(Model.RolesCount)</div><div class="tile-label">نقش‌ها</div></div>
+    </div>
+    <div class="card tile">
+        <div class="tile-icon">🔑</div>
+        <div><div class="tile-value">@Fa(Model.PermissionsCount)</div><div class="tile-label">دسترسی‌ها</div></div>
+    </div>
+    <div class="card tile">
+        <div class="tile-icon">📋</div>
+        <div><div class="tile-value">@Fa(Model.AuditLogsToday)</div><div class="tile-label">رویداد امروز</div></div>
+    </div>
+</div>
+
+<div class="card" style="margin-top:1.5rem">
+    <h3>آخرین رویدادها</h3>
+    @if (Model.RecentAudits.Count == 0)
+    {
+        <div class="empty-state">هنوز رویدادی ثبت نشده است.</div>
+    }
+    else
+    {
+        <table class="table">
+            <thead><tr><th>زمان</th><th>عملیات</th><th>کاربر</th><th>توضیح</th></tr></thead>
+            <tbody>
+                @foreach (var a in Model.RecentAudits)
+                {
+                    <tr>
+                        <td dir="ltr">@a.OccurredAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td>
+                        <td><span class="badge badge-primary">@a.Action</span></td>
+                        <td>@(a.UserName ?? "—")</td>
+                        <td>@(a.Description ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="card" style="margin-top:1.5rem;background:var(--c-primary-50);border-color:var(--c-primary-300)">
+    <h3 class="mt-0">مرحله ۱ با موفقیت راه‌اندازی شد ✅</h3>
+    <p class="mb-0 text-muted">
+        اسکلت سامانه، احراز هویت، نقش‌ها و دسترسی‌ها، داشبورد و طراحی پایه آماده است.
+        ماژول‌های محتوا، کمپین، کمک مالی و درخواست حمایت در مراحل بعد افزوده می‌شوند.
+    </p>
+</div>

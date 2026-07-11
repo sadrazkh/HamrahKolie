@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/.vs/
+**/logs/
+**/wwwroot/dist/
+.git/
+.env
+.env.*
+!.env.example
+**/*.user

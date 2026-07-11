@@ -1,0 +1,152 @@
+/* ============================================================
+   همراه کلیه — Design System
+   توکن‌های رنگ، تایپوگرافی و کامپوننت‌های پایه. RTL-First.
+   ============================================================ */
+
+:root {
+  /* رنگ اصلی: سبز آرام و امیدبخش */
+  --c-primary-50:  #eef7f0;
+  --c-primary-100: #d4ecd9;
+  --c-primary-300: #86c99a;
+  --c-primary-500: #2e9e5b;
+  --c-primary-600: #268a4f;
+  --c-primary-700: #1f6f40;
+
+  /* رنگ مکمل: آبی پزشکی */
+  --c-accent-50:  #eaf3fb;
+  --c-accent-500: #1f6fb2;
+  --c-accent-600: #195c93;
+
+  /* زمینه: کرم / سفید گرم */
+  --c-bg:        #fbfaf6;
+  --c-surface:   #ffffff;
+  --c-surface-2: #f4f2ec;
+
+  /* متن */
+  --c-text:        #1f2a24;
+  --c-text-muted:  #5c6b63;
+  --c-border:      #e3e0d7;
+
+  /* وضعیت‌ها (دسترس‌پذیر) */
+  --c-success: #2e9e5b;
+  --c-warning: #b8860b;
+  --c-danger:  #c0392b;
+  --c-info:    #1f6fb2;
+
+  /* شعاع، سایه، فاصله */
+  --radius-sm: 8px;
+  --radius:    14px;
+  --radius-lg: 22px;
+  --shadow-sm: 0 1px 2px rgba(31,42,36,.06), 0 1px 3px rgba(31,42,36,.08);
+  --shadow:    0 4px 14px rgba(31,42,36,.08);
+  --shadow-lg: 0 12px 34px rgba(31,42,36,.12);
+
+  --font-sans: "Vazirmatn", "Segoe UI", Tahoma, system-ui, sans-serif;
+  --container: 1180px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--c-bg);
+  color: var(--c-text);
+  line-height: 1.75;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--c-accent-600); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+h1, h2, h3, h4 { line-height: 1.4; font-weight: 800; color: var(--c-text); margin: 0 0 .6em; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); }
+h2 { font-size: clamp(1.4rem, 3vw, 2rem); }
+h3 { font-size: 1.25rem; }
+
+p { margin: 0 0 1rem; }
+
+/* ── Layout ─────────────────────────────────────────── */
+.container { width: min(100% - 2rem, var(--container)); margin-inline: auto; }
+.section { padding: clamp(2.5rem, 6vw, 5rem) 0; }
+.grid { display: grid; gap: 1.5rem; }
+.stack > * + * { margin-top: 1rem; }
+@media (min-width: 640px)  { .grid-2 { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px)  { .grid-3 { grid-template-columns: repeat(3, 1fr); }
+                             .grid-4 { grid-template-columns: repeat(4, 1fr); } }
+
+/* ── Buttons ────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .7rem 1.5rem; border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer;
+  border: 1.5px solid transparent; transition: all .18s ease; text-decoration: none;
+}
+.btn:hover { text-decoration: none; transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn-primary { background: var(--c-primary-500); color: #fff; box-shadow: var(--shadow-sm); }
+.btn-primary:hover { background: var(--c-primary-600); }
+.btn-accent { background: var(--c-accent-500); color: #fff; }
+.btn-accent:hover { background: var(--c-accent-600); }
+.btn-outline { background: transparent; border-color: var(--c-border); color: var(--c-text); }
+.btn-outline:hover { border-color: var(--c-primary-500); color: var(--c-primary-700); }
+.btn-ghost { background: transparent; color: var(--c-text-muted); }
+.btn-lg { padding: .9rem 2rem; font-size: 1.1rem; }
+.btn-block { width: 100%; }
+
+/* ── Cards ──────────────────────────────────────────── */
+.card {
+  background: var(--c-surface); border: 1px solid var(--c-border);
+  border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm);
+}
+.card-hover { transition: box-shadow .2s, transform .2s; }
+.card-hover:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+
+/* ── Forms ──────────────────────────────────────────── */
+.form-group { margin-bottom: 1.1rem; }
+.form-label { display: block; margin-bottom: .4rem; font-weight: 700; font-size: .95rem; }
+.form-control {
+  width: 100%; padding: .7rem .9rem; font-family: inherit; font-size: 1rem;
+  color: var(--c-text); background: var(--c-surface);
+  border: 1.5px solid var(--c-border); border-radius: var(--radius-sm);
+  transition: border-color .15s, box-shadow .15s;
+}
+.form-control:focus {
+  outline: none; border-color: var(--c-primary-500);
+  box-shadow: 0 0 0 3px var(--c-primary-100);
+}
+.form-hint { font-size: .85rem; color: var(--c-text-muted); margin-top: .3rem; }
+.field-validation-error, .text-danger { color: var(--c-danger); font-size: .85rem; }
+.input-validation-error { border-color: var(--c-danger); }
+
+/* ── Alerts ─────────────────────────────────────────── */
+.alert { padding: .9rem 1.1rem; border-radius: var(--radius-sm); border: 1px solid; margin-bottom: 1rem; }
+.alert-success { background: var(--c-primary-50);  border-color: var(--c-primary-300); color: var(--c-primary-700); }
+.alert-danger  { background: #fdecea; border-color: #e6b3ac; color: var(--c-danger); }
+.alert-warning { background: #fbf3e0; border-color: #e6d29a; color: #7a5b06; }
+.alert-info    { background: var(--c-accent-50);  border-color: #a9cce8; color: var(--c-accent-600); }
+
+/* ── Badges ─────────────────────────────────────────── */
+.badge { display: inline-block; padding: .2rem .6rem; border-radius: 999px; font-size: .78rem; font-weight: 700; }
+.badge-primary { background: var(--c-primary-100); color: var(--c-primary-700); }
+.badge-danger  { background: #fdecea; color: var(--c-danger); }
+
+/* ── Utilities ──────────────────────────────────────── */
+.text-center { text-align: center; }
+.text-muted { color: var(--c-text-muted); }
+.lead { font-size: 1.15rem; color: var(--c-text-muted); }
+.mt-0 { margin-top: 0; } .mb-0 { margin-bottom: 0; }
+.d-flex { display: flex; } .items-center { align-items: center; }
+.justify-between { justify-content: space-between; } .gap-2 { gap: .5rem; } .gap-4 { gap: 1rem; }
+.flex-wrap { flex-wrap: wrap; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+/* دسترس‌پذیری: حلقه فوکوس واضح */
+:focus-visible { outline: 3px solid var(--c-accent-500); outline-offset: 2px; border-radius: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

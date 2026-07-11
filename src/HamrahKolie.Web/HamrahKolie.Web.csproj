@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\HamrahKolie.Application\HamrahKolie.Application.csproj" />
+    <ProjectReference Include="..\HamrahKolie.Infrastructure\HamrahKolie.Infrastructure.csproj" />
+    <ProjectReference Include="..\HamrahKolie.Domain\HamrahKolie.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.21" />
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.20.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- پروژه فرانت‌اند (Vite/Vue) توسط dotnet کامپایل نمی‌شود؛ خروجی آن در wwwroot/dist است. -->
+  <ItemGroup>
+    <Compile Remove="ClientApp\**" />
+    <Content Remove="ClientApp\**" />
+    <None Remove="ClientApp\**" />
+    <EmbeddedResource Remove="ClientApp\**" />
+  </ItemGroup>
+
+</Project>

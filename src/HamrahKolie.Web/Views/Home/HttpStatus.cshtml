@@ -1,0 +1,16 @@
+@{
+    var code = ViewData["StatusCode"] as int? ?? 0;
+    var is404 = code == 404;
+}
+<section class="section">
+    <div class="container text-center" style="max-width:640px">
+        <div style="font-size:5rem;font-weight:800;color:var(--c-primary-500)">@code</div>
+        <h1>@(is404 ? "صفحه‌ای که دنبالش بودید پیدا نشد" : "خطایی رخ داد")</h1>
+        <p class="lead">
+            @(is404
+                ? "ممکن است نشانی تغییر کرده یا صفحه حذف شده باشد."
+                : "لطفاً کمی بعد دوباره تلاش کنید.")
+        </p>
+        <a class="btn btn-primary" asp-action="Index">بازگشت به صفحه اصلی</a>
+    </div>
+</section>

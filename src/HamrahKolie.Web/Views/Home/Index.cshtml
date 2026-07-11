@@ -1,0 +1,99 @@
+@inject HamrahKolie.Web.Infrastructure.Vite.ViteManifestService Vite
+@{
+    ViewData["Title"] = null; // صفحه اصلی از نام مؤسسه استفاده می‌کند
+    ViewData["MetaDescription"] = "همراه کلیه؛ مؤسسه خیریه حمایت از بیماران دیالیزی مناطق محروم. از روستا تا زندگی، مسیر درمان را با هم هموار می‌کنیم.";
+}
+
+@section Styles {
+    @foreach (var css in Vite.GetStylePaths("src/main.ts"))
+    {
+        <link rel="stylesheet" href="@css" />
+    }
+}
+
+<!-- ── Hero ─────────────────────────────────────────── -->
+<section class="hero">
+    <div class="container hero-inner">
+        <div>
+            <div class="eyebrow">در کنار بیماران دیالیزی روستایی</div>
+            <h1>از روستا <span class="hero-highlight">تا زندگی</span></h1>
+            <p class="lead">
+                با حمایت شما، مسیر سخت درمان را برای بیماران دیالیزی مناطق محروم هموار می‌کنیم؛
+                تا آن‌ها به زندگی و خانواده‌ی خود بازگردند.
+            </p>
+            <div class="hero-actions">
+                <a class="btn btn-primary btn-lg" asp-action="Donate">❤ حمایت مالی</a>
+                <a class="btn btn-outline btn-lg" asp-action="Services">آشنایی با فعالیت‌ها</a>
+            </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+            <img src="~/img/logo.svg" alt="" style="width:55%;max-width:220px" />
+        </div>
+    </div>
+</section>
+
+<!-- ── مشکلات بیماران ───────────────────────────────── -->
+<section class="section">
+    <div class="container">
+        <div class="text-center" style="max-width:720px;margin-inline:auto">
+            <h2>چرا بیماران روستایی به همراهی نیاز دارند؟</h2>
+            <p class="text-muted">درمان دیالیز پرهزینه و مداوم است؛ برای خانواده‌های روستایی، فاصله و هزینه به بحرانی روزمره تبدیل می‌شود.</p>
+        </div>
+        <div class="grid grid-3" style="margin-top:2rem">
+            <div class="card card-hover">
+                <h3>فاصله و مسیر سخت</h3>
+                <p class="text-muted mb-0">رفت‌وآمد مکرر به مراکز دیالیز شهری، توان و زمان خانواده را می‌فرساید.</p>
+            </div>
+            <div class="card card-hover">
+                <h3>هزینه‌های درمان</h3>
+                <p class="text-muted mb-0">دارو، جلسات دیالیز و ایاب‌وذهاب، فشار مالی سنگینی بر دوش خانوار می‌گذارد.</p>
+            </div>
+            <div class="card card-hover">
+                <h3>خستگی و نگرانی</h3>
+                <p class="text-muted mb-0">بیمار و خانواده‌اش به حمایت روانی و اجتماعی در کنار درمان نیاز دارند.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── آمارها (Vue Island) ──────────────────────────── -->
+<section class="section" style="background:var(--c-surface)">
+    <div class="container">
+        <div class="text-center"><h2>مسیر ما در یک نگاه</h2></div>
+        <!-- این بخش با یک «جزیره Vue» به‌صورت شمارنده متحرک نمایش داده می‌شود.
+             در صورت نبود خروجی Build فرانت‌اند، همان مقادیر ثابت (fallback) نمایش داده می‌شوند. -->
+        <div id="island-stats"
+             data-stats='[{"value":120,"label":"بیمار تحت حمایت"},{"value":45,"label":"روستای تحت پوشش"},{"value":18000,"label":"جلسه دیالیز حمایت‌شده"},{"value":350,"label":"خیر همراه"}]'>
+            <div class="grid grid-4" style="margin-top:2rem">
+                <div class="stat"><div class="stat-value">۱۲۰</div><div class="stat-label">بیمار تحت حمایت</div></div>
+                <div class="stat"><div class="stat-value">۴۵</div><div class="stat-label">روستای تحت پوشش</div></div>
+                <div class="stat"><div class="stat-value">۱۸٬۰۰۰</div><div class="stat-label">جلسه دیالیز حمایت‌شده</div></div>
+                <div class="stat"><div class="stat-value">۳۵۰</div><div class="stat-label">خیر همراه</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── مراحل درخواست حمایت ──────────────────────────── -->
+<section class="section">
+    <div class="container">
+        <div class="text-center"><h2>چطور کمک می‌کنیم؟</h2></div>
+        <div class="grid grid-4" style="margin-top:2rem">
+            <div class="step"><div class="step-num">۱</div><h3>شناسایی بیمار</h3><p class="text-muted mb-0">معرفی از سوی مراکز درمانی و مددکاران.</p></div>
+            <div class="step"><div class="step-num">۲</div><h3>بررسی و تأیید</h3><p class="text-muted mb-0">ارزیابی مددکاری و پزشکی با رعایت حریم خصوصی.</p></div>
+            <div class="step"><div class="step-num">۳</div><h3>جذب حمایت</h3><p class="text-muted mb-0">همراهی خیرین برای تأمین هزینه‌ها.</p></div>
+            <div class="step"><div class="step-num">۴</div><h3>ادامه زندگی</h3><p class="text-muted mb-0">تداوم درمان و بازگشت بیمار به زندگی.</p></div>
+        </div>
+        <div class="text-center" style="margin-top:2rem">
+            <a class="btn btn-accent btn-lg" asp-action="Donate">همراه ما شوید</a>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{ var islandScript = Vite.GetScriptPath("src/main.ts"); }
+    @if (islandScript is not null)
+    {
+        <script type="module" src="@islandScript"></script>
+    }
+}

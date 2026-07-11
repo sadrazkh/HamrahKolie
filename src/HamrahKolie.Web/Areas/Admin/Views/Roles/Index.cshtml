@@ -1,0 +1,21 @@
+@model IReadOnlyList<RoleListItem>
+@{
+    ViewData["Title"] = "نقش‌ها و دسترسی‌ها";
+}
+<div class="card">
+    <p class="text-muted">نقش‌های سامانه و تعداد دسترسی هر نقش. ویرایش دسترسی‌ها در گام بعدی افزوده می‌شود.</p>
+    <table class="table">
+        <thead><tr><th>نقش</th><th>توضیح</th><th>تعداد دسترسی</th><th>نوع</th></tr></thead>
+        <tbody>
+            @foreach (var r in Model)
+            {
+                <tr>
+                    <td><strong>@(r.DisplayName ?? r.Name)</strong><br /><small class="text-muted" dir="ltr">@r.Name</small></td>
+                    <td class="text-muted">@(r.Description ?? "—")</td>
+                    <td>@r.PermissionCount.ToString("N0", new System.Globalization.CultureInfo("fa-IR"))</td>
+                    <td>@(r.IsSystemRole ? Html.Raw("<span class=\"badge badge-primary\">سیستمی</span>") : Html.Raw("<span class=\"badge\">سفارشی</span>"))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

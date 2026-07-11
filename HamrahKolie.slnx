@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HamrahKolie.Application/HamrahKolie.Application.csproj" />
+    <Project Path="src/HamrahKolie.Domain/HamrahKolie.Domain.csproj" />
+    <Project Path="src/HamrahKolie.Infrastructure/HamrahKolie.Infrastructure.csproj" />
+    <Project Path="src/HamrahKolie.Web/HamrahKolie.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HamrahKolie.Tests/HamrahKolie.Tests.csproj" />
+  </Folder>
+</Solution>

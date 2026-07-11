@@ -1,0 +1,90 @@
+@using System.Security.Claims
+@{
+    var orgName = "همراه کلیه";
+    bool Can(string perm) => User.HasClaim("permission", "*") || User.HasClaim("permission", perm);
+    var displayName = User.Identity?.Name ?? "کاربر";
+}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] ?? "پنل مدیریت") — @orgName</title>
+    <link rel="icon" href="~/img/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@@v33.003/Vazirmatn-font-face.css" />
+    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="admin-body">
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <a class="admin-brand" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                <img class="brand-logo" src="~/img/logo.svg" alt="لوگو" />
+                <span>@orgName</span>
+            </a>
+            <ul class="admin-nav">
+                @if (Can(Permissions.DashboardView))
+                {
+                    <li><a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">داشبورد</a></li>
+                }
+
+                @if (Can(Permissions.ContentView) || Can(Permissions.MediaView) || Can(Permissions.MenuManage))
+                {
+                    <li class="nav-group-title">محتوا</li>
+                    @if (Can(Permissions.ContentView)) { <li><a href="#">مطالب و صفحات <span class="badge badge-primary">به‌زودی</span></a></li> }
+                    @if (Can(Permissions.MediaView)) { <li><a href="#">رسانه‌ها <span class="badge badge-primary">به‌زودی</span></a></li> }
+                    @if (Can(Permissions.MenuManage)) { <li><a href="#">منوها <span class="badge badge-primary">به‌زودی</span></a></li> }
+                }
+
+                @if (Can(Permissions.CampaignView) || Can(Permissions.DonationView))
+                {
+                    <li class="nav-group-title">مالی و کمپین</li>
+                    @if (Can(Permissions.CampaignView)) { <li><a href="#">کمپین‌ها <span class="badge badge-primary">به‌زودی</span></a></li> }
+                    @if (Can(Permissions.DonationView)) { <li><a href="#">کمک‌ها <span class="badge badge-primary">به‌زودی</span></a></li> }
+                }
+
+                @if (Can(Permissions.SupportRequestView) || Can(Permissions.VolunteerView) || Can(Permissions.CenterView))
+                {
+                    <li class="nav-group-title">خدمات</li>
+                    @if (Can(Permissions.SupportRequestView)) { <li><a href="#">درخواست‌های حمایت <span class="badge badge-primary">به‌زودی</span></a></li> }
+                    @if (Can(Permissions.VolunteerView)) { <li><a href="#">داوطلبان <span class="badge badge-primary">به‌زودی</span></a></li> }
+                    @if (Can(Permissions.CenterView)) { <li><a href="#">مراکز دیالیز <span class="badge badge-primary">به‌زودی</span></a></li> }
+                }
+
+                @if (Can(Permissions.UserView) || Can(Permissions.RoleManage) || Can(Permissions.SettingsManage) || Can(Permissions.AuditLogView))
+                {
+                    <li class="nav-group-title">سیستم</li>
+                    @if (Can(Permissions.UserView)) { <li><a asp-area="Admin" asp-controller="Users" asp-action="Index">کاربران</a></li> }
+                    @if (Can(Permissions.RoleManage)) { <li><a asp-area="Admin" asp-controller="Roles" asp-action="Index">نقش‌ها و دسترسی‌ها</a></li> }
+                    @if (Can(Permissions.SettingsManage)) { <li><a href="#">تنظیمات <span class="badge badge-primary">به‌زودی</span></a></li> }
+                    @if (Can(Permissions.AuditLogView)) { <li><a asp-area="Admin" asp-controller="AuditLog" asp-action="Index">گزارش رویدادها</a></li> }
+                    @if (Can(Permissions.SystemManage)) { <li><a href="/jobs">کارهای پس‌زمینه</a></li> }
+                }
+            </ul>
+        </aside>
+
+        <div class="admin-main">
+            <div class="admin-topbar">
+                <div>
+                    <strong>@(ViewData["Title"] ?? "پنل مدیریت")</strong>
+                </div>
+                <div class="d-flex items-center gap-4">
+                    <a class="btn btn-ghost" asp-area="" asp-controller="Home" asp-action="Index" target="_blank">مشاهده سایت ↗</a>
+                    <span class="admin-user">👤 @displayName</span>
+                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="mb-0">
+                        <button type="submit" class="btn btn-outline">خروج</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                @if (TempData["Success"] is string ok) { <div class="alert alert-success">@ok</div> }
+                @if (TempData["Error"] is string err) { <div class="alert alert-danger">@err</div> }
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

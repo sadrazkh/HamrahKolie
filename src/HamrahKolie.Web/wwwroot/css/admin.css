@@ -1,0 +1,60 @@
+/* ============================================================
+   همراه کلیه — استایل پنل مدیریت
+   ============================================================ */
+
+.admin-body { background: var(--c-surface-2); }
+
+.admin-layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+
+/* ── Sidebar ────────────────────────────────────────── */
+.admin-sidebar {
+  background: var(--c-text); color: #cfe0d6; padding: 1.2rem 0;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.admin-brand { display: flex; align-items: center; gap: .6rem; padding: 0 1.2rem 1rem; color: #fff; font-weight: 800; }
+.admin-brand .brand-logo { width: 36px; height: 36px; }
+.admin-nav { list-style: none; margin: 0; padding: 0; }
+.admin-nav .nav-group-title {
+  padding: .9rem 1.2rem .3rem; font-size: .75rem; color: #7f978a;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.admin-nav a {
+  display: flex; align-items: center; gap: .6rem; padding: .6rem 1.2rem;
+  color: #cfe0d6; font-weight: 600; font-size: .95rem;
+}
+.admin-nav a:hover { background: rgba(255,255,255,.06); color: #fff; text-decoration: none; }
+.admin-nav a.active { background: var(--c-primary-600); color: #fff; }
+
+/* ── Main ───────────────────────────────────────────── */
+.admin-main { display: flex; flex-direction: column; min-width: 0; }
+.admin-topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  background: var(--c-surface); border-bottom: 1px solid var(--c-border);
+  padding: .8rem 1.5rem; position: sticky; top: 0; z-index: 20;
+}
+.admin-content { padding: 1.5rem; flex: 1; }
+.admin-user { display: flex; align-items: center; gap: .6rem; font-weight: 700; font-size: .9rem; }
+
+/* ── Stat tiles ─────────────────────────────────────── */
+.tile { display: flex; align-items: center; gap: 1rem; }
+.tile-icon {
+  width: 52px; height: 52px; border-radius: var(--radius); display: grid; place-items: center;
+  background: var(--c-primary-50); color: var(--c-primary-600); flex-shrink: 0;
+}
+.tile-value { font-size: 1.6rem; font-weight: 800; }
+.tile-label { color: var(--c-text-muted); font-size: .9rem; }
+
+/* ── Table ──────────────────────────────────────────── */
+.table { width: 100%; border-collapse: collapse; background: var(--c-surface); }
+.table th, .table td { padding: .8rem 1rem; text-align: start; border-bottom: 1px solid var(--c-border); }
+.table th { background: var(--c-surface-2); font-weight: 700; font-size: .9rem; }
+.table tbody tr:hover { background: var(--c-primary-50); }
+
+/* ── Empty state ────────────────────────────────────── */
+.empty-state { text-align: center; padding: 3rem 1rem; color: var(--c-text-muted); }
+.empty-state svg { opacity: .5; margin-bottom: 1rem; }
+
+@media (max-width: 860px) {
+  .admin-layout { grid-template-columns: 1fr; }
+  .admin-sidebar { position: static; height: auto; }
+}
