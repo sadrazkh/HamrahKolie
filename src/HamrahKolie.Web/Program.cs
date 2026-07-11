@@ -102,13 +102,28 @@ try
     services.AddHealthChecks()
         .AddDbContextCheck<ApplicationDbContext>("database");
 
-    // Hangfire (Background Jobs)
-    services.AddHangfire(cfg => cfg
-        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-        .UseSimpleAssemblyNameTypeSerializer()
-        .UseRecommendedSerializerSettings()
-        .UsePostgreSqlStorage(o => o.UseNpgsqlConnection(config.GetConnectionString("Default"))));
-    services.AddHangfireServer();
+    // بررسی دسترس‌پذیری دیتابیس؛ اگر در دسترس نباشد، سرویس‌های وابسته (Hangfire) رد می‌شوند
+    // تا اپلیکیشن به‌جای Crash، بالا بیاید و بخش‌های عمومی سایت کار کنند.
+    var dbReachable = IsDatabaseReachable(
+        config["Database:Provider"] ?? "PostgreSql",
+        config.GetConnectionString("Default"));
+
+    if (!dbReachable)
+    {
+        Log.Warning("اتصال به پایگاه داده برقرار نشد. اپلیکیشن بالا می‌آید اما بخش‌های وابسته به دیتابیس " +
+                    "(ورود، پنل، Hangfire) تا زمان تنظیم صحیح رشته اتصال فعال نخواهند بود.");
+    }
+
+    // Hangfire (Background Jobs) — فقط در صورت دسترس‌پذیری دیتابیس
+    if (dbReachable)
+    {
+        services.AddHangfire(cfg => cfg
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(o => o.UseNpgsqlConnection(config.GetConnectionString("Default"))));
+        services.AddHangfireServer();
+    }
 
     var app = builder.Build();
 
@@ -140,11 +155,14 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
 
-    // داشبورد Hangfire فقط برای دارندگان دسترسی فنی
-    app.UseHangfireDashboard("/jobs", new DashboardOptions
+    // داشبورد Hangfire فقط برای دارندگان دسترسی فنی (و فقط اگر Hangfire فعال شده باشد)
+    if (dbReachable)
     {
-        Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
-    });
+        app.UseHangfireDashboard("/jobs", new DashboardOptions
+        {
+            Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
+        });
+    }
 
     app.MapControllerRoute(
         name: "areas",
@@ -185,6 +203,39 @@ static async Task MigrateAndSeedAsync(WebApplication app)
     catch (Exception ex)
     {
         logger.LogError(ex, "خطا در Migration/Seed پایگاه داده.");
+    }
+}
+
+static bool IsDatabaseReachable(string provider, string? connectionString)
+{
+    if (string.IsNullOrWhiteSpace(connectionString)) return false;
+    try
+    {
+        if (string.Equals(provider, "SqlServer", StringComparison.OrdinalIgnoreCase))
+        {
+            var sb = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connectionString)
+            {
+                ConnectTimeout = 3
+            };
+            using var conn = new Microsoft.Data.SqlClient.SqlConnection(sb.ConnectionString);
+            conn.Open();
+            return true;
+        }
+        else
+        {
+            var sb = new Npgsql.NpgsqlConnectionStringBuilder(connectionString)
+            {
+                Timeout = 3,
+                CommandTimeout = 3
+            };
+            using var conn = new Npgsql.NpgsqlConnection(sb.ConnectionString);
+            conn.Open();
+            return true;
+        }
+    }
+    catch
+    {
+        return false;
     }
 }
 
