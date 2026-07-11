@@ -1,119 +1,191 @@
 @inject HamrahKolie.Web.Infrastructure.Vite.ViteManifestService Vite
 @model HamrahKolie.Web.ViewModels.HomeViewModel
 @{
-    ViewData["Title"] = null; // صفحه اصلی از نام مؤسسه استفاده می‌کند
+    ViewData["Title"] = null;
     ViewData["MetaDescription"] = "همراه کلیه؛ مؤسسه خیریه حمایت از بیماران دیالیزی مناطق محروم. از روستا تا زندگی، مسیر درمان را با هم هموار می‌کنیم.";
 }
 
 @section Styles {
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
     @foreach (var css in Vite.GetStylePaths("src/main.ts"))
     {
         <link rel="stylesheet" href="@css" />
     }
 }
 
-<!-- ── Hero ─────────────────────────────────────────── -->
-<section class="hero">
-    <div class="container hero-inner">
-        <div>
-            <div class="eyebrow">در کنار بیماران دیالیزی روستایی</div>
-            <h1>از روستا <span class="hero-highlight">تا زندگی</span></h1>
-            <p class="lead">
-                با حمایت شما، مسیر سخت درمان را برای بیماران دیالیزی مناطق محروم هموار می‌کنیم؛
-                تا آن‌ها به زندگی و خانواده‌ی خود بازگردند.
+<section class="home-hero" aria-labelledby="home-hero-title">
+    <img class="home-hero__image"
+         src="~/img/home-journey-hero.png"
+         alt="مسیر یک خانواده روستایی تا مرکز دیالیز"
+         width="1536"
+         height="1024"
+         fetchpriority="high" />
+    <div class="home-hero__shade" aria-hidden="true"></div>
+
+    <div class="container home-hero__content">
+        <div class="home-hero__copy">
+            <p class="home-hero__eyebrow">
+                <span aria-hidden="true"></span>
+                همراه بیماران دیالیزی روستایی
+                <span aria-hidden="true"></span>
             </p>
-            <div class="hero-actions">
-                <a class="btn btn-primary btn-lg" asp-action="Donate">❤ حمایت مالی</a>
-                <a class="btn btn-outline btn-lg" asp-action="Services">آشنایی با فعالیت‌ها</a>
+            <h1 id="home-hero-title">
+                از <span class="home-hero__green">روستا</span>
+                تا <span class="home-hero__blue">زندگی</span>
+            </h1>
+            <p class="home-hero__lead">
+                با حمایت شما، مسیر سخت درمان را هموار می‌کنیم تا بیماران دیالیزی مناطق محروم
+                با آرامش بیشتری به درمان و زندگی در کنار خانواده ادامه دهند.
+            </p>
+
+            <div class="home-hero__actions">
+                <a class="btn btn-primary btn-lg home-hero__primary" asp-action="Donate">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.7-7.5 1.1-1.1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+                    حمایت مالی
+                </a>
+                <a class="btn btn-lg home-hero__secondary" asp-action="Services">
+                    آشنایی با فعالیت‌ها
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.8 3.2c-5 .2-8.3 2.1-9.8 5.8-1.1 2.7-.7 5.1-.3 6.5M3.5 20.5c2.4-4.8 5.9-7.8 10.7-9.3M4 4.5c4.4.2 7.1 1.8 8.4 4.7"/></svg>
+                </a>
             </div>
+
+            <ul class="home-hero__needs" aria-label="مهم‌ترین دشواری‌های بیماران">
+                <li><span class="home-hero__need-icon" aria-hidden="true">↗</span> فاصله و مسیر سخت</li>
+                <li><span class="home-hero__need-icon" aria-hidden="true">○</span> هزینه‌های مداوم درمان</li>
+                <li><span class="home-hero__need-icon" aria-hidden="true">♡</span> خستگی و نگرانی خانواده</li>
+            </ul>
         </div>
-        <div class="hero-art" aria-hidden="true">
-            <img src="~/img/logo.svg" alt="" style="width:55%;max-width:220px" />
+    </div>
+
+    <div class="container home-hero__stats-wrap">
+        <div class="impact-stats" aria-label="آمار فعالیت‌های همراه کلیه">
+            <div id="island-stats"
+                 data-stats='[{"value":120,"label":"بیمار تحت حمایت"},{"value":45,"label":"روستای تحت پوشش"},{"value":18000,"label":"جلسه دیالیز حمایت‌شده"},{"value":350,"label":"خیر همراه"}]'>
+                <div class="grid grid-4">
+                    <div class="stat"><div class="stat-value">۱۲۰</div><div class="stat-label">بیمار تحت حمایت</div></div>
+                    <div class="stat"><div class="stat-value">۴۵</div><div class="stat-label">روستای تحت پوشش</div></div>
+                    <div class="stat"><div class="stat-value">۱۸٬۰۰۰</div><div class="stat-label">جلسه دیالیز حمایت‌شده</div></div>
+                    <div class="stat"><div class="stat-value">۳۵۰</div><div class="stat-label">خیر همراه</div></div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- ── مشکلات بیماران ───────────────────────────────── -->
-<section class="section">
+<section class="home-section home-needs" aria-labelledby="needs-title">
     <div class="container">
-        <div class="text-center" style="max-width:720px;margin-inline:auto">
-            <h2>چرا بیماران روستایی به همراهی نیاز دارند؟</h2>
-            <p class="text-muted">درمان دیالیز پرهزینه و مداوم است؛ برای خانواده‌های روستایی، فاصله و هزینه به بحرانی روزمره تبدیل می‌شود.</p>
+        <div class="home-heading">
+            <p class="home-kicker">یک مسیر، چند مانع جدی</p>
+            <h2 id="needs-title">چرا این همراهی حیاتی است؟</h2>
+            <p>دیالیز درمانی مداوم است؛ اما برای یک بیمار روستایی، رسیدن به درمان گاهی از خود درمان دشوارتر می‌شود.</p>
         </div>
-        <div class="grid grid-3" style="margin-top:2rem">
-            <div class="card card-hover">
+
+        <div class="home-needs__grid">
+            <article class="need-card need-card--route">
+                <div class="need-card__icon" aria-hidden="true">
+                    <svg viewBox="0 0 48 48"><path d="M7 37c6-11 11-16 18-16 6 0 8-5 16-13M34 8h7v7M9 37h.1M20 26h.1M31 17h.1"/></svg>
+                </div>
+                <span class="need-card__number">۰۱</span>
                 <h3>فاصله و مسیر سخت</h3>
-                <p class="text-muted mb-0">رفت‌وآمد مکرر به مراکز دیالیز شهری، توان و زمان خانواده را می‌فرساید.</p>
-            </div>
-            <div class="card card-hover">
-                <h3>هزینه‌های درمان</h3>
-                <p class="text-muted mb-0">دارو، جلسات دیالیز و ایاب‌وذهاب، فشار مالی سنگینی بر دوش خانوار می‌گذارد.</p>
-            </div>
-            <div class="card card-hover">
-                <h3>خستگی و نگرانی</h3>
-                <p class="text-muted mb-0">بیمار و خانواده‌اش به حمایت روانی و اجتماعی در کنار درمان نیاز دارند.</p>
-            </div>
+                <p>رفت‌وآمد چندباره در هفته به مراکز شهری، زمان و توان بیمار و خانواده را می‌گیرد.</p>
+            </article>
+
+            <article class="need-card need-card--cost">
+                <div class="need-card__icon" aria-hidden="true">
+                    <svg viewBox="0 0 48 48"><path d="M8 15h32v24H8zM8 20h32M31 31h5M13 10h22"/></svg>
+                </div>
+                <span class="need-card__number">۰۲</span>
+                <h3>هزینه‌های پیوسته</h3>
+                <p>دارو، آزمایش، تغذیه و ایاب‌وذهاب، فشار سنگینی بر اقتصاد خانواده وارد می‌کند.</p>
+            </article>
+
+            <article class="need-card need-card--care">
+                <div class="need-card__icon" aria-hidden="true">
+                    <svg viewBox="0 0 48 48"><path d="M24 40S7 31 7 18a9 9 0 0 1 16-5 9 9 0 0 1 18 5c0 13-17 22-17 22Z"/></svg>
+                </div>
+                <span class="need-card__number">۰۳</span>
+                <h3>فرسودگی خانواده</h3>
+                <p>ادامه درمان، علاوه بر کمک مالی، به دلگرمی و یک شبکهٔ حمایت انسانی نیاز دارد.</p>
+            </article>
         </div>
     </div>
 </section>
 
-<!-- ── آمارها (Vue Island) ──────────────────────────── -->
-<section class="section" style="background:var(--c-surface)">
-    <div class="container">
-        <div class="text-center"><h2>مسیر ما در یک نگاه</h2></div>
-        <!-- این بخش با یک «جزیره Vue» به‌صورت شمارنده متحرک نمایش داده می‌شود.
-             در صورت نبود خروجی Build فرانت‌اند، همان مقادیر ثابت (fallback) نمایش داده می‌شوند. -->
-        <div id="island-stats"
-             data-stats='[{"value":120,"label":"بیمار تحت حمایت"},{"value":45,"label":"روستای تحت پوشش"},{"value":18000,"label":"جلسه دیالیز حمایت‌شده"},{"value":350,"label":"خیر همراه"}]'>
-            <div class="grid grid-4" style="margin-top:2rem">
-                <div class="stat"><div class="stat-value">۱۲۰</div><div class="stat-label">بیمار تحت حمایت</div></div>
-                <div class="stat"><div class="stat-value">۴۵</div><div class="stat-label">روستای تحت پوشش</div></div>
-                <div class="stat"><div class="stat-value">۱۸٬۰۰۰</div><div class="stat-label">جلسه دیالیز حمایت‌شده</div></div>
-                <div class="stat"><div class="stat-value">۳۵۰</div><div class="stat-label">خیر همراه</div></div>
-            </div>
+<section class="home-section home-path" aria-labelledby="path-title">
+    <div class="container home-path__layout">
+        <div class="home-path__intro">
+            <p class="home-kicker">از شناسایی تا بازگشت به زندگی</p>
+            <h2 id="path-title">کمک شما چطور به بیمار می‌رسد؟</h2>
+            <p>هر حمایت از یک مسیر شفاف عبور می‌کند تا درست در جایی قرار بگیرد که بیشترین اثر را دارد.</p>
+            <a class="home-text-link" asp-action="Services">
+                جزئیات فعالیت‌های ما
+                <span aria-hidden="true">←</span>
+            </a>
         </div>
+
+        <ol class="home-path__steps">
+            <li>
+                <span class="home-path__step-number">۱</span>
+                <div><h3>شناسایی بیمار</h3><p>معرفی از سوی مراکز درمانی و مددکاران محلی</p></div>
+            </li>
+            <li>
+                <span class="home-path__step-number">۲</span>
+                <div><h3>بررسی و تأیید</h3><p>ارزیابی پزشکی و مددکاری با حفظ کرامت بیمار</p></div>
+            </li>
+            <li>
+                <span class="home-path__step-number">۳</span>
+                <div><h3>تأمین حمایت</h3><p>پیوند کمک خیرین با نیازهای درمانی و رفت‌وآمد</p></div>
+            </li>
+            <li>
+                <span class="home-path__step-number">۴</span>
+                <div><h3>تداوم درمان</h3><p>پیگیری منظم تا بیمار مسیر درمان را تنها طی نکند</p></div>
+            </li>
+        </ol>
     </div>
 </section>
 
-<!-- ── مراحل درخواست حمایت ──────────────────────────── -->
-<section class="section">
-    <div class="container">
-        <div class="text-center"><h2>چطور کمک می‌کنیم؟</h2></div>
-        <div class="grid grid-4" style="margin-top:2rem">
-            <div class="step"><div class="step-num">۱</div><h3>شناسایی بیمار</h3><p class="text-muted mb-0">معرفی از سوی مراکز درمانی و مددکاران.</p></div>
-            <div class="step"><div class="step-num">۲</div><h3>بررسی و تأیید</h3><p class="text-muted mb-0">ارزیابی مددکاری و پزشکی با رعایت حریم خصوصی.</p></div>
-            <div class="step"><div class="step-num">۳</div><h3>جذب حمایت</h3><p class="text-muted mb-0">همراهی خیرین برای تأمین هزینه‌ها.</p></div>
-            <div class="step"><div class="step-num">۴</div><h3>ادامه زندگی</h3><p class="text-muted mb-0">تداوم درمان و بازگشت بیمار به زندگی.</p></div>
+<section class="home-callout" aria-labelledby="callout-title">
+    <div class="container home-callout__inner">
+        <div>
+            <p class="home-kicker">سهمی در ادامهٔ یک زندگی</p>
+            <h2 id="callout-title">فاصله نباید درمان را متوقف کند.</h2>
+            <p>هر همراهی، بخشی از مسیر یک بیمار تا مرکز درمان را کوتاه‌تر می‌کند.</p>
         </div>
-        <div class="text-center" style="margin-top:2rem">
-            <a class="btn btn-accent btn-lg" asp-action="Donate">همراه ما شوید</a>
-        </div>
+        <a class="btn btn-lg home-callout__button" asp-action="Donate">
+            همین حالا همراه شوید
+            <span aria-hidden="true">←</span>
+        </a>
     </div>
 </section>
 
 @if (Model.LatestNews.Any() || Model.LatestArticles.Any())
 {
-    <section class="section" style="background:var(--c-surface)">
+    <section class="home-section home-news" aria-labelledby="news-title">
         <div class="container">
-            <div class="d-flex justify-between items-center">
-                <h2 class="mb-0">آخرین اخبار و مطالب</h2>
-                <a class="btn btn-ghost" href="/news">همه اخبار ←</a>
+            <div class="home-news__heading">
+                <div>
+                    <p class="home-kicker">روایت همراهی</p>
+                    <h2 id="news-title">آخرین اخبار و مطالب</h2>
+                </div>
+                <a class="home-text-link" href="/news">مشاهده همه اخبار <span aria-hidden="true">←</span></a>
             </div>
-            <div class="grid grid-3" style="margin-top:1.5rem">
+            <div class="home-news__grid">
                 @foreach (var c in Model.LatestNews)
                 {
-                    <article class="card card-hover">
+                    <article class="home-news__card">
                         <span class="badge badge-primary">خبر</span>
-                        <h3 style="margin-top:.6rem"><a href="/news/@c.Slug">@c.Title</a></h3>
-                        <p class="text-muted mb-0">@c.Summary</p>
+                        <h3><a href="/news/@c.Slug">@c.Title</a></h3>
+                        <p>@c.Summary</p>
+                        <a class="home-news__more" href="/news/@c.Slug" aria-label="مطالعه خبر @c.Title">مطالعه خبر <span aria-hidden="true">←</span></a>
                     </article>
                 }
                 @foreach (var c in Model.LatestArticles)
                 {
-                    <article class="card card-hover">
+                    <article class="home-news__card">
                         <span class="badge">مقاله</span>
-                        <h3 style="margin-top:.6rem"><a href="/articles/@c.Slug">@c.Title</a></h3>
-                        <p class="text-muted mb-0">@c.Summary</p>
+                        <h3><a href="/articles/@c.Slug">@c.Title</a></h3>
+                        <p>@c.Summary</p>
+                        <a class="home-news__more" href="/articles/@c.Slug" aria-label="مطالعه مقاله @c.Title">مطالعه مطلب <span aria-hidden="true">←</span></a>
                     </article>
                 }
             </div>
