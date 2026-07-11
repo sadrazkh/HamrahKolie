@@ -1,0 +1,49 @@
+@using HamrahKolie.Domain.Entities
+@model IReadOnlyList<MediaFile>
+@{
+    ViewData["Title"] = "کتابخانه رسانه";
+    string Size(long b) => b < 1024 * 1024 ? $"{b / 1024} KB" : $"{b / (1024 * 1024.0):0.0} MB";
+}
+
+<div class="card" style="margin-bottom:1.5rem">
+    <h3 class="mt-0">بارگذاری فایل جدید</h3>
+    <form asp-action="Upload" method="post" enctype="multipart/form-data" class="d-flex gap-4 items-center flex-wrap">
+        @Html.AntiForgeryToken()
+        <input type="file" name="file" class="form-control" style="max-width:400px" accept="image/*,application/pdf" required />
+        <button type="submit" class="btn btn-primary">بارگذاری</button>
+        <span class="form-hint mb-0">تصویر یا PDF، حداکثر ۱۰ مگابایت.</span>
+    </form>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="card empty-state">هنوز فایلی بارگذاری نشده است.</div>
+}
+else
+{
+    <div class="grid grid-4">
+        @foreach (var m in Model)
+        {
+            <div class="card">
+                @if (m.IsImage)
+                {
+                    <img src="@m.Url" alt="@m.FileName" style="width:100%;height:140px;object-fit:cover;border-radius:var(--radius-sm)" />
+                }
+                else
+                {
+                    <div style="height:140px;display:grid;place-items:center;background:var(--c-surface-2);border-radius:var(--radius-sm);font-size:2rem">📄</div>
+                }
+                <p style="font-size:.85rem;margin:.6rem 0 .2rem;word-break:break-all">@m.FileName</p>
+                <p class="text-muted" style="font-size:.8rem">@Size(m.SizeBytes)</p>
+                <div class="d-flex gap-2">
+                    <input class="form-control" style="font-size:.75rem;padding:.3rem" value="@m.Url" readonly dir="ltr"
+                           onclick="this.select();document.execCommand('copy');" title="برای کپی کلیک کنید" />
+                    <form asp-action="Delete" asp-route-id="@m.Id" method="post" onsubmit="return confirm('این فایل حذف شود؟');" class="mb-0">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-ghost">حذف</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+}

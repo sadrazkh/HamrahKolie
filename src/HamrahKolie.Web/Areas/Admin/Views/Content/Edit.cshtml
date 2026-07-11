@@ -1,0 +1,153 @@
+@inject HamrahKolie.Web.Infrastructure.Vite.ViteManifestService Vite
+@using HamrahKolie.Application.Cms
+@using HamrahKolie.Domain.Enums
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model ContentEditDto
+@{
+    var isNew = Model.Id == 0;
+    ViewData["Title"] = isNew ? "محتوای جدید" : "ویرایش محتوا";
+    var cats = ViewBag.Categories as List<SelectListItem> ?? new();
+    var media = ViewBag.Media as List<SelectListItem> ?? new();
+    var action = isNew ? "Create" : "Edit";
+}
+
+@section Styles {
+    @foreach (var css in Vite.GetStylePaths("src/admin.ts"))
+    {
+        <link rel="stylesheet" href="@css" />
+    }
+}
+
+<form asp-action="@action" asp-route-id="@(isNew ? null : (long?)Model.Id)" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="Type" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
+
+    <div class="grid" style="grid-template-columns: 1fr 320px; gap:1.5rem; align-items:start">
+        <!-- ستون اصلی -->
+        <div class="stack">
+            <div class="card">
+                <div class="form-group">
+                    <label class="form-label" asp-for="Title">عنوان</label>
+                    <input class="form-control" asp-for="Title" />
+                    <span class="field-validation-error" asp-validation-for="Title"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="Slug">نامک (اختیاری؛ از عنوان ساخته می‌شود)</label>
+                    <input class="form-control" asp-for="Slug" dir="ltr" placeholder="مثلاً: ashnaei-ba-dializ" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="Summary">خلاصه</label>
+                    <textarea class="form-control" asp-for="Summary" rows="2"></textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <label class="form-label">متن کامل</label>
+                <!-- ادیتور TipTap: مقدار در textarea مخفی زیر همگام می‌شود -->
+                <div data-editor-target="Body"></div>
+                <textarea id="Body" name="Body" style="display:none">@Model.Body</textarea>
+                <p class="form-hint">اگر ادیتور بارگذاری نشد، همین کادر متن نمایش داده می‌شود و می‌توانید HTML وارد کنید.</p>
+            </div>
+
+            <div class="card">
+                <h3 class="mt-0">تنظیمات سئو</h3>
+                <div class="form-group">
+                    <label class="form-label" asp-for="SeoTitle">عنوان سئو</label>
+                    <input class="form-control" asp-for="SeoTitle" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="MetaDescription">توضیح متا</label>
+                    <textarea class="form-control" asp-for="MetaDescription" rows="2"></textarea>
+                    <span class="field-validation-error" asp-validation-for="MetaDescription"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="CanonicalUrl">Canonical URL</label>
+                    <input class="form-control" asp-for="CanonicalUrl" dir="ltr" />
+                </div>
+                <div class="form-group">
+                    <label class="d-flex items-center gap-2" style="font-weight:600">
+                        <input type="checkbox" asp-for="NoIndex" /> این صفحه ایندکس نشود (noindex)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ستون کناری -->
+        <div class="stack">
+            <div class="card">
+                <h3 class="mt-0">انتشار</h3>
+                <div class="form-group">
+                    <label class="form-label" asp-for="Status">وضعیت</label>
+                    <select class="form-control" asp-for="Status" asp-items="Html.GetEnumSelectList<ContentStatus>()"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="PublishedAt">زمان انتشار</label>
+                    <input class="form-control" asp-for="PublishedAt" type="datetime-local" dir="ltr" />
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">ذخیره</button>
+            </div>
+
+            @if (!isNew)
+            {
+                <div class="card">
+                    <h3 class="mt-0">دسترسی سریع</h3>
+                    <form asp-action="SetStatus" asp-route-id="@Model.Id" method="post" class="mb-0">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="status" value="@((int)ContentStatus.Published)" />
+                        <button type="submit" class="btn btn-accent btn-block">انتشار فوری</button>
+                    </form>
+                </div>
+            }
+
+            <div class="card">
+                <h3 class="mt-0">دسته و برچسب</h3>
+                <div class="form-group">
+                    <label class="form-label" asp-for="CategoryId">دسته‌بندی</label>
+                    <select class="form-control" asp-for="CategoryId">
+                        <option value="">— بدون دسته —</option>
+                        @foreach (var c in cats)
+                        {
+                            <option value="@c.Value" selected="@(Model.CategoryId?.ToString() == c.Value)">@c.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="Tags">برچسب‌ها (با کاما جدا کنید)</label>
+                    <input class="form-control" asp-for="Tags" placeholder="دیالیز، تغذیه" />
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="mt-0">تصویر شاخص</h3>
+                <div class="form-group">
+                    <select class="form-control" asp-for="FeaturedImageId">
+                        <option value="">— بدون تصویر —</option>
+                        @foreach (var m in media)
+                        {
+                            <option value="@m.Value" selected="@(Model.FeaturedImageId?.ToString() == m.Value)">@m.Text</option>
+                        }
+                    </select>
+                    <p class="form-hint">ابتدا تصویر را در بخش «رسانه‌ها» بارگذاری کنید.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="mt-0">بازبینی پزشکی</h3>
+                <div class="form-group">
+                    <input class="form-control" asp-for="MedicalReviewer" placeholder="نام بازبین (اختیاری)" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{ var adminScript = Vite.GetScriptPath("src/admin.ts"); }
+    @if (adminScript is not null)
+    {
+        <script type="module" src="@adminScript"></script>
+    }
+}

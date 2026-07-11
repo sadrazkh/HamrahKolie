@@ -21,6 +21,15 @@ public class ApplicationDbContext : IdentityDbContext<
     public DbSet<Setting> Settings => Set<Setting>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
+    // ── محتوا (CMS) ──────────────────────────────────────────────
+    public DbSet<Content> Contents => Set<Content>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<ContentTag> ContentTags => Set<ContentTag>();
+    public DbSet<MediaFile> MediaFiles => Set<MediaFile>();
+    public DbSet<Menu> Menus => Set<Menu>();
+    public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

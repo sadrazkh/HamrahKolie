@@ -1,4 +1,5 @@
 @inject HamrahKolie.Web.Infrastructure.Vite.ViteManifestService Vite
+@model HamrahKolie.Web.ViewModels.HomeViewModel
 @{
     ViewData["Title"] = null; // صفحه اصلی از نام مؤسسه استفاده می‌کند
     ViewData["MetaDescription"] = "همراه کلیه؛ مؤسسه خیریه حمایت از بیماران دیالیزی مناطق محروم. از روستا تا زندگی، مسیر درمان را با هم هموار می‌کنیم.";
@@ -89,6 +90,36 @@
         </div>
     </div>
 </section>
+
+@if (Model.LatestNews.Any() || Model.LatestArticles.Any())
+{
+    <section class="section" style="background:var(--c-surface)">
+        <div class="container">
+            <div class="d-flex justify-between items-center">
+                <h2 class="mb-0">آخرین اخبار و مطالب</h2>
+                <a class="btn btn-ghost" href="/news">همه اخبار ←</a>
+            </div>
+            <div class="grid grid-3" style="margin-top:1.5rem">
+                @foreach (var c in Model.LatestNews)
+                {
+                    <article class="card card-hover">
+                        <span class="badge badge-primary">خبر</span>
+                        <h3 style="margin-top:.6rem"><a href="/news/@c.Slug">@c.Title</a></h3>
+                        <p class="text-muted mb-0">@c.Summary</p>
+                    </article>
+                }
+                @foreach (var c in Model.LatestArticles)
+                {
+                    <article class="card card-hover">
+                        <span class="badge">مقاله</span>
+                        <h3 style="margin-top:.6rem"><a href="/articles/@c.Slug">@c.Title</a></h3>
+                        <p class="text-muted mb-0">@c.Summary</p>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}
 
 @section Scripts {
     @{ var islandScript = Vite.GetScriptPath("src/main.ts"); }

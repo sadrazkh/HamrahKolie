@@ -87,3 +87,21 @@
   background: var(--c-accent-600); color: #fff; text-align: center;
   padding: .9rem 1rem; font-weight: 700;
 }
+
+/* ── محتوای غنی (خروجی ادیتور) ──────────────────────── */
+.content-body { font-size: 1.08rem; line-height: 2; color: var(--c-text); }
+.content-body h2 { margin: 1.8rem 0 .8rem; }
+.content-body h3 { margin: 1.4rem 0 .6rem; }
+.content-body p { margin: 0 0 1.1rem; }
+.content-body ul, .content-body ol { margin: 0 0 1.1rem; padding-inline-start: 1.5rem; }
+.content-body li { margin-bottom: .4rem; }
+.content-body img { max-width: 100%; height: auto; border-radius: var(--radius-sm); }
+.content-body a { color: var(--c-accent-600); text-decoration: underline; }
+.content-body blockquote {
+  margin: 1.5rem 0; padding: .8rem 1.2rem;
+  border-inline-start: 4px solid var(--c-primary-500);
+  background: var(--c-primary-50); border-radius: var(--radius-sm); color: var(--c-primary-700);
+}
+.content-body table { width: 100%; border-collapse: collapse; margin: 1.2rem 0; }
+.content-body th, .content-body td { border: 1px solid var(--c-border); padding: .6rem .8rem; text-align: start; }
+.content-body th { background: var(--c-surface-2); }

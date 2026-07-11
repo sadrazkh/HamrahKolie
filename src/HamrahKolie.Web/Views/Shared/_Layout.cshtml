@@ -6,8 +6,24 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@(ViewData["Title"] is null ? orgName : $"{ViewData["Title"]} — {orgName}")</title>
-    <meta name="description" content="@(ViewData["MetaDescription"] ?? "مؤسسه خیریه حمایت از بیماران کلیوی و دیالیزی مناطق محروم و روستایی")" />
+    @{
+        var pageTitle = ViewData["Title"] is null ? orgName : $"{ViewData["Title"]} — {orgName}";
+        var metaDesc = (ViewData["MetaDescription"] as string) ?? "مؤسسه خیریه حمایت از بیماران کلیوی و دیالیزی مناطق محروم و روستایی";
+        var canonical = ViewData["Canonical"] as string;
+        var ogImage = ViewData["OgImage"] as string;
+        var ogType = (ViewData["OgType"] as string) ?? "website";
+        var robots = ViewData["Robots"] as string;
+    }
+    <title>@pageTitle</title>
+    <meta name="description" content="@metaDesc" />
+    @if (!string.IsNullOrEmpty(robots)) { <meta name="robots" content="@robots" /> }
+    @if (!string.IsNullOrEmpty(canonical)) { <link rel="canonical" href="@canonical" /> }
+    <meta property="og:site_name" content="@orgName" />
+    <meta property="og:title" content="@pageTitle" />
+    <meta property="og:description" content="@metaDesc" />
+    <meta property="og:type" content="@ogType" />
+    @if (!string.IsNullOrEmpty(ogImage)) { <meta property="og:image" content="@ogImage" /> }
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="~/img/logo.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@@v33.003/Vazirmatn-font-face.css" />
     <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
@@ -23,12 +39,7 @@
             </a>
             <button class="nav-toggle" aria-label="منو" onclick="document.getElementById('navmenu').classList.toggle('open')">☰</button>
             <ul class="nav-menu" id="navmenu">
-                <li><a asp-controller="Home" asp-action="Index">صفحه اصلی</a></li>
-                <li><a asp-controller="Home" asp-action="About">درباره ما</a></li>
-                <li><a asp-controller="Home" asp-action="Services">خدمات حمایتی</a></li>
-                <li><a asp-controller="Home" asp-action="Campaigns">کمپین‌ها</a></li>
-                <li><a asp-controller="Home" asp-action="Contact">تماس با ما</a></li>
-                <li><a class="btn btn-primary" asp-controller="Home" asp-action="Donate">❤ حمایت مالی</a></li>
+                @await Component.InvokeAsync("NavMenu", new { location = "Header" })
             </ul>
         </div>
     </header>
@@ -49,12 +60,7 @@
             </div>
             <div>
                 <div class="footer-title">دسترسی سریع</div>
-                <ul class="footer-links">
-                    <li><a asp-controller="Home" asp-action="About">درباره مؤسسه</a></li>
-                    <li><a asp-controller="Home" asp-action="Services">خدمات حمایتی</a></li>
-                    <li><a asp-controller="Home" asp-action="Campaigns">کمپین‌ها</a></li>
-                    <li><a asp-controller="Home" asp-action="Contact">تماس با ما</a></li>
-                </ul>
+                @await Component.InvokeAsync("NavMenu", new { location = "Footer" })
             </div>
             <div>
                 <div class="footer-title">همراهی</div>

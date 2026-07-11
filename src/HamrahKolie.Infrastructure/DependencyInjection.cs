@@ -65,6 +65,12 @@ public static class DependencyInjection
         services.AddScoped<ISettingService, SettingService>();
         services.AddScoped<IAuditService, AuditService>();
 
+        // سرویس‌های CMS
+        services.AddSingleton<ISlugService, SlugService>();
+        services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
+        services.AddSingleton<IStorageService, LocalStorageService>();
+        services.AddScoped<HamrahKolie.Application.Cms.IContentService, ContentService>();
+
         return services;
     }
 }

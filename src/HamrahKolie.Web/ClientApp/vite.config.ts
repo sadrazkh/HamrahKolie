@@ -12,7 +12,10 @@ export default defineConfig({
     outDir: resolve(__dirname, '../wwwroot/dist'),
     emptyOutDir: true,
     rollupOptions: {
-      input: resolve(__dirname, 'src/main.ts'),
+      input: {
+        main: resolve(__dirname, 'src/main.ts'),
+        admin: resolve(__dirname, 'src/admin.ts'),
+      },
     },
   },
 });

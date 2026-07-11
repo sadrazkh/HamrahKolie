@@ -1,0 +1,50 @@
+@model List<(long Id, string Name, string Slug, int Count)>
+@{
+    ViewData["Title"] = "دسته‌بندی‌ها";
+}
+<div class="grid" style="grid-template-columns: 320px 1fr; gap:1.5rem; align-items:start">
+    <div class="card">
+        <h3 class="mt-0">دسته جدید</h3>
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label class="form-label">نام دسته</label>
+                <input class="form-control" name="name" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">توضیح (اختیاری)</label>
+                <textarea class="form-control" name="description" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">افزودن</button>
+        </form>
+    </div>
+
+    <div class="card">
+        @if (Model.Count == 0)
+        {
+            <div class="empty-state">هنوز دسته‌ای ثبت نشده است.</div>
+        }
+        else
+        {
+            <table class="table">
+                <thead><tr><th>نام</th><th>نامک</th><th>تعداد محتوا</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var c in Model)
+                    {
+                        <tr>
+                            <td>@c.Name</td>
+                            <td dir="ltr">@c.Slug</td>
+                            <td>@c.Count.ToString("N0", new System.Globalization.CultureInfo("fa-IR"))</td>
+                            <td>
+                                <form asp-action="Delete" asp-route-id="@c.Id" method="post" onsubmit="return confirm('این دسته حذف شود؟');" class="mb-0">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-ghost">حذف</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

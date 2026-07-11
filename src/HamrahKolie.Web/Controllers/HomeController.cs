@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using HamrahKolie.Application.Cms;
+using HamrahKolie.Domain.Enums;
 using HamrahKolie.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
@@ -6,13 +8,29 @@ using Microsoft.AspNetCore.OutputCaching;
 namespace HamrahKolie.Web.Controllers;
 
 /// <summary>
-/// صفحات عمومی سایت. در نسخه اول محتوای پایه ارائه می‌شود؛ در مراحل بعد این صفحات
-/// از سیستم مدیریت محتوا و صفحه‌ساز تغذیه خواهند شد.
+/// صفحات عمومی سایت. صفحه اصلی و فهرست‌ها از سیستم مدیریت محتوا تغذیه می‌شوند.
 /// </summary>
 public class HomeController : Controller
 {
+    private readonly IContentService _content;
+
+    public HomeController(IContentService content) => _content = content;
+
     [OutputCache(Duration = 60)]
-    public IActionResult Index() => View();
+    public async Task<IActionResult> Index()
+    {
+        var vm = new HamrahKolie.Web.ViewModels.HomeViewModel();
+        try
+        {
+            vm.LatestNews = await _content.GetLatestPublishedAsync(ContentType.News, 3);
+            vm.LatestArticles = await _content.GetLatestPublishedAsync(ContentType.Article, 3);
+        }
+        catch
+        {
+            // اگر پایگاه داده در دسترس نباشد، صفحه اصلی بدون فهرست مطالب نمایش داده می‌شود.
+        }
+        return View(vm);
+    }
 
     public IActionResult About()
     {

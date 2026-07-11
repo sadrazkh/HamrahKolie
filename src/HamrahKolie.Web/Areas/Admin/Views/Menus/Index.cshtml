@@ -1,0 +1,60 @@
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@model IReadOnlyList<Menu>
+@{
+    ViewData["Title"] = "مدیریت منوها";
+    string LocName(MenuLocation l) => l == MenuLocation.Header ? "سرصفحه" : "پاورقی";
+}
+
+<div class="grid grid-2">
+    @foreach (var menu in Model)
+    {
+        <div class="card">
+            <div class="d-flex justify-between items-center">
+                <h3 class="mt-0">@menu.Name</h3>
+                <span class="badge badge-primary">@LocName(menu.Location)</span>
+            </div>
+
+            @if (menu.Items.Count == 0)
+            {
+                <p class="text-muted">این منو آیتمی ندارد.</p>
+            }
+            else
+            {
+                <table class="table">
+                    <thead><tr><th>ترتیب</th><th>عنوان</th><th>نشانی</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var item in menu.Items.OrderBy(i => i.SortOrder))
+                        {
+                            <tr>
+                                <td>@item.SortOrder</td>
+                                <td>@item.Title</td>
+                                <td dir="ltr" style="word-break:break-all">@item.Url</td>
+                                <td>
+                                    <form asp-action="DeleteItem" asp-route-id="@item.Id" method="post" onsubmit="return confirm('حذف شود؟');" class="mb-0">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-ghost">حذف</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            <form asp-action="AddItem" method="post" style="margin-top:1rem;border-top:1px solid var(--c-border);padding-top:1rem">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="menuId" value="@menu.Id" />
+                <div class="d-flex gap-2 flex-wrap">
+                    <input class="form-control" name="title" placeholder="عنوان" style="flex:1;min-width:120px" required />
+                    <input class="form-control" name="url" placeholder="/news یا https://..." dir="ltr" style="flex:1;min-width:140px" required />
+                    <input class="form-control" name="sortOrder" type="number" value="0" style="width:80px" title="ترتیب" />
+                </div>
+                <label class="d-flex items-center gap-2" style="margin:.6rem 0;font-weight:600">
+                    <input type="checkbox" name="openInNewTab" value="true" /> باز شدن در تب جدید
+                </label>
+                <button type="submit" class="btn btn-outline btn-block">+ افزودن آیتم</button>
+            </form>
+        </div>
+    }
+</div>

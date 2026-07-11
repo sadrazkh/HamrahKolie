@@ -1,0 +1,82 @@
+@using HamrahKolie.Application.Cms
+@using HamrahKolie.Application.Common.Models
+@using HamrahKolie.Domain.Enums
+@model PagedResult<ContentListItemDto>
+@{
+    ViewData["Title"] = "مدیریت محتوا";
+    var currentType = ViewData["Type"] as ContentType?;
+    var faCulture = new System.Globalization.CultureInfo("fa-IR");
+
+    string TypeName(ContentType t) => t switch
+    {
+        ContentType.Page => "صفحه", ContentType.News => "خبر",
+        ContentType.Article => "مقاله", ContentType.PatientStory => "داستان بیمار", _ => t.ToString()
+    };
+    (string, string) StatusBadge(ContentStatus s) => s switch
+    {
+        ContentStatus.Published => ("badge-primary", "منتشرشده"),
+        ContentStatus.Draft => ("badge", "پیش‌نویس"),
+        ContentStatus.Scheduled => ("badge", "زمان‌بندی‌شده"),
+        ContentStatus.Review => ("badge", "در بازبینی"),
+        ContentStatus.Archived => ("badge-danger", "بایگانی"),
+        _ => ("badge", s.ToString())
+    };
+}
+
+<div class="d-flex justify-between items-center" style="margin-bottom:1rem">
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn @(currentType == null ? "btn-primary" : "btn-outline")" asp-action="Index">همه</a>
+        <a class="btn @(currentType == ContentType.Article ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-type="Article">مقالات</a>
+        <a class="btn @(currentType == ContentType.News ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-type="News">اخبار</a>
+        <a class="btn @(currentType == ContentType.PatientStory ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-type="PatientStory">داستان‌ها</a>
+        <a class="btn @(currentType == ContentType.Page ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-type="Page">صفحات</a>
+    </div>
+    <a class="btn btn-primary" asp-action="Create" asp-route-type="@(currentType ?? ContentType.Article)">+ محتوای جدید</a>
+</div>
+
+<div class="card">
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty-state">
+            <p>هنوز محتوایی ثبت نشده است.</p>
+            <a class="btn btn-primary" asp-action="Create">ایجاد اولین محتوا</a>
+        </div>
+    }
+    else
+    {
+        <table class="table">
+            <thead><tr><th>عنوان</th><th>نوع</th><th>دسته</th><th>وضعیت</th><th>تاریخ</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var c in Model.Items)
+                {
+                    var (cls, label) = StatusBadge(c.Status);
+                    <tr>
+                        <td><a asp-action="Edit" asp-route-id="@c.Id"><strong>@c.Title</strong></a><br /><small class="text-muted" dir="ltr">@c.Slug</small></td>
+                        <td>@TypeName(c.Type)</td>
+                        <td>@(c.CategoryName ?? "—")</td>
+                        <td><span class="badge @cls">@label</span></td>
+                        <td dir="ltr">@((c.PublishedAt ?? c.CreatedAt).ToLocalTime().ToString("yyyy/MM/dd"))</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a class="btn btn-outline" asp-action="Edit" asp-route-id="@c.Id">ویرایش</a>
+                                <form asp-action="Delete" asp-route-id="@c.Id" method="post" onsubmit="return confirm('این محتوا به سطل زباله منتقل شود؟');" class="mb-0">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-ghost">حذف</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="d-flex gap-2 items-center" style="margin-top:1rem">
+                @if (Model.HasPrevious) { <a class="btn btn-outline" asp-action="Index" asp-route-type="@currentType" asp-route-page="@(Model.Page - 1)">قبلی</a> }
+                <span class="btn btn-ghost">صفحه @Model.Page از @Model.TotalPages</span>
+                @if (Model.HasNext) { <a class="btn btn-outline" asp-action="Index" asp-route-type="@currentType" asp-route-page="@(Model.Page + 1)">بعدی</a> }
+            </div>
+        }
+    }
+</div>

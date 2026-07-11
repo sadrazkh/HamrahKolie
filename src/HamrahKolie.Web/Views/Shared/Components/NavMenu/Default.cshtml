@@ -1,0 +1,21 @@
+@model IReadOnlyList<HamrahKolie.Web.ViewComponents.NavMenuItem>
+@{
+    var location = ViewData["Location"] as string ?? "Header";
+}
+@if (location == "Footer")
+{
+    <ul class="footer-links">
+        @foreach (var item in Model)
+        {
+            <li><a href="@item.Url" target="@(item.OpenInNewTab ? "_blank" : null)">@item.Title</a></li>
+        }
+    </ul>
+}
+else
+{
+    @foreach (var item in Model)
+    {
+        <li><a href="@item.Url" target="@(item.OpenInNewTab ? "_blank" : null)">@item.Title</a></li>
+    }
+    <li><a class="btn btn-primary" asp-controller="Home" asp-action="Donate">❤ حمایت مالی</a></li>
+}
