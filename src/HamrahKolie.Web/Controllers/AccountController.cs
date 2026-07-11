@@ -57,7 +57,10 @@ public class AccountController : Controller
             await _audit.LogAsync("Login.Success", $"ورود موفق کاربر {user.Email}");
 
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+            {
                 return Redirect(model.ReturnUrl);
+            }
+
             return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
         }
 

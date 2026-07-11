@@ -24,9 +24,9 @@ public class SeoController : Controller
         var sb = new StringBuilder();
         var settings = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding(false), Async = false };
         await using (var sw = new StringWriter(sb))
-        using (var xml = XmlWriter.Create(sw, settings))
+        await using (var xml = XmlWriter.Create(sw, settings))
         {
-            xml.WriteStartDocument();
+            await xml.WriteStartDocumentAsync();
             xml.WriteStartElement("urlset", "http://www.sitemaps.org/schemas/sitemap/0.9");
 
             // صفحات اصلی ثابت
@@ -48,8 +48,8 @@ public class SeoController : Controller
                     WriteUrl(xml, baseUrl + path, c.UpdatedAt ?? c.PublishedAt ?? c.CreatedAt);
             }
 
-            xml.WriteEndElement();
-            xml.WriteEndDocument();
+            await xml.WriteEndElementAsync();
+            await xml.WriteEndDocumentAsync();
         }
 
         return Content(sb.ToString(), "application/xml", Encoding.UTF8);
@@ -60,7 +60,10 @@ public class SeoController : Controller
         xml.WriteStartElement("url");
         xml.WriteElementString("loc", loc);
         if (lastMod is not null)
+        {
             xml.WriteElementString("lastmod", lastMod.Value.ToString("yyyy-MM-dd"));
+        }
+
         xml.WriteEndElement();
     }
 
