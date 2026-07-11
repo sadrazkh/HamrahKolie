@@ -1,0 +1,120 @@
+@using HamrahKolie.Application.PageBuilder
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@inject HamrahKolie.Application.Cms.IContentService ContentService
+@model PageSection
+@{
+    var bgStyle = Model.Background switch
+    {
+        SectionBackground.Surface => "background:var(--c-surface)",
+        SectionBackground.Tint => "background:var(--c-primary-50)",
+        SectionBackground.Dark => "background:var(--c-text);color:#e6efe9",
+        _ => ""
+    };
+    var padClass = Model.Padding switch
+    {
+        SectionPadding.Compact => "section-compact",
+        SectionPadding.Spacious => "section-spacious",
+        _ => ""
+    };
+    var visClass = (!Model.ShowOnMobile ? "hide-mobile " : "") + (!Model.ShowOnDesktop ? "hide-desktop" : "");
+}
+
+@if (Model.Type == SectionType.Hero)
+{
+    <section class="hero @visClass" style="@bgStyle">
+        <div class="container hero-inner">
+            <div>
+                @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="lead">@Model.Subtitle</p> }
+                <h1>@Model.Title</h1>
+                <div class="hero-actions">
+                    @if (!string.IsNullOrWhiteSpace(Model.ButtonText)) { <a class="btn btn-primary btn-lg" href="@Model.ButtonUrl">@Model.ButtonText</a> }
+                    @if (!string.IsNullOrWhiteSpace(Model.SecondaryButtonText)) { <a class="btn btn-outline btn-lg" href="@Model.SecondaryButtonUrl">@Model.SecondaryButtonText</a> }
+                </div>
+            </div>
+            <div class="hero-art" aria-hidden="true">
+                <img src="@(Model.Image?.Url ?? "/img/logo.svg")" alt="" style="width:55%;max-width:220px" />
+            </div>
+        </div>
+    </section>
+}
+else
+{
+    <section class="section @padClass @visClass" style="@bgStyle">
+        <div class="container">
+            @if (!string.IsNullOrWhiteSpace(Model.Title) || !string.IsNullOrWhiteSpace(Model.Subtitle))
+            {
+                <div class="text-center" style="max-width:760px;margin-inline:auto">
+                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Model.Title</h2> }
+                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Model.Subtitle</p> }
+                </div>
+            }
+
+            @switch (Model.Type)
+            {
+                case SectionType.Stats:
+                    <div class="grid grid-4" style="margin-top:2rem">
+                        @foreach (var s in Model.GetStats())
+                        {
+                            <div class="stat"><div class="stat-value">@s.Value</div><div class="stat-label">@s.Label</div></div>
+                        }
+                    </div>
+                    break;
+
+                case SectionType.FeatureCards:
+                    <div class="grid grid-3" style="margin-top:2rem">
+                        @foreach (var c in Model.GetCards())
+                        {
+                            <div class="card card-hover"><h3>@c.Title</h3><p class="text-muted mb-0">@c.Text</p></div>
+                        }
+                    </div>
+                    break;
+
+                case SectionType.Steps:
+                    <div class="grid grid-4" style="margin-top:2rem">
+                        @{ var i = 1; }
+                        @foreach (var c in Model.GetCards())
+                        {
+                            <div class="step"><div class="step-num">@i</div><h3>@c.Title</h3><p class="text-muted mb-0">@c.Text</p></div>
+                            i++;
+                        }
+                    </div>
+                    break;
+
+                case SectionType.CallToAction:
+                    <div class="text-center" style="margin-top:1.5rem">
+                        @if (!string.IsNullOrWhiteSpace(Model.ButtonText)) { <a class="btn btn-accent btn-lg" href="@Model.ButtonUrl">@Model.ButtonText</a> }
+                    </div>
+                    break;
+
+                case SectionType.RichText:
+                    <div class="content-body" style="max-width:820px;margin-inline:auto">@Html.Raw(Model.Body)</div>
+                    break;
+
+                case SectionType.LatestContent:
+                    {
+                        IReadOnlyList<Content> news = Array.Empty<Content>();
+                        IReadOnlyList<Content> articles = Array.Empty<Content>();
+                        try
+                        {
+                            var count = Model.GetCount(3);
+                            news = await ContentService.GetLatestPublishedAsync(ContentType.News, count);
+                            articles = await ContentService.GetLatestPublishedAsync(ContentType.Article, count);
+                        }
+                        catch { }
+                        <div class="grid grid-3" style="margin-top:1.5rem">
+                            @foreach (var c in news)
+                            {
+                                <article class="card card-hover"><span class="badge badge-primary">خبر</span><h3 style="margin-top:.6rem"><a href="/news/@c.Slug">@c.Title</a></h3><p class="text-muted mb-0">@c.Summary</p></article>
+                            }
+                            @foreach (var c in articles)
+                            {
+                                <article class="card card-hover"><span class="badge">مقاله</span><h3 style="margin-top:.6rem"><a href="/articles/@c.Slug">@c.Title</a></h3><p class="text-muted mb-0">@c.Summary</p></article>
+                            }
+                        </div>
+                    }
+                    break;
+            }
+        </div>
+    </section>
+}

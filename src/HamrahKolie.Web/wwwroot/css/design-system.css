@@ -72,6 +72,10 @@ p { margin: 0 0 1rem; }
 /* ── Layout ─────────────────────────────────────────── */
 .container { width: min(100% - 2rem, var(--container)); margin-inline: auto; }
 .section { padding: clamp(2.5rem, 6vw, 5rem) 0; }
+.section-compact { padding: clamp(1.5rem, 3vw, 2.5rem) 0; }
+.section-spacious { padding: clamp(3.5rem, 8vw, 7rem) 0; }
+@media (max-width: 720px) { .hide-mobile { display: none !important; } }
+@media (min-width: 721px) { .hide-desktop { display: none !important; } }
 .grid { display: grid; gap: 1.5rem; }
 .stack > * + * { margin-top: 1rem; }
 @media (min-width: 640px)  { .grid-2 { grid-template-columns: repeat(2, 1fr); } }

@@ -1,0 +1,131 @@
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@model IReadOnlyList<PageSection>
+@{
+    ViewData["Title"] = "صفحه‌ساز صفحه اصلی";
+    string TypeName(SectionType t) => t switch
+    {
+        SectionType.Hero => "بخش قهرمان (Hero)",
+        SectionType.Stats => "آمارها",
+        SectionType.FeatureCards => "کارت‌های ویژگی",
+        SectionType.Steps => "مراحل",
+        SectionType.LatestContent => "آخرین مطالب",
+        SectionType.RichText => "متن غنی",
+        SectionType.CallToAction => "فراخوان به اقدام",
+        _ => t.ToString()
+    };
+    var addable = new[] { SectionType.Hero, SectionType.Stats, SectionType.FeatureCards, SectionType.Steps, SectionType.LatestContent, SectionType.RichText, SectionType.CallToAction };
+}
+
+@Html.AntiForgeryToken()
+
+<div class="d-flex justify-between items-center flex-wrap gap-4" style="margin-bottom:1rem">
+    <p class="text-muted mb-0">با ساختن سکشن، صفحه اصلی از این طرح استفاده می‌کند. اگر هیچ سکشنِ منتشرشده‌ای نباشد، طرح پیش‌فرض فعلی نمایش داده می‌شود.</p>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline" asp-action="Preview" target="_blank">پیش‌نمایش ↗</a>
+        <a class="btn btn-ghost" asp-area="" asp-controller="Home" asp-action="Index" target="_blank">مشاهده سایت ↗</a>
+    </div>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="card empty-state">
+        <p>هنوز سکشنی ساخته نشده است. می‌توانید از طرح پیش‌فرض شروع کنید یا سکشن دلخواه بسازید.</p>
+        <form asp-action="CreateDefaults" method="post" class="mb-0" style="display:inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-primary">ایجاد سکشن‌های پیش‌فرض</button>
+        </form>
+    </div>
+}
+else
+{
+    <div class="card" id="sections-list">
+        @foreach (var s in Model)
+        {
+            <div class="section-row" draggable="true" data-id="@s.Id">
+                <span class="section-row__handle" title="برای جابه‌جایی بکشید">⠿</span>
+                <div style="flex:1">
+                    <strong>@TypeName(s.Type)</strong>
+                    @if (!string.IsNullOrWhiteSpace(s.Title)) { <span class="text-muted"> — @s.Title</span> }
+                    <div class="d-flex gap-2" style="margin-top:.3rem">
+                        @if (s.IsPublished) { <span class="badge badge-primary">منتشرشده</span> } else { <span class="badge">پیش‌نویس</span> }
+                        @if (!s.IsEnabled) { <span class="badge badge-danger">غیرفعال</span> }
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-outline" asp-action="Edit" asp-route-id="@s.Id">ویرایش</a>
+                    <form asp-action="Delete" asp-route-id="@s.Id" method="post" onsubmit="return confirm('این سکشن حذف شود؟');" class="mb-0">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-ghost">حذف</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+    <p class="form-hint">برای تغییر ترتیب، سکشن‌ها را بکشید و رها کنید.</p>
+}
+
+<div class="card" style="margin-top:1.5rem">
+    <h3 class="mt-0">افزودن سکشن جدید</h3>
+    <div class="d-flex gap-2 flex-wrap">
+        @foreach (var t in addable)
+        {
+            <form asp-action="Create" method="post" class="mb-0">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="type" value="@((int)t)" />
+                <button type="submit" class="btn btn-outline">+ @TypeName(t)</button>
+            </form>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var list = document.getElementById('sections-list');
+            if (!list) return;
+            var dragged = null;
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            list.querySelectorAll('.section-row').forEach(function (row) {
+                row.addEventListener('dragstart', function () { dragged = row; row.classList.add('dragging'); });
+                row.addEventListener('dragend', function () { row.classList.remove('dragging'); saveOrder(); });
+            });
+
+            list.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                var after = getAfterElement(list, e.clientY);
+                if (!dragged) return;
+                if (after == null) list.appendChild(dragged);
+                else list.insertBefore(dragged, after);
+            });
+
+            function getAfterElement(container, y) {
+                var els = [].slice.call(container.querySelectorAll('.section-row:not(.dragging)'));
+                return els.reduce(function (closest, child) {
+                    var box = child.getBoundingClientRect();
+                    var offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+                    return closest;
+                }, { offset: -Infinity }).element;
+            }
+
+            function saveOrder() {
+                var ids = [].slice.call(list.querySelectorAll('.section-row')).map(function (r) { return parseInt(r.dataset.id); });
+                fetch('@Url.Action("Reorder")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                    body: JSON.stringify(ids)
+                });
+            }
+        })();
+    </script>
+}
+
+@section Styles {
+    <style>
+        .section-row { display:flex; align-items:center; gap:1rem; padding:1rem; border:1px solid var(--c-border); border-radius:var(--radius-sm); margin-bottom:.6rem; background:var(--c-surface); cursor:default; }
+        .section-row__handle { cursor:grab; font-size:1.4rem; color:var(--c-text-muted); }
+        .section-row.dragging { opacity:.5; }
+    </style>
+}

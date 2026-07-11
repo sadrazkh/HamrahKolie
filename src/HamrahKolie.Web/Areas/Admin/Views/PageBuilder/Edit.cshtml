@@ -1,0 +1,156 @@
+@inject HamrahKolie.Web.Infrastructure.Vite.ViteManifestService Vite
+@using HamrahKolie.Domain.Enums
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model HamrahKolie.Web.Areas.Admin.ViewModels.PageSectionInput
+@{
+    ViewData["Title"] = "ویرایش سکشن";
+    var media = ViewBag.Media as List<SelectListItem> ?? new();
+    var t = Model.Type;
+    bool Has(params SectionType[] types) => types.Contains(t);
+}
+
+@section Styles {
+    @foreach (var css in Vite.GetStylePaths("src/admin.ts"))
+    {
+        <link rel="stylesheet" href="@css" />
+    }
+}
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="Type" />
+
+    <div class="grid" style="grid-template-columns: 1fr 300px; gap:1.5rem; align-items:start">
+        <div class="stack">
+            <div class="card">
+                <h3 class="mt-0">محتوای سکشن — @t</h3>
+
+                @if (Has(SectionType.Hero, SectionType.Stats, SectionType.FeatureCards, SectionType.Steps, SectionType.LatestContent, SectionType.CallToAction))
+                {
+                    <div class="form-group">
+                        <label class="form-label" asp-for="Title">عنوان</label>
+                        <input class="form-control" asp-for="Title" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" asp-for="Subtitle">توضیح</label>
+                        <textarea class="form-control" asp-for="Subtitle" rows="2"></textarea>
+                    </div>
+                }
+
+                @if (Has(SectionType.Hero, SectionType.CallToAction))
+                {
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label class="form-label" asp-for="ButtonText">متن دکمه اصلی</label>
+                            <input class="form-control" asp-for="ButtonText" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" asp-for="ButtonUrl">لینک دکمه اصلی</label>
+                            <input class="form-control" asp-for="ButtonUrl" dir="ltr" />
+                        </div>
+                    </div>
+                }
+
+                @if (Has(SectionType.Hero))
+                {
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label class="form-label" asp-for="SecondaryButtonText">متن دکمه دوم</label>
+                            <input class="form-control" asp-for="SecondaryButtonText" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" asp-for="SecondaryButtonUrl">لینک دکمه دوم</label>
+                            <input class="form-control" asp-for="SecondaryButtonUrl" dir="ltr" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" asp-for="ImageId">تصویر (اختیاری)</label>
+                        <select class="form-control" asp-for="ImageId">
+                            <option value="">— بدون تصویر —</option>
+                            @foreach (var m in media)
+                            {
+                                <option value="@m.Value" selected="@(Model.ImageId?.ToString() == m.Value)">@m.Text</option>
+                            }
+                        </select>
+                    </div>
+                }
+
+                @if (Has(SectionType.RichText))
+                {
+                    <label class="form-label">متن</label>
+                    <div data-editor-target="Body"></div>
+                    <textarea id="Body" name="Body" style="display:none">@Model.Body</textarea>
+                }
+
+                @if (Has(SectionType.Stats))
+                {
+                    <label class="form-label">آیتم‌های آمار</label>
+                    <div data-items-editor="SettingsJson" data-items-key="stats"
+                         data-items-fields='[{"name":"value","label":"مقدار"},{"name":"label","label":"برچسب"}]'></div>
+                    <textarea id="SettingsJson" name="SettingsJson" style="display:none">@Model.SettingsJson</textarea>
+                }
+
+                @if (Has(SectionType.FeatureCards, SectionType.Steps))
+                {
+                    <label class="form-label">کارت‌ها</label>
+                    <div data-items-editor="SettingsJson" data-items-key="cards"
+                         data-items-fields='[{"name":"title","label":"عنوان"},{"name":"text","label":"متن"}]'></div>
+                    <textarea id="SettingsJson" name="SettingsJson" style="display:none">@Model.SettingsJson</textarea>
+                }
+
+                @if (Has(SectionType.LatestContent))
+                {
+                    <div class="form-group">
+                        <label class="form-label" asp-for="Count">تعداد از هر نوع (خبر/مقاله)</label>
+                        <input class="form-control" asp-for="Count" type="number" min="1" max="12" style="max-width:120px" />
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="stack">
+            <div class="card">
+                <h3 class="mt-0">نمایش</h3>
+                <label class="d-flex items-center gap-2" style="font-weight:600;margin-bottom:.6rem">
+                    <input type="checkbox" asp-for="IsEnabled" /> فعال
+                </label>
+                <label class="d-flex items-center gap-2" style="font-weight:600;margin-bottom:.6rem">
+                    <input type="checkbox" asp-for="IsPublished" /> منتشرشده (روی سایت دیده شود)
+                </label>
+                <hr />
+                <label class="d-flex items-center gap-2" style="font-weight:600;margin-bottom:.6rem">
+                    <input type="checkbox" asp-for="ShowOnDesktop" /> نمایش در دسکتاپ
+                </label>
+                <label class="d-flex items-center gap-2" style="font-weight:600">
+                    <input type="checkbox" asp-for="ShowOnMobile" /> نمایش در موبایل
+                </label>
+            </div>
+
+            <div class="card">
+                <h3 class="mt-0">ظاهر</h3>
+                <div class="form-group">
+                    <label class="form-label" asp-for="Background">پس‌زمینه</label>
+                    <select class="form-control" asp-for="Background" asp-items="Html.GetEnumSelectList<SectionBackground>()"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="Padding">فاصله عمودی</label>
+                    <select class="form-control" asp-for="Padding" asp-items="Html.GetEnumSelectList<SectionPadding>()"></select>
+                </div>
+            </div>
+
+            <div class="card">
+                <button type="submit" class="btn btn-primary btn-block">ذخیره سکشن</button>
+                <a class="btn btn-ghost btn-block" asp-action="Index" style="margin-top:.5rem">بازگشت به فهرست</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{ var adminScript = Vite.GetScriptPath("src/admin.ts"); }
+    @if (adminScript is not null)
+    {
+        <script type="module" src="@adminScript"></script>
+    }
+}

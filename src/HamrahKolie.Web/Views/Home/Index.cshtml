@@ -13,6 +13,17 @@
     }
 }
 
+@if (Model.Sections.Any())
+{
+    @* اگر در «صفحه‌ساز» سکشن تعریف شده باشد، صفحه اصلی از روی آن رندر می‌شود *@
+    foreach (var section in Model.Sections)
+    {
+        <partial name="_PageSection" model="section" />
+    }
+}
+else
+{
+
 <section class="home-hero" aria-labelledby="home-hero-title">
     <img class="home-hero__image"
          src="~/img/home-journey-hero.png"
@@ -192,6 +203,8 @@
         </div>
     </section>
 }
+
+} @* پایان طرح ثابت پیش‌فرض *@
 
 @section Scripts {
     @{ var islandScript = Vite.GetScriptPath("src/main.ts"); }

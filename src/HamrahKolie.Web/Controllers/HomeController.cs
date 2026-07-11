@@ -13,8 +13,13 @@ namespace HamrahKolie.Web.Controllers;
 public class HomeController : Controller
 {
     private readonly IContentService _content;
+    private readonly HamrahKolie.Application.PageBuilder.IPageBuilderService _pageBuilder;
 
-    public HomeController(IContentService content) => _content = content;
+    public HomeController(IContentService content, HamrahKolie.Application.PageBuilder.IPageBuilderService pageBuilder)
+    {
+        _content = content;
+        _pageBuilder = pageBuilder;
+    }
 
     [OutputCache(Duration = 60)]
     public async Task<IActionResult> Index()
@@ -22,12 +27,17 @@ public class HomeController : Controller
         var vm = new HamrahKolie.Web.ViewModels.HomeViewModel();
         try
         {
-            vm.LatestNews = await _content.GetLatestPublishedAsync(ContentType.News, 3);
-            vm.LatestArticles = await _content.GetLatestPublishedAsync(ContentType.Article, 3);
+            vm.Sections = await _pageBuilder.GetVisibleAsync("home");
+            // فهرست مطالب فقط زمانی لازم است که سکشنی تعریف نشده و از طرح ثابت استفاده می‌شود.
+            if (vm.Sections.Count == 0)
+            {
+                vm.LatestNews = await _content.GetLatestPublishedAsync(ContentType.News, 3);
+                vm.LatestArticles = await _content.GetLatestPublishedAsync(ContentType.Article, 3);
+            }
         }
         catch
         {
-            // اگر پایگاه داده در دسترس نباشد، صفحه اصلی بدون فهرست مطالب نمایش داده می‌شود.
+            // اگر پایگاه داده در دسترس نباشد، صفحه اصلی با طرح ثابت پیش‌فرض نمایش داده می‌شود.
         }
         return View(vm);
     }

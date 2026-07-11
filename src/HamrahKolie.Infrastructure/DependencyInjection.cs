@@ -70,6 +70,7 @@ public static class DependencyInjection
         services.AddSingleton<IHtmlSanitizerService, HtmlSanitizerService>();
         services.AddSingleton<IStorageService, LocalStorageService>();
         services.AddScoped<HamrahKolie.Application.Cms.IContentService, ContentService>();
+        services.AddScoped<HamrahKolie.Application.PageBuilder.IPageBuilderService, PageBuilderService>();
 
         return services;
     }

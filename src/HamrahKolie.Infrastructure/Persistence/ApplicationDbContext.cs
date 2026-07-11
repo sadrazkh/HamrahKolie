@@ -29,6 +29,7 @@ public class ApplicationDbContext : IdentityDbContext<
     public DbSet<MediaFile> MediaFiles => Set<MediaFile>();
     public DbSet<Menu> Menus => Set<Menu>();
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
+    public DbSet<PageSection> PageSections => Set<PageSection>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

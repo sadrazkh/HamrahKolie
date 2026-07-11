@@ -33,6 +33,58 @@ public static class DbSeeder
         await SeedCmsAsync(db, ct);
     }
 
+    /// <summary>
+    /// فهرست سکشن‌های پیش‌فرض صفحه اصلی. این متد به‌صورت خودکار در Seed اجرا نمی‌شود؛
+    /// از پنل (صفحه‌ساز → «ایجاد سکشن‌های پیش‌فرض») فراخوانی می‌شود تا طرح سفارشی فعلی
+    /// صفحه اصلی حفظ شود و مدیر فقط در صورت تمایل از صفحه‌ساز استفاده کند.
+    /// </summary>
+    public static List<PageSection> BuildDefaultHomeSections()
+    {
+        return new List<PageSection>
+        {
+            new()
+            {
+                PageKey = "home", Type = SectionType.Hero, SortOrder = 1, IsEnabled = true, IsPublished = true,
+                Subtitle = "با حمایت شما، مسیر سخت درمان را برای بیماران دیالیزی مناطق محروم هموار می‌کنیم؛ تا آن‌ها به زندگی و خانواده‌ی خود بازگردند.",
+                Title = "از روستا تا زندگی",
+                ButtonText = "❤ حمایت مالی", ButtonUrl = "/Home/Donate",
+                SecondaryButtonText = "آشنایی با فعالیت‌ها", SecondaryButtonUrl = "/Home/Services",
+            },
+            new()
+            {
+                PageKey = "home", Type = SectionType.FeatureCards, SortOrder = 2, IsEnabled = true, IsPublished = true,
+                Title = "چرا بیماران روستایی به همراهی نیاز دارند؟",
+                Subtitle = "درمان دیالیز پرهزینه و مداوم است؛ برای خانواده‌های روستایی، فاصله و هزینه به بحرانی روزمره تبدیل می‌شود.",
+                SettingsJson = """{"cards":[{"title":"فاصله و مسیر سخت","text":"رفت‌وآمد مکرر به مراکز دیالیز شهری، توان و زمان خانواده را می‌فرساید."},{"title":"هزینه‌های درمان","text":"دارو، جلسات دیالیز و ایاب‌وذهاب، فشار مالی سنگینی بر دوش خانوار می‌گذارد."},{"title":"خستگی و نگرانی","text":"بیمار و خانواده‌اش به حمایت روانی و اجتماعی در کنار درمان نیاز دارند."}]}""",
+            },
+            new()
+            {
+                PageKey = "home", Type = SectionType.Stats, SortOrder = 3, IsEnabled = true, IsPublished = true,
+                Title = "مسیر ما در یک نگاه", Background = SectionBackground.Surface,
+                SettingsJson = """{"stats":[{"value":"۱۲۰","label":"بیمار تحت حمایت"},{"value":"۴۵","label":"روستای تحت پوشش"},{"value":"۱۸٬۰۰۰","label":"جلسه دیالیز حمایت‌شده"},{"value":"۳۵۰","label":"خیر همراه"}]}""",
+            },
+            new()
+            {
+                PageKey = "home", Type = SectionType.Steps, SortOrder = 4, IsEnabled = true, IsPublished = true,
+                Title = "چطور کمک می‌کنیم؟",
+                SettingsJson = """{"cards":[{"title":"شناسایی بیمار","text":"معرفی از سوی مراکز درمانی و مددکاران."},{"title":"بررسی و تأیید","text":"ارزیابی مددکاری و پزشکی با رعایت حریم خصوصی."},{"title":"جذب حمایت","text":"همراهی خیرین برای تأمین هزینه‌ها."},{"title":"ادامه زندگی","text":"تداوم درمان و بازگشت بیمار به زندگی."}]}""",
+            },
+            new()
+            {
+                PageKey = "home", Type = SectionType.LatestContent, SortOrder = 5, IsEnabled = true, IsPublished = true,
+                Title = "آخرین اخبار و مطالب", Background = SectionBackground.Surface,
+                SettingsJson = """{"count":3}""",
+            },
+            new()
+            {
+                PageKey = "home", Type = SectionType.CallToAction, SortOrder = 6, IsEnabled = true, IsPublished = true,
+                Title = "همراه ما شوید",
+                Subtitle = "هر همراهی، یک قدم به بازگشت بیمار به زندگی نزدیک‌تر است.",
+                ButtonText = "حمایت مالی", ButtonUrl = "/Home/Donate", Background = SectionBackground.Tint,
+            },
+        };
+    }
+
     private static async Task SeedCmsAsync(ApplicationDbContext db, CancellationToken ct)
     {
         if (await db.Contents.AnyAsync(ct)) return; // فقط یک‌بار
