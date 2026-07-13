@@ -1,0 +1,55 @@
+@using HamrahKolie.Application.Common.Models
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Web.Helpers
+@model PagedResult<DialysisCenter>
+@{
+    ViewData["Title"] = "مراکز دیالیز";
+    var approved = ViewData["Approved"] as bool?;
+    var pending = ViewData["PendingCount"] as int? ?? 0;
+    var fa = new System.Globalization.CultureInfo("fa-IR");
+    bool Can(string p) => User.HasClaim("permission", "*") || User.HasClaim("permission", p);
+}
+<div class="d-flex justify-between items-center flex-wrap gap-2" style="margin-bottom:1rem">
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn @(approved == null ? "btn-primary" : "btn-outline")" asp-action="Index">همه</a>
+        <a class="btn @(approved == true ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-approved="true">تأییدشده</a>
+        <a class="btn @(approved == false ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-approved="false">در انتظار تأیید @(pending > 0 ? $"({pending.ToString(fa)})" : "")</a>
+    </div>
+    @if (Can(Permissions.CenterManage)) { <a class="btn btn-primary" asp-action="Create">+ مرکز جدید</a> }
+</div>
+<div class="card">
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty-state">مرکزی یافت نشد.</div>
+    }
+    else
+    {
+        <table class="table">
+            <thead><tr><th>نام</th><th>نوع</th><th>استان</th><th>وضعیت</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var c in Model.Items)
+                {
+                    <tr>
+                        <td>@c.Name @if (c.SubmittedByPublic) { <span class="badge">پیشنهاد کاربر</span> }</td>
+                        <td>@Phase5Display.CenterType(c.Type)</td>
+                        <td>@(c.Province ?? "—")</td>
+                        <td>@(c.IsApproved ? Html.Raw("<span class=\"badge badge-primary\">تأییدشده</span>") : Html.Raw("<span class=\"badge\">در انتظار</span>"))</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                @if (Can(Permissions.CenterManage)) { <a class="btn btn-outline" asp-action="Edit" asp-route-id="@c.Id">ویرایش</a> }
+                                @if (Can(Permissions.CenterApprove))
+                                {
+                                    <form asp-action="SetApproval" asp-route-id="@c.Id" method="post" class="mb-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="approved" value="@((!c.IsApproved).ToString().ToLower())" />
+                                        <button type="submit" class="btn btn-ghost">@(c.IsApproved ? "لغو تأیید" : "تأیید")</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

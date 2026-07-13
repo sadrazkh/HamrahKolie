@@ -50,8 +50,14 @@
                 {
                     <li class="nav-group-title">خدمات</li>
                     @if (Can(Permissions.SupportRequestView)) { <li><a asp-area="Admin" asp-controller="SupportRequests" asp-action="Index">درخواست‌های حمایت</a></li> }
-                    @if (Can(Permissions.VolunteerView)) { <li><a href="#">داوطلبان <span class="badge badge-primary">به‌زودی</span></a></li> }
-                    @if (Can(Permissions.CenterView)) { <li><a href="#">مراکز دیالیز <span class="badge badge-primary">به‌زودی</span></a></li> }
+                    @if (Can(Permissions.VolunteerView)) { <li><a asp-area="Admin" asp-controller="Volunteers" asp-action="Index">داوطلبان</a></li> }
+                    @if (Can(Permissions.CenterView)) { <li><a asp-area="Admin" asp-controller="Centers" asp-action="Index">مراکز دیالیز</a></li> }
+                }
+
+                @if (Can(Permissions.ReportView))
+                {
+                    <li class="nav-group-title">گزارش‌ها</li>
+                    <li><a asp-area="Admin" asp-controller="Reports" asp-action="Index">گزارش‌های مدیریتی</a></li>
                 }
 
                 @if (Can(Permissions.UserView) || Can(Permissions.RoleManage) || Can(Permissions.SettingsManage) || Can(Permissions.AuditLogView))

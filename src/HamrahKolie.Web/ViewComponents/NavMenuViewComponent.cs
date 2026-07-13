@@ -69,6 +69,7 @@ public class NavMenuViewComponent : ViewComponent
             new("درباره ما", "/Home/About", false),
             new("خدمات حمایتی", "/Home/Services", false),
             new("کمپین‌ها", "/campaigns", false),
+            new("مراکز دیالیز", "/centers", false),
             new("اخبار", "/news", false),
             new("درخواست حمایت", "/support/request", false),
             new("تماس با ما", "/Home/Contact", false),

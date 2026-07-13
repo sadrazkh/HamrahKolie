@@ -1,0 +1,42 @@
+@model HamrahKolie.Application.Reports.TransparencyReport
+@{
+    ViewData["Title"] = "شفافیت مالی";
+    var fa = new System.Globalization.CultureInfo("fa-IR");
+}
+<section class="section">
+    <div class="container">
+        <div class="text-center" style="max-width:720px;margin-inline:auto">
+            <h1>شفافیت مالی</h1>
+            <p class="lead">ما به اعتماد شما پایبندیم. خلاصه‌ای از عملکرد مؤسسه را اینجا می‌بینید.</p>
+        </div>
+
+        <div class="grid grid-4" style="margin-top:2rem">
+            <div class="card stat"><div class="stat-value">@Model.TotalRaised.ToString("N0", fa)</div><div class="stat-label">مجموع کمک‌ها (تومان)</div></div>
+            <div class="card stat"><div class="stat-value">@Model.TotalDonations.ToString("N0", fa)</div><div class="stat-label">تعداد کمک‌ها</div></div>
+            <div class="card stat"><div class="stat-value">@Model.PatientsSupported.ToString("N0", fa)</div><div class="stat-label">بیمار تحت حمایت</div></div>
+            <div class="card stat"><div class="stat-value">@Model.RegisteredVolunteers.ToString("N0", fa)</div><div class="stat-label">داوطلب همراه</div></div>
+        </div>
+
+        @if (Model.Campaigns.Any())
+        {
+            <h2 style="margin-top:2.5rem">وضعیت کمپین‌ها</h2>
+            <div class="grid grid-2" style="margin-top:1rem">
+                @foreach (var c in Model.Campaigns)
+                {
+                    <div class="card">
+                        <div class="d-flex justify-between"><strong><a href="/campaigns/@c.Slug">@c.Title</a></strong><span>@c.Percent.ToString(fa)٪</span></div>
+                        <div style="background:var(--c-surface-2);border-radius:999px;height:10px;overflow:hidden;margin:.6rem 0">
+                            <div style="width:@(c.Percent)%;background:var(--c-primary-500);height:100%"></div>
+                        </div>
+                        <div class="d-flex justify-between text-muted" style="font-size:.85rem">
+                            <span>جمع‌آوری‌شده: @c.Collected.ToString("N0", fa)</span>
+                            <span>هدف: @c.Goal.ToString("N0", fa)</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <p class="text-muted" style="margin-top:2rem">گزارش‌های تفصیلی و اسناد قابل انتشار در بخش گزارش عملکرد ارائه می‌شوند.</p>
+    </div>
+</section>

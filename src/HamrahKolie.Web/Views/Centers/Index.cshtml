@@ -1,0 +1,62 @@
+@using HamrahKolie.Application.Common.Models
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Web.Helpers
+@model PagedResult<DialysisCenter>
+@{
+    ViewData["Title"] = "مراکز دیالیز";
+    var provinces = ViewData["Provinces"] as IReadOnlyList<string> ?? new List<string>();
+    var selProvince = ViewData["Province"] as string;
+    var search = ViewData["Search"] as string;
+}
+<section class="section">
+    <div class="container">
+        <div class="d-flex justify-between items-center flex-wrap gap-2">
+            <h1 class="mb-0">مراکز دیالیز</h1>
+            <a class="btn btn-outline" href="/centers/submit">+ پیشنهاد مرکز جدید</a>
+        </div>
+        <p class="lead">مراکز دیالیز را بر اساس استان جست‌وجو کنید.</p>
+
+        <div class="card" style="margin-bottom:1.5rem">
+            <form method="get" class="d-flex gap-2 flex-wrap">
+                <select class="form-control" name="province" style="max-width:220px">
+                    <option value="">همه استان‌ها</option>
+                    @foreach (var p in provinces)
+                    {
+                        <option value="@p" selected="@(p == selProvince)">@p</option>
+                    }
+                </select>
+                <input class="form-control" name="search" value="@search" placeholder="نام یا شهر" style="max-width:240px" />
+                <button type="submit" class="btn btn-primary">جست‌وجو</button>
+            </form>
+        </div>
+
+        @if (Model.Items.Count == 0)
+        {
+            <div class="card empty-state">مرکزی با این فیلتر یافت نشد.</div>
+        }
+        else
+        {
+            <div class="grid grid-3">
+                @foreach (var c in Model.Items)
+                {
+                    <article class="card card-hover">
+                        <span class="badge badge-primary">@Phase5Display.CenterType(c.Type)</span>
+                        <h3 style="margin-top:.5rem"><a href="/centers/@c.Slug">@c.Name</a></h3>
+                        <p class="text-muted mb-0">@c.Province @(string.IsNullOrEmpty(c.City) ? "" : "— " + c.City)</p>
+                        @if (!string.IsNullOrEmpty(c.Phone)) { <p class="text-muted" dir="ltr">☎ @c.Phone</p> }
+                        <a class="btn btn-outline btn-block" style="margin-top:.6rem" href="/centers/@c.Slug">جزئیات</a>
+                    </article>
+                }
+            </div>
+
+            @if (Model.TotalPages > 1)
+            {
+                <div class="d-flex gap-2 justify-between" style="margin-top:2rem">
+                    <div>@if (Model.HasPrevious) { <a class="btn btn-outline" href="?province=@selProvince&page=@(Model.Page - 1)">→ قبلی</a> }</div>
+                    <span class="text-muted">صفحه @Model.Page از @Model.TotalPages</span>
+                    <div>@if (Model.HasNext) { <a class="btn btn-outline" href="?province=@selProvince&page=@(Model.Page + 1)">بعدی ←</a> }</div>
+                </div>
+            }
+        }
+    </div>
+</section>

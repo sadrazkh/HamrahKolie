@@ -1,0 +1,39 @@
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Web.Helpers
+@inject HamrahKolie.Application.Common.Interfaces.IMapLinkProvider Map
+@model DialysisCenter
+@{
+    ViewData["Title"] = Model.Name;
+    var mapUrl = Map.MapUrl(Model.Latitude, Model.Longitude, Model.Name);
+    var dirUrl = Map.DirectionsUrl(Model.Latitude, Model.Longitude);
+}
+<section class="section">
+    <div class="container" style="max-width:760px">
+        <nav class="text-muted" style="font-size:.9rem;margin-bottom:1rem"><a href="/">خانه</a> / <a href="/centers">مراکز دیالیز</a> / @Model.Name</nav>
+        <span class="badge badge-primary">@Phase5Display.CenterType(Model.Type)</span>
+        <h1>@Model.Name</h1>
+
+        <div class="card">
+            <table class="table">
+                <tr><th>استان</th><td>@(Model.Province ?? "—")</td></tr>
+                <tr><th>شهر</th><td>@(Model.City ?? "—")</td></tr>
+                <tr><th>آدرس</th><td>@(Model.Address ?? "—")</td></tr>
+                <tr><th>تلفن</th><td dir="ltr">@(Model.Phone ?? "—")</td></tr>
+                <tr><th>ساعات کاری</th><td>@(Model.WorkingHours ?? "—")</td></tr>
+                <tr><th>نوع دیالیز</th><td>@(Model.DialysisTypes ?? "—")</td></tr>
+                <tr><th>خدمات</th><td>@(Model.Services ?? "—")</td></tr>
+                <tr><th>امکانات</th><td>@(Model.Facilities ?? "—")</td></tr>
+                @if (!string.IsNullOrEmpty(Model.AccessibilityNotes)) { <tr><th>دسترس‌پذیری</th><td>@Model.AccessibilityNotes</td></tr> }
+                @if (!string.IsNullOrEmpty(Model.Website)) { <tr><th>وب‌سایت</th><td dir="ltr"><a href="@Model.Website" target="_blank" rel="noopener">@Model.Website</a></td></tr> }
+            </table>
+
+            @if (mapUrl != null)
+            {
+                <div class="d-flex gap-2" style="margin-top:1rem">
+                    <a class="btn btn-outline" href="@mapUrl" target="_blank" rel="noopener">نمایش روی نقشه</a>
+                    <a class="btn btn-primary" href="@dirUrl" target="_blank" rel="noopener">مسیریابی</a>
+                </div>
+            }
+        </div>
+    </div>
+</section>

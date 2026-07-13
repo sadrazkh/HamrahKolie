@@ -76,6 +76,12 @@ public static class DependencyInjection
         services.AddScoped<HamrahKolie.Application.Campaigns.ICampaignService, CampaignService>();
         services.AddScoped<HamrahKolie.Application.Donations.IDonationService, DonationService>();
 
+        // داوطلبان، مراکز، گزارش‌ها، نقشه
+        services.AddScoped<HamrahKolie.Application.Volunteers.IVolunteerService, VolunteerService>();
+        services.AddScoped<HamrahKolie.Application.Centers.ICenterService, CenterService>();
+        services.AddScoped<HamrahKolie.Application.Reports.IReportService, ReportService>();
+        services.AddSingleton<HamrahKolie.Application.Common.Interfaces.IMapLinkProvider, OpenStreetMapLinkProvider>();
+
         // درخواست حمایت + OTP
         services.AddScoped<HamrahKolie.Application.SupportRequests.ISupportRequestService, SupportRequestService>();
         services.AddScoped<HamrahKolie.Application.Common.Interfaces.IOtpService, OtpService>();

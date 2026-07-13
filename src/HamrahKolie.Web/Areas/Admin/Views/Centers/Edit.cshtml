@@ -1,0 +1,55 @@
+@using HamrahKolie.Domain.Enums
+@using HamrahKolie.Web.Helpers
+@model HamrahKolie.Application.Centers.CenterInput
+@{
+    var isNew = Model.Id == 0;
+    ViewData["Title"] = isNew ? "مرکز جدید" : "ویرایش مرکز";
+    var action = isNew ? "Create" : "Edit";
+}
+<form asp-action="@action" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
+
+    <div class="card" style="max-width:760px">
+        <div class="form-group">
+            <label class="form-label">نام مرکز</label>
+            <input class="form-control" asp-for="Name" />
+            <span class="field-validation-error" asp-validation-for="Name"></span>
+        </div>
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label class="form-label">نوع مرکز</label>
+                <select class="form-control" asp-for="Type">
+                    @foreach (CenterType t in Enum.GetValues<CenterType>())
+                    {
+                        <option value="@((int)t)" selected="@(t == Model.Type)">@Phase5Display.CenterType(t)</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">تلفن</label><input class="form-control" asp-for="Phone" dir="ltr" /></div>
+        </div>
+        <div class="grid grid-2">
+            <div class="form-group"><label class="form-label">استان</label><input class="form-control" asp-for="Province" /></div>
+            <div class="form-group"><label class="form-label">شهر</label><input class="form-control" asp-for="City" /></div>
+        </div>
+        <div class="form-group"><label class="form-label">آدرس</label><input class="form-control" asp-for="Address" /></div>
+        <div class="grid grid-2">
+            <div class="form-group"><label class="form-label">عرض جغرافیایی (Lat)</label><input class="form-control" asp-for="Latitude" dir="ltr" /></div>
+            <div class="form-group"><label class="form-label">طول جغرافیایی (Lng)</label><input class="form-control" asp-for="Longitude" dir="ltr" /></div>
+        </div>
+        <div class="grid grid-2">
+            <div class="form-group"><label class="form-label">ساعات کاری</label><input class="form-control" asp-for="WorkingHours" /></div>
+            <div class="form-group"><label class="form-label">نوع دیالیز</label><input class="form-control" asp-for="DialysisTypes" /></div>
+        </div>
+        <div class="form-group"><label class="form-label">خدمات</label><input class="form-control" asp-for="Services" /></div>
+        <div class="form-group"><label class="form-label">امکانات</label><input class="form-control" asp-for="Facilities" /></div>
+        <div class="form-group"><label class="form-label">توضیحات دسترس‌پذیری</label><input class="form-control" asp-for="AccessibilityNotes" /></div>
+        <div class="form-group"><label class="form-label">وب‌سایت</label><input class="form-control" asp-for="Website" dir="ltr" /></div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">ذخیره</button>
+            <a class="btn btn-ghost" asp-action="Index">بازگشت</a>
+        </div>
+    </div>
+</form>

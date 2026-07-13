@@ -1,0 +1,51 @@
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@using HamrahKolie.Web.Helpers
+@model Volunteer
+@{
+    ViewData["Title"] = Model.FullName;
+    bool Can(string p) => User.HasClaim("permission", "*") || User.HasClaim("permission", p);
+}
+<div class="grid" style="grid-template-columns: 1fr 300px; gap:1.5rem; align-items:start">
+    <div class="card">
+        <h3 class="mt-0">اطلاعات داوطلب</h3>
+        <table class="table">
+            <tr><th>نام</th><td>@Model.FullName</td></tr>
+            <tr><th>موبایل</th><td dir="ltr">@Model.Mobile</td></tr>
+            <tr><th>ایمیل</th><td dir="ltr">@(Model.Email ?? "—")</td></tr>
+            <tr><th>محل</th><td>@Model.Province @Model.City</td></tr>
+            <tr><th>نوع همکاری</th><td>@Phase5Display.Collaboration(Model.CollaborationType)</td></tr>
+            <tr><th>مهارت‌ها</th><td>@(Model.Skills ?? "—")</td></tr>
+            <tr><th>زمان‌های در دسترس</th><td>@(Model.AvailableTimes ?? "—")</td></tr>
+        </table>
+        @if (!string.IsNullOrWhiteSpace(Model.Background)) { <p><strong>سوابق:</strong> @Model.Background</p> }
+    </div>
+
+    <div class="stack">
+        @if (Can(Permissions.VolunteerManage))
+        {
+            <div class="card">
+                <h3 class="mt-0">وضعیت</h3>
+                <form asp-action="SetStatus" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <select class="form-control" name="status" style="margin-bottom:.5rem">
+                        @foreach (VolunteerStatus s in Enum.GetValues<VolunteerStatus>())
+                        {
+                            <option value="@((int)s)" selected="@(s == Model.Status)">@Phase5Display.VolunteerStatus(s)</option>
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-block">اعمال</button>
+                </form>
+            </div>
+            <div class="card">
+                <h3 class="mt-0">یادداشت داخلی</h3>
+                <form asp-action="SetNotes" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <textarea class="form-control" name="notes" rows="4">@Model.AdminNotes</textarea>
+                    <button type="submit" class="btn btn-outline btn-block" style="margin-top:.5rem">ذخیره یادداشت</button>
+                </form>
+            </div>
+        }
+        <a class="btn btn-ghost btn-block" asp-action="Index">بازگشت به فهرست</a>
+    </div>
+</div>

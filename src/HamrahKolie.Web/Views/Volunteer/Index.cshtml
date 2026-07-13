@@ -1,0 +1,66 @@
+@using HamrahKolie.Domain.Enums
+@using HamrahKolie.Web.Helpers
+@model HamrahKolie.Application.Volunteers.VolunteerInput
+@{
+    ViewData["Title"] = "همکاری داوطلبانه";
+}
+<section class="section">
+    <div class="container" style="max-width:680px">
+        <h1>همکاری داوطلبانه</h1>
+        <p class="lead">مهارت و زمان شما می‌تواند مسیر درمان یک بیمار را هموارتر کند. فرم زیر را پر کنید تا با شما در تماس باشیم.</p>
+
+        <div class="card">
+            <form asp-action="Index" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">نام و نام خانوادگی</label>
+                        <input class="form-control" asp-for="FullName" />
+                        <span class="field-validation-error" asp-validation-for="FullName"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">شماره موبایل</label>
+                        <input class="form-control" asp-for="Mobile" dir="ltr" placeholder="09xxxxxxxxx" />
+                        <span class="field-validation-error" asp-validation-for="Mobile"></span>
+                    </div>
+                </div>
+                <div class="grid grid-3">
+                    <div class="form-group"><label class="form-label">ایمیل (اختیاری)</label><input class="form-control" asp-for="Email" dir="ltr" /></div>
+                    <div class="form-group"><label class="form-label">استان</label><input class="form-control" asp-for="Province" /></div>
+                    <div class="form-group"><label class="form-label">شهر</label><input class="form-control" asp-for="City" /></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">نوع همکاری</label>
+                    <select class="form-control" asp-for="CollaborationType">
+                        @foreach (CollaborationType t in Enum.GetValues<CollaborationType>())
+                        {
+                            <option value="@((int)t)">@Phase5Display.Collaboration(t)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">مهارت‌ها</label>
+                    <input class="form-control" asp-for="Skills" placeholder="مثلاً رانندگی، طراحی، ..." />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">زمان‌های در دسترس</label>
+                    <input class="form-control" asp-for="AvailableTimes" placeholder="مثلاً آخر هفته‌ها، عصرها" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">سوابق و توضیحات</label>
+                    <textarea class="form-control" asp-for="Background" rows="3"></textarea>
+                </div>
+
+                <label class="d-flex items-center gap-2" style="font-weight:600;margin-bottom:1rem">
+                    <input type="checkbox" asp-for="ConsentAccepted" /> <span>قوانین و شرایط همکاری داوطلبانه را می‌پذیرم.</span>
+                </label>
+                <span class="field-validation-error" asp-validation-for="ConsentAccepted"></span>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block">ثبت درخواست همکاری</button>
+            </form>
+        </div>
+    </div>
+</section>

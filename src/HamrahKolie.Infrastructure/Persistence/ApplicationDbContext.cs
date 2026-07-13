@@ -45,6 +45,10 @@ public class ApplicationDbContext : IdentityDbContext<
     public DbSet<SupportRequestStatusHistory> SupportRequestStatusHistory => Set<SupportRequestStatusHistory>();
     public DbSet<SupportRequestMessage> SupportRequestMessages => Set<SupportRequestMessage>();
 
+    // ── داوطلبان و مراکز ─────────────────────────────────────────
+    public DbSet<Volunteer> Volunteers => Set<Volunteer>();
+    public DbSet<DialysisCenter> DialysisCenters => Set<DialysisCenter>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

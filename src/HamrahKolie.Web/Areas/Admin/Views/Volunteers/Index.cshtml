@@ -1,0 +1,52 @@
+@using HamrahKolie.Application.Common.Models
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@using HamrahKolie.Web.Helpers
+@model PagedResult<Volunteer>
+@{
+    ViewData["Title"] = "داوطلبان";
+    var currentStatus = ViewData["Status"] as VolunteerStatus?;
+    var pending = ViewData["PendingCount"] as int? ?? 0;
+    var fa = new System.Globalization.CultureInfo("fa-IR");
+}
+<div class="d-flex justify-between items-center flex-wrap gap-2" style="margin-bottom:1rem">
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn @(currentStatus == null ? "btn-primary" : "btn-outline")" asp-action="Index">همه</a>
+        <a class="btn @(currentStatus == VolunteerStatus.Pending ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-status="Pending">در انتظار</a>
+        <a class="btn @(currentStatus == VolunteerStatus.Active ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-status="Active">فعال</a>
+    </div>
+    @if (pending > 0) { <span class="badge badge-primary">@pending.ToString(fa) داوطلب در انتظار</span> }
+</div>
+<div class="card">
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty-state">داوطلبی با این فیلتر یافت نشد.</div>
+    }
+    else
+    {
+        <table class="table">
+            <thead><tr><th>نام</th><th>موبایل</th><th>نوع همکاری</th><th>استان</th><th>وضعیت</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var v in Model.Items)
+                {
+                    <tr>
+                        <td>@v.FullName</td>
+                        <td dir="ltr">@v.Mobile</td>
+                        <td>@Phase5Display.Collaboration(v.CollaborationType)</td>
+                        <td>@(v.Province ?? "—")</td>
+                        <td><span class="badge">@Phase5Display.VolunteerStatus(v.Status)</span></td>
+                        <td><a class="btn btn-outline" asp-action="Detail" asp-route-id="@v.Id">بررسی</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (Model.TotalPages > 1)
+        {
+            <div class="d-flex gap-2 items-center" style="margin-top:1rem">
+                @if (Model.HasPrevious) { <a class="btn btn-outline" asp-action="Index" asp-route-status="@currentStatus" asp-route-page="@(Model.Page - 1)">قبلی</a> }
+                <span class="btn btn-ghost">صفحه @Model.Page از @Model.TotalPages</span>
+                @if (Model.HasNext) { <a class="btn btn-outline" asp-action="Index" asp-route-status="@currentStatus" asp-route-page="@(Model.Page + 1)">بعدی</a> }
+            </div>
+        }
+    }
+</div>

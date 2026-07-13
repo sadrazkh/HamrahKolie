@@ -32,6 +32,32 @@ public static class DbSeeder
         await SeedSuperAdminAsync(userManager, config, logger, ct);
         await SeedCmsAsync(db, ct);
         await SeedCampaignsAsync(db, ct);
+        await SeedCentersAsync(db, ct);
+    }
+
+    private static async Task SeedCentersAsync(ApplicationDbContext db, CancellationToken ct)
+    {
+        if (await db.DialysisCenters.AnyAsync(ct)) return;
+
+        db.DialysisCenters.AddRange(
+            new DialysisCenter
+            {
+                Name = "مرکز دیالیز بیمارستان امام", Slug = "markaz-dialysis-emam", Type = CenterType.Governmental,
+                Province = "کرمانشاه", City = "کرمانشاه", Address = "بلوار شهید بهشتی",
+                Phone = "083-00000000", WorkingHours = "شنبه تا پنجشنبه ۷ تا ۱۹",
+                DialysisTypes = "همودیالیز", Services = "دیالیز، مشاوره تغذیه",
+                IsApproved = true, LastReviewedAt = DateTime.UtcNow,
+            },
+            new DialysisCenter
+            {
+                Name = "مرکز دیالیز خیریه مهر", Slug = "markaz-dialysis-mehr", Type = CenterType.Charity,
+                Province = "کرمانشاه", City = "اسلام‌آباد غرب", Address = "خیابان امام خمینی",
+                Phone = "083-11111111", WorkingHours = "همه‌روزه ۸ تا ۲۰",
+                DialysisTypes = "همودیالیز، دیالیز صفاقی", Services = "دیالیز، حمایت رفت‌وآمد",
+                IsApproved = true, LastReviewedAt = DateTime.UtcNow,
+            }
+        );
+        await db.SaveChangesAsync(ct);
     }
 
     private static async Task SeedCampaignsAsync(ApplicationDbContext db, CancellationToken ct)

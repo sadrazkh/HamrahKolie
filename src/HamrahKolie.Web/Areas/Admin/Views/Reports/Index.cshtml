@@ -1,0 +1,74 @@
+@model HamrahKolie.Application.Reports.ManagementReport
+@{
+    ViewData["Title"] = "گزارش‌ها";
+    var fa = new System.Globalization.CultureInfo("fa-IR");
+    string M(HamrahKolie.Application.Reports.MoneyStat s) => $"{s.Amount.ToString("N0", fa)} تومان ({s.Count.ToString(fa)} کمک)";
+}
+
+<h3>کمک‌های مالی</h3>
+<div class="grid grid-4">
+    <div class="card tile"><div class="tile-icon">📅</div><div><div class="tile-value">@Model.Today.Amount.ToString("N0", fa)</div><div class="tile-label">امروز</div></div></div>
+    <div class="card tile"><div class="tile-icon">🗓️</div><div><div class="tile-value">@Model.ThisWeek.Amount.ToString("N0", fa)</div><div class="tile-label">۷ روز اخیر</div></div></div>
+    <div class="card tile"><div class="tile-icon">📆</div><div><div class="tile-value">@Model.ThisMonth.Amount.ToString("N0", fa)</div><div class="tile-label">۳۰ روز اخیر</div></div></div>
+    <div class="card tile"><div class="tile-icon">💰</div><div><div class="tile-value">@Model.AllTime.Amount.ToString("N0", fa)</div><div class="tile-label">کل</div></div></div>
+</div>
+
+<div class="grid grid-2" style="margin-top:1rem">
+    <div class="card">
+        <h3 class="mt-0">تفکیک روش پرداخت</h3>
+        <table class="table">
+            <tr><th>آنلاین</th><td>@M(Model.Online)</td></tr>
+            <tr><th>آفلاین</th><td>@M(Model.Offline)</td></tr>
+            <tr><th>میانگین هر کمک</th><td>@Model.AverageDonation.ToString("N0", fa) تومان</td></tr>
+        </table>
+    </div>
+    <div class="card">
+        <h3 class="mt-0">حامیان</h3>
+        <table class="table">
+            <tr><th>حامیان جدید (یک‌بار)</th><td>@Model.NewDonors.ToString(fa)</td></tr>
+            <tr><th>حامیان تکرارشونده</th><td>@Model.RepeatDonors.ToString(fa)</td></tr>
+        </table>
+    </div>
+</div>
+
+<div class="card" style="margin-top:1rem">
+    <h3 class="mt-0">کمپین‌ها</h3>
+    @if (!Model.Campaigns.Any()) { <p class="text-muted">کمپینی وجود ندارد.</p> }
+    else
+    {
+        <table class="table">
+            <thead><tr><th>کمپین</th><th>هدف</th><th>جمع‌آوری‌شده</th><th>پیشرفت</th><th>حامیان</th></tr></thead>
+            <tbody>
+                @foreach (var c in Model.Campaigns)
+                {
+                    <tr><td>@c.Title</td><td>@c.Goal.ToString("N0", fa)</td><td>@c.Collected.ToString("N0", fa)</td><td>@c.Percent.ToString(fa)٪</td><td>@c.Supporters.ToString(fa)</td></tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="grid grid-3" style="margin-top:1rem">
+    <div class="card">
+        <h3 class="mt-0">درخواست‌ها بر اساس وضعیت</h3>
+        @foreach (var x in Model.SupportRequestsByStatus)
+        {
+            <div class="d-flex justify-between"><span>@x.Label</span><strong>@x.Count.ToString(fa)</strong></div>
+        }
+    </div>
+    <div class="card">
+        <h3 class="mt-0">درخواست‌ها بر اساس استان</h3>
+        @if (!Model.SupportRequestsByProvince.Any()) { <p class="text-muted">داده‌ای نیست.</p> }
+        @foreach (var x in Model.SupportRequestsByProvince)
+        {
+            <div class="d-flex justify-between"><span>@x.Label</span><strong>@x.Count.ToString(fa)</strong></div>
+        }
+    </div>
+    <div class="card">
+        <h3 class="mt-0">داوطلبان بر اساس وضعیت</h3>
+        @foreach (var x in Model.VolunteersByStatus)
+        {
+            <div class="d-flex justify-between"><span>@x.Label</span><strong>@x.Count.ToString(fa)</strong></div>
+        }
+    </div>
+</div>

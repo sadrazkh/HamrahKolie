@@ -1,0 +1,47 @@
+@using HamrahKolie.Domain.Enums
+@using HamrahKolie.Web.Helpers
+@model HamrahKolie.Application.Centers.CenterInput
+@{
+    ViewData["Title"] = "پیشنهاد مرکز دیالیز";
+}
+<section class="section">
+    <div class="container" style="max-width:680px">
+        <h1>پیشنهاد مرکز دیالیز</h1>
+        <p class="lead">اطلاعات یک مرکز دیالیز را ثبت کنید تا پس از بررسی به دایرکتوری افزوده شود.</p>
+
+        <div class="card">
+            <form asp-action="Submit" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
+
+                <div class="form-group">
+                    <label class="form-label">نام مرکز</label>
+                    <input class="form-control" asp-for="Name" />
+                    <span class="field-validation-error" asp-validation-for="Name"></span>
+                </div>
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">نوع مرکز</label>
+                        <select class="form-control" asp-for="Type">
+                            @foreach (CenterType t in Enum.GetValues<CenterType>())
+                            {
+                                <option value="@((int)t)">@Phase5Display.CenterType(t)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group"><label class="form-label">تلفن</label><input class="form-control" asp-for="Phone" dir="ltr" /></div>
+                </div>
+                <div class="grid grid-2">
+                    <div class="form-group"><label class="form-label">استان</label><input class="form-control" asp-for="Province" /></div>
+                    <div class="form-group"><label class="form-label">شهر</label><input class="form-control" asp-for="City" /></div>
+                </div>
+                <div class="form-group"><label class="form-label">آدرس</label><input class="form-control" asp-for="Address" /></div>
+                <div class="grid grid-2">
+                    <div class="form-group"><label class="form-label">ساعات کاری</label><input class="form-control" asp-for="WorkingHours" /></div>
+                    <div class="form-group"><label class="form-label">نوع دیالیز</label><input class="form-control" asp-for="DialysisTypes" /></div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg btn-block">ثبت پیشنهاد</button>
+            </form>
+        </div>
+    </div>
+</section>
