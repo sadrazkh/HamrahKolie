@@ -1,0 +1,47 @@
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@model IReadOnlyList<Campaign>
+@{
+    ViewData["Title"] = "کمپین‌ها";
+    var faCulture = new System.Globalization.CultureInfo("fa-IR");
+    (string, string) Badge(CampaignStatus s) => s switch
+    {
+        CampaignStatus.Active => ("badge-primary", "فعال"),
+        CampaignStatus.Draft => ("badge", "پیش‌نویس"),
+        CampaignStatus.Paused => ("badge", "متوقف"),
+        CampaignStatus.Completed => ("badge-primary", "تکمیل‌شده"),
+        CampaignStatus.Successful => ("badge-primary", "موفق"),
+        CampaignStatus.Closed => ("badge-danger", "بسته‌شده"),
+        _ => ("badge", s.ToString())
+    };
+}
+<div class="d-flex justify-between items-center" style="margin-bottom:1rem">
+    <p class="text-muted mb-0">مدیریت کمپین‌های جمع‌آوری کمک.</p>
+    <a class="btn btn-primary" asp-action="Create">+ کمپین جدید</a>
+</div>
+<div class="card">
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state"><p>هنوز کمپینی ساخته نشده است.</p><a class="btn btn-primary" asp-action="Create">ایجاد کمپین</a></div>
+    }
+    else
+    {
+        <table class="table">
+            <thead><tr><th>عنوان</th><th>وضعیت</th><th>هدف</th><th>جمع‌آوری‌شده</th><th>حامیان</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    var (cls, label) = Badge(c.Status);
+                    <tr>
+                        <td><a asp-action="Edit" asp-route-id="@c.Id"><strong>@c.Title</strong></a>@if (c.IsUrgent) { <span class="badge badge-danger">فوری</span> }</td>
+                        <td><span class="badge @cls">@label</span></td>
+                        <td>@c.GoalAmount.ToString("N0", faCulture)</td>
+                        <td>@c.CollectedAmount.ToString("N0", faCulture) (@c.ProgressPercent.ToString(faCulture)٪)</td>
+                        <td>@c.SupporterCount.ToString("N0", faCulture)</td>
+                        <td><a class="btn btn-outline" asp-action="Edit" asp-route-id="@c.Id">ویرایش</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

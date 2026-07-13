@@ -1,6 +1,10 @@
+using System.Security.Claims;
+using HamrahKolie.Application.Authorization;
 using HamrahKolie.Application.Common.Interfaces;
 using HamrahKolie.Domain.Identity;
+using HamrahKolie.Infrastructure.Identity;
 using HamrahKolie.Web.ViewModels;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,15 +17,61 @@ public class AccountController : Controller
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IAuditService _audit;
+    private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _configuration;
 
     public AccountController(
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
-        IAuditService audit)
+        IAuditService audit,
+        IWebHostEnvironment environment,
+        IConfiguration configuration)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _audit = audit;
+        _environment = environment;
+        _configuration = configuration;
+    }
+
+    [HttpGet("/presentation/admin")]
+    [AllowAnonymous]
+    public async Task<IActionResult> PresentationAdmin(string? returnUrl = null)
+    {
+        if (!_environment.IsDevelopment()
+            || !_configuration.GetValue<bool>("PresentationMode:Enabled"))
+        {
+            return NotFound();
+        }
+
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, "presentation-admin"),
+            new Claim(ClaimTypes.Name, "مدیر نسخه نمایشی"),
+            new Claim(ClaimTypes.Email, "presentation@localhost"),
+            new Claim(ClaimTypes.Role, Roles.SuperAdmin),
+            new Claim(AppClaimTypes.Permission, "*"),
+            new Claim("presentation_mode", "true"),
+        };
+
+        var principal = new ClaimsPrincipal(
+            new ClaimsIdentity(claims, IdentityConstants.ApplicationScheme));
+
+        await HttpContext.SignInAsync(
+            IdentityConstants.ApplicationScheme,
+            principal,
+            new AuthenticationProperties
+            {
+                IsPersistent = false,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(4),
+            });
+
+        if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+        {
+            return LocalRedirect(returnUrl);
+        }
+
+        return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
     }
 
     [HttpGet]

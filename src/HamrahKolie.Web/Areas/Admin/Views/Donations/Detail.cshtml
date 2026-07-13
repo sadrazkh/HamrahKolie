@@ -1,0 +1,86 @@
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@model Donation
+@{
+    ViewData["Title"] = $"کمک {Model.TrackingCode}";
+    var faCulture = new System.Globalization.CultureInfo("fa-IR");
+    bool Can(string p) => User.HasClaim("permission", "*") || User.HasClaim("permission", p);
+    var isOfflinePending = Model.OfflinePayment is { ReviewStatus: OfflineReviewStatus.Pending };
+}
+
+<div class="grid" style="grid-template-columns: 1fr 320px; gap:1.5rem; align-items:start">
+    <div class="card">
+        <h3 class="mt-0">اطلاعات کمک</h3>
+        <table class="table">
+            <tr><th>کد پیگیری</th><td dir="ltr">@Model.TrackingCode</td></tr>
+            <tr><th>مبلغ</th><td>@Model.Amount.ToString("N0", faCulture) تومان</td></tr>
+            <tr><th>نوع</th><td>@Model.Type</td></tr>
+            <tr><th>روش</th><td>@(Model.Method == PaymentMethod.Online ? "آنلاین" : "آفلاین")</td></tr>
+            <tr><th>وضعیت</th><td>@Model.Status</td></tr>
+            <tr><th>کمپین</th><td>@(Model.Campaign?.Title ?? "کمک آزاد")</td></tr>
+            <tr><th>تاریخ ثبت</th><td dir="ltr">@Model.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td></tr>
+            @if (Model.CompletedAt != null) { <tr><th>تاریخ تکمیل</th><td dir="ltr">@Model.CompletedAt.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td></tr> }
+            @if (!string.IsNullOrWhiteSpace(Model.Note)) { <tr><th>یادداشت</th><td>@Model.Note</td></tr> }
+        </table>
+
+        @if (Model.Payment != null)
+        {
+            <h3>پرداخت آنلاین</h3>
+            <table class="table">
+                <tr><th>درگاه</th><td>@Model.Payment.Provider</td></tr>
+                <tr><th>وضعیت</th><td>@Model.Payment.Status</td></tr>
+                <tr><th>کد مرجع</th><td dir="ltr">@(Model.Payment.ReferenceId ?? "—")</td></tr>
+                <tr><th>زمان پرداخت</th><td dir="ltr">@(Model.Payment.PaidAt?.ToLocalTime().ToString("yyyy/MM/dd HH:mm") ?? "—")</td></tr>
+            </table>
+        }
+
+        @if (Model.OfflinePayment != null)
+        {
+            <h3>پرداخت آفلاین</h3>
+            <table class="table">
+                <tr><th>وضعیت بررسی</th><td>@Model.OfflinePayment.ReviewStatus</td></tr>
+                <tr><th>شماره مرجع</th><td dir="ltr">@(Model.OfflinePayment.ReferenceNumber ?? "—")</td></tr>
+                @if (Model.OfflinePayment.ReviewedBy != null) { <tr><th>بررسی‌کننده</th><td>@Model.OfflinePayment.ReviewedBy</td></tr> }
+                @if (!string.IsNullOrWhiteSpace(Model.OfflinePayment.ReviewNote)) { <tr><th>یادداشت بررسی</th><td>@Model.OfflinePayment.ReviewNote</td></tr> }
+            </table>
+        }
+    </div>
+
+    <div class="stack">
+        <div class="card">
+            <h3 class="mt-0">حامی</h3>
+            <p><strong>@(Model.IsAnonymous ? "ناشناس" : Model.DonorName)</strong></p>
+            <p dir="ltr" class="text-muted">@Model.DonorMobile</p>
+            @if (!string.IsNullOrWhiteSpace(Model.DonorEmail)) { <p dir="ltr" class="text-muted">@Model.DonorEmail</p> }
+        </div>
+
+        @if (isOfflinePending && Can(Permissions.DonationVerifyOffline))
+        {
+            <div class="card">
+                <h3 class="mt-0">بررسی فیش</h3>
+                <form asp-action="ApproveOffline" asp-route-id="@Model.Id" method="post" class="mb-0">
+                    @Html.AntiForgeryToken()
+                    <input class="form-control" name="note" placeholder="یادداشت (اختیاری)" style="margin-bottom:.5rem" />
+                    <button type="submit" class="btn btn-primary btn-block">تأیید فیش</button>
+                </form>
+                <form asp-action="RejectOffline" asp-route-id="@Model.Id" method="post" class="mb-0" style="margin-top:.5rem" onsubmit="return confirm('این فیش رد شود؟');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline btn-block">رد فیش</button>
+                </form>
+            </div>
+        }
+
+        @if (Model.Status == PaymentStatus.Succeeded && Can(Permissions.DonationRefund))
+        {
+            <div class="card">
+                <h3 class="mt-0">بازپرداخت</h3>
+                <form asp-action="Refund" asp-route-id="@Model.Id" method="post" class="mb-0" onsubmit="return confirm('بازپرداخت این کمک ثبت شود؟ اثر آن روی کمپین برگردانده می‌شود.');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline btn-block">ثبت بازپرداخت</button>
+                </form>
+            </div>
+        }
+
+        <a class="btn btn-ghost btn-block" asp-action="Index">بازگشت به فهرست</a>
+    </div>
+</div>

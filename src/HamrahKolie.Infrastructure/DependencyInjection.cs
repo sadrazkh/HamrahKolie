@@ -72,6 +72,21 @@ public static class DependencyInjection
         services.AddScoped<HamrahKolie.Application.Cms.IContentService, ContentService>();
         services.AddScoped<HamrahKolie.Application.PageBuilder.IPageBuilderService, PageBuilderService>();
 
+        // کمپین و کمک مالی
+        services.AddScoped<HamrahKolie.Application.Campaigns.ICampaignService, CampaignService>();
+        services.AddScoped<HamrahKolie.Application.Donations.IDonationService, DonationService>();
+
+        // درگاه پرداخت (قابل تعویض). پیش‌فرض: درگاه آزمایشی.
+        var paymentProvider = config["Payment:Provider"] ?? "Fake";
+        switch (paymentProvider.ToLowerInvariant())
+        {
+            // case "zarinpal": services.AddScoped<IPaymentGateway, ZarinpalGateway>(); break;
+            default:
+                services.AddScoped<HamrahKolie.Application.Payments.IPaymentGateway,
+                    Payments.FakePaymentGateway>();
+                break;
+        }
+
         return services;
     }
 }

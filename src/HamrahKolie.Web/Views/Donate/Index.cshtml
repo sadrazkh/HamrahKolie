@@ -1,0 +1,100 @@
+@using HamrahKolie.Domain.Enums
+@model HamrahKolie.Web.ViewModels.DonateViewModel
+@{
+    ViewData["Title"] = "حمایت مالی";
+}
+<section class="section">
+    <div class="container" style="max-width:640px">
+        <h1>حمایت مالی</h1>
+        <p class="lead">هر همراهی، یک قدم به بازگشت بیمار به زندگی نزدیک‌تر است.</p>
+
+        @if (!string.IsNullOrEmpty(Model.SelectedCampaignTitle))
+        {
+            <div class="alert alert-info">کمک شما به کمپین: <strong>@Model.SelectedCampaignTitle</strong></div>
+        }
+
+        <div class="card">
+            <form asp-action="Index" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
+
+                <div class="form-group">
+                    <label class="form-label">مبلغ کمک (تومان)</label>
+                    <div class="d-flex gap-2 flex-wrap" style="margin-bottom:.6rem">
+                        @foreach (var amt in HamrahKolie.Web.ViewModels.DonateViewModel.SuggestedAmounts)
+                        {
+                            <button type="button" class="btn btn-outline amount-btn" data-amount="@amt">@amt.ToString("N0", new System.Globalization.CultureInfo("fa-IR"))</button>
+                        }
+                    </div>
+                    <input class="form-control" asp-for="Input.Amount" type="number" min="1000" step="1000" placeholder="مبلغ دلخواه" />
+                    <span class="field-validation-error" asp-validation-for="Input.Amount"></span>
+                </div>
+
+                @if (Model.Input.CampaignId is null && Model.Campaigns.Count > 0)
+                {
+                    <div class="form-group">
+                        <label class="form-label">تخصیص به کمپین (اختیاری)</label>
+                        <select class="form-control" asp-for="Input.CampaignId" asp-items="Model.Campaigns">
+                            <option value="">— کمک آزاد —</option>
+                        </select>
+                    </div>
+                }
+                else
+                {
+                    <input type="hidden" asp-for="Input.CampaignId" />
+                }
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">نام و نام خانوادگی</label>
+                        <input class="form-control" asp-for="Input.DonorName" />
+                        <span class="field-validation-error" asp-validation-for="Input.DonorName"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">شماره موبایل</label>
+                        <input class="form-control" asp-for="Input.DonorMobile" dir="ltr" placeholder="09xxxxxxxxx" />
+                        <span class="field-validation-error" asp-validation-for="Input.DonorMobile"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ایمیل (اختیاری)</label>
+                    <input class="form-control" asp-for="Input.DonorEmail" dir="ltr" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">یادداشت (اختیاری)</label>
+                    <textarea class="form-control" asp-for="Input.Note" rows="2"></textarea>
+                </div>
+
+                <label class="d-flex items-center gap-2" style="font-weight:600;margin-bottom:.5rem">
+                    <input type="checkbox" asp-for="Input.IsAnonymous" /> کمک ناشناس باشد
+                </label>
+                <label class="d-flex items-center gap-2" style="font-weight:600;margin-bottom:.5rem">
+                    <input type="checkbox" asp-for="Input.ShowNamePublicly" /> نام من در فهرست حامیان نمایش داده شود
+                </label>
+                <label class="d-flex items-center gap-2" style="font-weight:600;margin-bottom:1rem">
+                    <input type="checkbox" asp-for="Input.AcceptTerms" /> <span>قوانین و شرایط را می‌پذیرم</span>
+                </label>
+                <span class="field-validation-error" asp-validation-for="Input.AcceptTerms"></span>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block">پرداخت و حمایت</button>
+            </form>
+        </div>
+
+        <div class="d-flex gap-4 justify-between" style="margin-top:1rem">
+            <a href="/donate/offline">پرداخت آفلاین (ثبت فیش)</a>
+            <a href="/donate/track">پیگیری کمک</a>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.amount-btn').forEach(function (b) {
+            b.addEventListener('click', function () {
+                document.querySelector('[name="Input.Amount"]').value = b.dataset.amount;
+            });
+        });
+    </script>
+}

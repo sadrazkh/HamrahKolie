@@ -1,0 +1,59 @@
+@using HamrahKolie.Domain.Entities
+@model Campaign
+@{
+    var faCulture = new System.Globalization.CultureInfo("fa-IR");
+}
+<section class="section">
+    <div class="container" style="max-width:900px">
+        <div class="grid" style="grid-template-columns: 1fr 320px; gap:2rem; align-items:start">
+            <div>
+                <nav class="text-muted" style="font-size:.9rem;margin-bottom:1rem"><a href="/">خانه</a> / <a href="/campaigns">کمپین‌ها</a> / @Model.Title</nav>
+                @if (Model.IsUrgent) { <span class="badge badge-danger">فوری</span> }
+                <h1>@Model.Title</h1>
+                @if (Model.FeaturedImage != null)
+                {
+                    <img src="@Model.FeaturedImage.Url" alt="@Model.Title" style="width:100%;border-radius:var(--radius);margin:1rem 0" />
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.ShortDescription)) { <p class="lead">@Model.ShortDescription</p> }
+                <div class="content-body">@Html.Raw(Model.Description)</div>
+
+                @if (Model.Updates.Any())
+                {
+                    <h2 style="margin-top:2rem">به‌روزرسانی‌های کمپین</h2>
+                    @foreach (var u in Model.Updates)
+                    {
+                        <div class="card" style="margin-bottom:1rem">
+                            <div class="d-flex justify-between">
+                                <h3 class="mt-0">@u.Title</h3>
+                                <span class="text-muted" style="font-size:.85rem">@u.PublishedAt.ToLocalTime().ToString("yyyy/MM/dd")</span>
+                            </div>
+                            <div class="content-body">@Html.Raw(u.Body)</div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <aside>
+                <div class="card" style="position:sticky;top:90px">
+                    <div class="progress-bar" style="background:var(--c-surface-2);border-radius:999px;height:12px;overflow:hidden;margin-bottom:.8rem">
+                        <div style="width:@(Model.ProgressPercent)%;background:var(--c-primary-500);height:100%"></div>
+                    </div>
+                    <div class="stat-value" style="font-size:1.6rem">@Model.ProgressPercent.ToString(faCulture)٪</div>
+                    <div class="text-muted">تأمین شده</div>
+
+                    @if (Model.ShowExactAmount)
+                    {
+                        <div style="margin:1rem 0;border-top:1px solid var(--c-border);padding-top:1rem">
+                            <div class="d-flex justify-between"><span class="text-muted">جمع‌آوری‌شده</span><strong>@Model.CollectedAmount.ToString("N0", faCulture)</strong></div>
+                            <div class="d-flex justify-between"><span class="text-muted">هدف</span><strong>@Model.GoalAmount.ToString("N0", faCulture)</strong></div>
+                            <div class="d-flex justify-between"><span class="text-muted">حامیان</span><strong>@Model.SupporterCount.ToString("N0", faCulture)</strong></div>
+                        </div>
+                    }
+
+                    <a class="btn btn-primary btn-lg btn-block" href="/donate?campaign=@Model.Slug">❤ حمایت از این کمپین</a>
+                    <a class="btn btn-outline btn-block" style="margin-top:.5rem" href="/donate/offline?campaign=@Model.Slug">پرداخت آفلاین</a>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>

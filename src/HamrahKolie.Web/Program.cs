@@ -33,6 +33,10 @@ try
 
     var services = builder.Services;
     var config = builder.Configuration;
+    var presentationMode = builder.Environment.IsDevelopment()
+        && config.GetValue<bool>("PresentationMode:Enabled");
+    var skipDatabase = presentationMode
+        && config.GetValue<bool>("PresentationMode:SkipDatabase");
 
     // ── لایه‌های اپلیکیشن ────────────────────────────────────────────
     services.AddApplication();
@@ -99,16 +103,23 @@ try
     });
 
     // Health Checks
-    services.AddHealthChecks()
-        .AddDbContextCheck<ApplicationDbContext>("database");
+    var healthChecks = services.AddHealthChecks();
+    if (!skipDatabase)
+    {
+        healthChecks.AddDbContextCheck<ApplicationDbContext>("database");
+    }
 
     // بررسی دسترس‌پذیری دیتابیس؛ اگر در دسترس نباشد، سرویس‌های وابسته (Hangfire) رد می‌شوند
     // تا اپلیکیشن به‌جای Crash، بالا بیاید و بخش‌های عمومی سایت کار کنند.
-    var dbReachable = IsDatabaseReachable(
+    var dbReachable = !skipDatabase && IsDatabaseReachable(
         config["Database:Provider"] ?? "PostgreSql",
         config.GetConnectionString("Default"));
 
-    if (!dbReachable)
+    if (skipDatabase)
+    {
+        Log.Warning("Presentation mode is enabled. Database checks, migrations, seed and Hangfire are disabled.");
+    }
+    else if (!dbReachable)
     {
         Log.Warning("اتصال به پایگاه داده برقرار نشد. اپلیکیشن بالا می‌آید اما بخش‌های وابسته به دیتابیس " +
                     "(ورود، پنل، Hangfire) تا زمان تنظیم صحیح رشته اتصال فعال نخواهند بود.");
@@ -175,7 +186,10 @@ try
     app.MapHealthChecks("/health");
 
     // ── Migration و Seed در راه‌اندازی ───────────────────────────────
-    await MigrateAndSeedAsync(app);
+    if (dbReachable)
+    {
+        await MigrateAndSeedAsync(app);
+    }
 
     app.Run();
 }

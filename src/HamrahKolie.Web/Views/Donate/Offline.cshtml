@@ -1,0 +1,70 @@
+@model HamrahKolie.Web.ViewModels.OfflineDonateViewModel
+@{
+    ViewData["Title"] = "پرداخت آفلاین (ثبت فیش)";
+}
+<section class="section">
+    <div class="container" style="max-width:600px">
+        <h1>پرداخت آفلاین</h1>
+        <p class="lead">اگر مبلغی را کارت‌به‌کارت یا واریز کرده‌اید، اطلاعات آن را اینجا ثبت کنید تا پس از بررسی تأیید شود.</p>
+
+        @if (!string.IsNullOrWhiteSpace(Model.BankAccountInfo))
+        {
+            <div class="alert alert-info">اطلاعات حساب مقصد: @Model.BankAccountInfo</div>
+        }
+
+        <div class="card">
+            <form asp-action="Offline" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
+
+                <div class="form-group">
+                    <label class="form-label">مبلغ واریزی (تومان)</label>
+                    <input class="form-control" asp-for="Input.Amount" type="number" min="1000" step="1000" />
+                    <span class="field-validation-error" asp-validation-for="Input.Amount"></span>
+                </div>
+
+                @if (Model.Campaigns.Count > 0)
+                {
+                    <div class="form-group">
+                        <label class="form-label">تخصیص به کمپین (اختیاری)</label>
+                        <select class="form-control" asp-for="Input.CampaignId" asp-items="Model.Campaigns">
+                            <option value="">— کمک آزاد —</option>
+                        </select>
+                    </div>
+                }
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">نام و نام خانوادگی</label>
+                        <input class="form-control" asp-for="Input.DonorName" />
+                        <span class="field-validation-error" asp-validation-for="Input.DonorName"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">شماره موبایل</label>
+                        <input class="form-control" asp-for="Input.DonorMobile" dir="ltr" placeholder="09xxxxxxxxx" />
+                        <span class="field-validation-error" asp-validation-for="Input.DonorMobile"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">شماره پیگیری/مرجع تراکنش (اختیاری)</label>
+                    <input class="form-control" asp-for="Input.ReferenceNumber" dir="ltr" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">توضیحات (اختیاری)</label>
+                    <textarea class="form-control" asp-for="Input.Note" rows="2"></textarea>
+                </div>
+
+                <p class="form-hint">بارگذاری مستقیم تصویر فیش در نسخه بعد افزوده می‌شود؛ فعلاً شماره مرجع تراکنش را وارد کنید.</p>
+
+                <label class="d-flex items-center gap-2" style="font-weight:600;margin:.5rem 0 1rem">
+                    <input type="checkbox" asp-for="Input.AcceptTerms" /> <span>قوانین و شرایط را می‌پذیرم</span>
+                </label>
+                <span class="field-validation-error" asp-validation-for="Input.AcceptTerms"></span>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block">ثبت فیش</button>
+            </form>
+        </div>
+    </div>
+</section>

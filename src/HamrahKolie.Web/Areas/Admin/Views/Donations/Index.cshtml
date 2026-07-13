@@ -1,0 +1,71 @@
+@using HamrahKolie.Application.Common.Models
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@model PagedResult<Donation>
+@{
+    ViewData["Title"] = "کمک‌ها";
+    var faCulture = new System.Globalization.CultureInfo("fa-IR");
+    var currentStatus = ViewData["Status"] as PaymentStatus?;
+    var pendingOffline = ViewData["PendingOffline"] as int? ?? 0;
+    (string, string) Badge(PaymentStatus s) => s switch
+    {
+        PaymentStatus.Succeeded => ("badge-primary", "موفق"),
+        PaymentStatus.Pending => ("badge", "در انتظار"),
+        PaymentStatus.Failed => ("badge-danger", "ناموفق"),
+        PaymentStatus.Canceled => ("badge-danger", "لغوشده"),
+        PaymentStatus.Refunded => ("badge", "بازپرداخت"),
+        _ => ("badge", s.ToString())
+    };
+}
+
+<div class="d-flex justify-between items-center flex-wrap gap-2" style="margin-bottom:1rem">
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn @(currentStatus == null ? "btn-primary" : "btn-outline")" asp-action="Index">همه</a>
+        <a class="btn @(currentStatus == PaymentStatus.Succeeded ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-status="Succeeded">موفق</a>
+        <a class="btn @(currentStatus == PaymentStatus.Pending ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-status="Pending">در انتظار</a>
+        <a class="btn @(currentStatus == PaymentStatus.Failed ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-status="Failed">ناموفق</a>
+    </div>
+    @if (pendingOffline > 0)
+    {
+        <a class="btn btn-accent" asp-action="Index" asp-route-method="Offline" asp-route-status="Pending">
+            @pendingOffline.ToString(faCulture) فیش در انتظار بررسی
+        </a>
+    }
+</div>
+
+<div class="card">
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty-state">کمکی با این فیلتر یافت نشد.</div>
+    }
+    else
+    {
+        <table class="table">
+            <thead><tr><th>کد پیگیری</th><th>حامی</th><th>مبلغ</th><th>روش</th><th>وضعیت</th><th>تاریخ</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var d in Model.Items)
+                {
+                    var (cls, label) = Badge(d.Status);
+                    <tr>
+                        <td dir="ltr"><a asp-action="Detail" asp-route-id="@d.Id">@d.TrackingCode</a></td>
+                        <td>@(d.IsAnonymous ? "ناشناس" : d.DonorName)<br /><small class="text-muted" dir="ltr">@d.DonorMobile</small></td>
+                        <td>@d.Amount.ToString("N0", faCulture)</td>
+                        <td>@(d.Method == PaymentMethod.Online ? "آنلاین" : "آفلاین")</td>
+                        <td><span class="badge @cls">@label</span></td>
+                        <td dir="ltr">@d.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td>
+                        <td><a class="btn btn-outline" asp-action="Detail" asp-route-id="@d.Id">جزئیات</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="d-flex gap-2 items-center" style="margin-top:1rem">
+                @if (Model.HasPrevious) { <a class="btn btn-outline" asp-action="Index" asp-route-status="@currentStatus" asp-route-page="@(Model.Page - 1)">قبلی</a> }
+                <span class="btn btn-ghost">صفحه @Model.Page از @Model.TotalPages</span>
+                @if (Model.HasNext) { <a class="btn btn-outline" asp-action="Index" asp-route-status="@currentStatus" asp-route-page="@(Model.Page + 1)">بعدی</a> }
+            </div>
+        }
+    }
+</div>

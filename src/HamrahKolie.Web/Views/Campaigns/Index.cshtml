@@ -1,0 +1,56 @@
+@using HamrahKolie.Application.Common.Models
+@using HamrahKolie.Domain.Entities
+@model PagedResult<Campaign>
+@{
+    ViewData["Title"] = "کمپین‌ها";
+    var faCulture = new System.Globalization.CultureInfo("fa-IR");
+}
+<section class="section">
+    <div class="container">
+        <h1>کمپین‌های فعال</h1>
+        <p class="lead">با مشارکت در کمپین‌ها، مستقیماً در تأمین نیازهای بیماران سهیم شوید.</p>
+
+        @if (Model.Items.Count == 0)
+        {
+            <div class="card empty-state">در حال حاضر کمپین فعالی وجود ندارد.</div>
+        }
+        else
+        {
+            <div class="grid grid-3" style="margin-top:1.5rem">
+                @foreach (var c in Model.Items)
+                {
+                    <article class="card card-hover">
+                        @if (c.FeaturedImage != null)
+                        {
+                            <img src="@c.FeaturedImage.Url" alt="@c.Title" loading="lazy" style="width:100%;height:170px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:1rem" />
+                        }
+                        @if (c.IsUrgent) { <span class="badge badge-danger">فوری</span> }
+                        <h3 style="margin-top:.5rem"><a href="/campaigns/@c.Slug">@c.Title</a></h3>
+                        <p class="text-muted">@c.ShortDescription</p>
+
+                        <div class="progress-bar" style="background:var(--c-surface-2);border-radius:999px;height:10px;overflow:hidden;margin:.6rem 0">
+                            <div style="width:@(c.ProgressPercent)%;background:var(--c-primary-500);height:100%"></div>
+                        </div>
+                        <div class="d-flex justify-between" style="font-size:.85rem">
+                            <span class="text-muted">@c.ProgressPercent.ToString(faCulture)٪ تأمین شده</span>
+                            @if (c.ShowExactAmount)
+                            {
+                                <span class="text-muted">@c.CollectedAmount.ToString("N0", faCulture) از @c.GoalAmount.ToString("N0", faCulture)</span>
+                            }
+                        </div>
+                        <a class="btn btn-primary btn-block" style="margin-top:1rem" href="/donate?campaign=@c.Slug">حمایت از این کمپین</a>
+                    </article>
+                }
+            </div>
+
+            @if (Model.TotalPages > 1)
+            {
+                <div class="d-flex gap-2 justify-between" style="margin-top:2rem">
+                    <div>@if (Model.HasPrevious) { <a class="btn btn-outline" href="/campaigns?page=@(Model.Page - 1)">→ قبلی</a> }</div>
+                    <span class="text-muted">صفحه @Model.Page از @Model.TotalPages</span>
+                    <div>@if (Model.HasNext) { <a class="btn btn-outline" href="/campaigns?page=@(Model.Page + 1)">بعدی ←</a> }</div>
+                </div>
+            }
+        }
+    </div>
+</section>

@@ -1,22 +1,33 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 
 namespace HamrahKolie.Infrastructure.Persistence;
 
 /// <summary>
 /// کارخانه زمان‌طراحی (Design-Time) برای ابزار EF Core.
 /// وجود این کلاس باعث می‌شود «dotnet ef» به‌جای اجرای کل برنامه، مستقیماً DbContext بسازد.
-/// رشته اتصال از متغیر محیطی خوانده می‌شود و در نبود آن مقدار پیش‌فرض توسعه استفاده می‌شود
-/// (فقط برای ساخت Migration؛ نیازی به اتصال واقعی نیست).
+/// تنظیمات اتصال از فایل‌های appsettings پروژه وب خوانده می‌شود و متغیرهای محیطی می‌توانند آن‌ها را بازنویسی کنند.
 /// </summary>
 public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
-        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__Default")
-            ?? "Host=localhost;Port=5432;Database=hamrahkolie;Username=postgres;Password=postgres";
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+            ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+            ?? "Development";
 
-        var provider = Environment.GetEnvironmentVariable("Database__Provider") ?? "PostgreSql";
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(FindWebProjectDirectory())
+            .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile($"appsettings.{environment}.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
+
+        var connectionString = configuration.GetConnectionString("Default")
+            ?? throw new InvalidOperationException("Connection string 'Default' is not configured.");
+
+        var provider = configuration["Database:Provider"] ?? "PostgreSql";
 
         var options = new DbContextOptionsBuilder<ApplicationDbContext>();
         if (string.Equals(provider, "SqlServer", StringComparison.OrdinalIgnoreCase))
@@ -31,5 +42,22 @@ public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Ap
         }
 
         return new ApplicationDbContext(options.Options);
+    }
+
+    private static string FindWebProjectDirectory()
+    {
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var candidates = new[]
+        {
+            currentDirectory,
+            Path.Combine(currentDirectory, "src", "HamrahKolie.Web"),
+            Path.GetFullPath(Path.Combine(currentDirectory, "..", "HamrahKolie.Web")),
+        };
+
+        var directory = candidates.FirstOrDefault(candidate =>
+            File.Exists(Path.Combine(candidate, "appsettings.json")));
+
+        return directory
+            ?? throw new DirectoryNotFoundException("Could not locate the HamrahKolie.Web configuration directory.");
     }
 }

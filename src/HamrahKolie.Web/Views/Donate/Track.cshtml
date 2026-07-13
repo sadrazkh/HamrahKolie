@@ -1,0 +1,54 @@
+@using HamrahKolie.Domain.Enums
+@model HamrahKolie.Web.ViewModels.TrackDonationViewModel
+@{
+    ViewData["Title"] = "پیگیری کمک";
+    var faCulture = new System.Globalization.CultureInfo("fa-IR");
+    string StatusText(PaymentStatus s) => s switch
+    {
+        PaymentStatus.Succeeded => "پرداخت‌شده / تأییدشده",
+        PaymentStatus.Pending => "در انتظار",
+        PaymentStatus.Failed => "ناموفق",
+        PaymentStatus.Canceled => "لغوشده",
+        PaymentStatus.Refunded => "بازپرداخت‌شده",
+        _ => s.ToString()
+    };
+}
+<section class="section">
+    <div class="container" style="max-width:520px">
+        <h1>پیگیری کمک</h1>
+        <div class="card">
+            <form asp-action="Track" method="post">
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    <label class="form-label">کد پیگیری</label>
+                    <input class="form-control" asp-for="TrackingCode" dir="ltr" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">شماره موبایل</label>
+                    <input class="form-control" asp-for="Mobile" dir="ltr" placeholder="09xxxxxxxxx" required />
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">پیگیری</button>
+            </form>
+
+            @if (Model.Searched)
+            {
+                @if (Model.Result is null)
+                {
+                    <div class="alert alert-warning" style="margin-top:1rem">کمکی با این مشخصات یافت نشد.</div>
+                }
+                else
+                {
+                    <div style="margin-top:1rem;border-top:1px solid var(--c-border);padding-top:1rem">
+                        <div class="d-flex justify-between"><span class="text-muted">مبلغ</span><strong>@Model.Result.Amount.ToString("N0", faCulture) تومان</strong></div>
+                        <div class="d-flex justify-between"><span class="text-muted">روش</span><strong>@(Model.Result.Method == PaymentMethod.Online ? "آنلاین" : "آفلاین")</strong></div>
+                        <div class="d-flex justify-between"><span class="text-muted">وضعیت</span><strong>@StatusText(Model.Result.Status)</strong></div>
+                        @if (Model.Result.Campaign != null)
+                        {
+                            <div class="d-flex justify-between"><span class="text-muted">کمپین</span><strong>@Model.Result.Campaign.Title</strong></div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>

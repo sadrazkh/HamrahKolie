@@ -28,16 +28,20 @@ public class HomeController : Controller
         try
         {
             vm.Sections = await _pageBuilder.GetVisibleAsync("home");
-            // فهرست مطالب فقط زمانی لازم است که سکشنی تعریف نشده و از طرح ثابت استفاده می‌شود.
-            if (vm.Sections.Count == 0)
-            {
-                vm.LatestNews = await _content.GetLatestPublishedAsync(ContentType.News, 3);
-                vm.LatestArticles = await _content.GetLatestPublishedAsync(ContentType.Article, 3);
-            }
         }
         catch
         {
-            // اگر پایگاه داده در دسترس نباشد، صفحه اصلی با طرح ثابت پیش‌فرض نمایش داده می‌شود.
+            // اگر صفحه‌ساز در دسترس نباشد، پوستهٔ ثابت با محتوای پیش‌فرض نمایش داده می‌شود.
+        }
+
+        try
+        {
+            vm.LatestNews = await _content.GetLatestPublishedAsync(ContentType.News, 3);
+            vm.LatestArticles = await _content.GetLatestPublishedAsync(ContentType.Article, 3);
+        }
+        catch
+        {
+            // نبود محتوای خبری مانع نمایش صفحهٔ اصلی نمی‌شود.
         }
         return View(vm);
     }
@@ -54,17 +58,9 @@ public class HomeController : Controller
         return View();
     }
 
-    public IActionResult Campaigns()
-    {
-        ViewData["Title"] = "کمپین‌ها";
-        return View();
-    }
+    public IActionResult Campaigns() => RedirectToActionPermanent("Index", "Campaigns");
 
-    public IActionResult Donate()
-    {
-        ViewData["Title"] = "حمایت مالی";
-        return View();
-    }
+    public IActionResult Donate() => RedirectToActionPermanent("Index", "Donate");
 
     public IActionResult Contact()
     {

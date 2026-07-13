@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "درگاه پرداخت آزمایشی";
+    var authority = ViewData["Authority"] as string;
+    var amount = (decimal)(ViewData["Amount"] ?? 0m);
+    var tracking = ViewData["Tracking"] as string;
+    var faCulture = new System.Globalization.CultureInfo("fa-IR");
+}
+<section class="section">
+    <div class="container" style="max-width:480px">
+        <div class="card text-center">
+            <div class="alert alert-warning">این یک درگاه <strong>آزمایشی</strong> است. هیچ پول واقعی جابه‌جا نمی‌شود.</div>
+            <h1 style="font-size:1.4rem">پرداخت مبلغ</h1>
+            <div style="font-size:2rem;font-weight:800;color:var(--c-primary-600);margin:1rem 0">
+                @amount.ToString("N0", faCulture) <span style="font-size:1rem">تومان</span>
+            </div>
+            <p class="text-muted">کد پیگیری: <span dir="ltr">@tracking</span></p>
+
+            <div class="d-flex gap-2" style="margin-top:1.5rem">
+                <a class="btn btn-primary btn-lg btn-block" href="/payment/callback?authority=@Uri.EscapeDataString(authority ?? "")&status=OK">
+                    ✔ پرداخت موفق
+                </a>
+                <a class="btn btn-outline btn-lg btn-block" href="/payment/callback?authority=@Uri.EscapeDataString(authority ?? "")&status=NOK">
+                    ✕ انصراف / ناموفق
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

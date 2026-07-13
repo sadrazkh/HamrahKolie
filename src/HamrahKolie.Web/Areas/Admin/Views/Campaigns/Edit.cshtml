@@ -1,0 +1,123 @@
+@inject HamrahKolie.Web.Infrastructure.Vite.ViteManifestService Vite
+@using HamrahKolie.Domain.Enums
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model HamrahKolie.Web.Areas.Admin.ViewModels.CampaignInput
+@{
+    var isNew = Model.Id == 0;
+    ViewData["Title"] = isNew ? "کمپین جدید" : "ویرایش کمپین";
+    var media = ViewBag.Media as List<SelectListItem> ?? new();
+    var action = isNew ? "Create" : "Edit";
+    var faCulture = new System.Globalization.CultureInfo("fa-IR");
+}
+@section Styles {
+    @foreach (var css in Vite.GetStylePaths("src/admin.ts")) { <link rel="stylesheet" href="@css" /> }
+}
+
+<form asp-action="@action" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
+
+    <div class="grid" style="grid-template-columns: 1fr 300px; gap:1.5rem; align-items:start">
+        <div class="stack">
+            <div class="card">
+                <div class="form-group">
+                    <label class="form-label" asp-for="Title">عنوان</label>
+                    <input class="form-control" asp-for="Title" />
+                    <span class="field-validation-error" asp-validation-for="Title"></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="Slug">نامک (اختیاری)</label>
+                    <input class="form-control" asp-for="Slug" dir="ltr" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="ShortDescription">توضیح کوتاه</label>
+                    <textarea class="form-control" asp-for="ShortDescription" rows="2"></textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <label class="form-label">توضیح کامل</label>
+                <div data-editor-target="Description"></div>
+                <textarea id="Description" name="Description" style="display:none">@Model.Description</textarea>
+            </div>
+
+            <div class="card">
+                <h3 class="mt-0">جزئیات</h3>
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label" asp-for="Province">استان</label>
+                        <input class="form-control" asp-for="Province" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" asp-for="City">شهر</label>
+                        <input class="form-control" asp-for="City" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" asp-for="NeedType">نوع نیاز</label>
+                    <input class="form-control" asp-for="NeedType" placeholder="مثلاً حمل‌ونقل، دارو" />
+                </div>
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label" asp-for="StartDate">تاریخ شروع</label>
+                        <input class="form-control" asp-for="StartDate" type="datetime-local" dir="ltr" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" asp-for="EndDate">تاریخ پایان</label>
+                        <input class="form-control" asp-for="EndDate" type="datetime-local" dir="ltr" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stack">
+            <div class="card">
+                <h3 class="mt-0">انتشار</h3>
+                <div class="form-group">
+                    <label class="form-label" asp-for="Status">وضعیت</label>
+                    <select class="form-control" asp-for="Status" asp-items="Html.GetEnumSelectList<CampaignStatus>()"></select>
+                </div>
+                <label class="d-flex items-center gap-2" style="font-weight:600;margin-bottom:.5rem">
+                    <input type="checkbox" asp-for="IsUrgent" /> کمپین فوری
+                </label>
+                <label class="d-flex items-center gap-2" style="font-weight:600">
+                    <input type="checkbox" asp-for="ShowExactAmount" /> نمایش مبلغ دقیق
+                </label>
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top:1rem">ذخیره</button>
+            </div>
+
+            <div class="card">
+                <h3 class="mt-0">مالی</h3>
+                <div class="form-group">
+                    <label class="form-label" asp-for="GoalAmount">مبلغ هدف (تومان)</label>
+                    <input class="form-control" asp-for="GoalAmount" type="number" dir="ltr" />
+                </div>
+                @if (!isNew)
+                {
+                    <p class="text-muted mb-0">جمع‌آوری‌شده: <strong>@Model.CollectedAmount.ToString("N0", faCulture)</strong> — حامیان: <strong>@Model.SupporterCount.ToString(faCulture)</strong></p>
+                }
+                <div class="grid grid-2" style="margin-top:.6rem">
+                    <div class="form-group"><label class="form-label" asp-for="MinDonation">حداقل کمک</label><input class="form-control" asp-for="MinDonation" type="number" dir="ltr" /></div>
+                    <div class="form-group"><label class="form-label" asp-for="MaxDonation">حداکثر کمک</label><input class="form-control" asp-for="MaxDonation" type="number" dir="ltr" /></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="mt-0">تصویر شاخص</h3>
+                <select class="form-control" asp-for="FeaturedImageId">
+                    <option value="">— بدون تصویر —</option>
+                    @foreach (var m in media)
+                    {
+                        <option value="@m.Value" selected="@(Model.FeaturedImageId?.ToString() == m.Value)">@m.Text</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{ var adminScript = Vite.GetScriptPath("src/admin.ts"); }
+    @if (adminScript is not null) { <script type="module" src="@adminScript"></script> }
+}

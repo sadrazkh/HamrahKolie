@@ -31,6 +31,14 @@ public class ApplicationDbContext : IdentityDbContext<
     public DbSet<MenuItem> MenuItems => Set<MenuItem>();
     public DbSet<PageSection> PageSections => Set<PageSection>();
 
+    // ── کمپین و کمک مالی ─────────────────────────────────────────
+    public DbSet<Campaign> Campaigns => Set<Campaign>();
+    public DbSet<CampaignUpdate> CampaignUpdates => Set<CampaignUpdate>();
+    public DbSet<Donor> Donors => Set<Donor>();
+    public DbSet<Donation> Donations => Set<Donation>();
+    public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<OfflinePayment> OfflinePayments => Set<OfflinePayment>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

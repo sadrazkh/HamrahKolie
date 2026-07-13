@@ -1,0 +1,21 @@
+@model HamrahKolie.Domain.Entities.Donation
+@{
+    ViewData["Title"] = "پرداخت ناموفق";
+}
+<section class="section">
+    <div class="container text-center" style="max-width:520px">
+        <div class="card">
+            <div style="font-size:3rem">⚠️</div>
+            <h1>پرداخت انجام نشد</h1>
+            <p class="lead">متأسفیم؛ پرداخت شما تکمیل نشد. مبلغی از حساب شما کسر نشده است.</p>
+            @if (Model != null)
+            {
+                <p class="text-muted">کد پیگیری: <span dir="ltr">@Model.TrackingCode</span></p>
+            }
+            <div class="d-flex gap-2 justify-center" style="margin-top:1rem">
+                <a class="btn btn-primary" href="/donate">تلاش دوباره</a>
+                <a class="btn btn-outline" href="/">بازگشت به خانه</a>
+            </div>
+        </div>
+    </div>
+</section>

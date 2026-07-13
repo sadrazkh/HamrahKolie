@@ -31,6 +31,32 @@ public static class DbSeeder
         await SeedSettingsAsync(db, ct);
         await SeedSuperAdminAsync(userManager, config, logger, ct);
         await SeedCmsAsync(db, ct);
+        await SeedCampaignsAsync(db, ct);
+    }
+
+    private static async Task SeedCampaignsAsync(ApplicationDbContext db, CancellationToken ct)
+    {
+        if (await db.Campaigns.AnyAsync(ct)) return;
+
+        var now = DateTime.UtcNow;
+        db.Campaigns.Add(new Campaign
+        {
+            Title = "تأمین هزینه رفت‌وآمد بیماران دیالیزی روستایی",
+            Slug = "raftamad-bimaran-roostaei",
+            ShortDescription = "کمک به تأمین هزینه ایاب‌وذهاب بیمارانی که هفته‌ای چند بار مسیری طولانی تا مرکز دیالیز طی می‌کنند.",
+            Description = "<p>بسیاری از بیماران دیالیزی روستایی برای هر جلسه درمان، مسیری طولانی و پرهزینه را طی می‌کنند. این کمپین برای سبک‌تر کردن این بار برپا شده است. مشارکت شما مستقیماً صرف کاهش هزینه رفت‌وآمد بیماران می‌شود.</p>",
+            GoalAmount = 200_000_000,
+            CollectedAmount = 0,
+            SupporterCount = 0,
+            Status = CampaignStatus.Active,
+            IsUrgent = true,
+            Province = "کرمانشاه",
+            NeedType = "حمل‌ونقل",
+            StartDate = now.AddDays(-3),
+            ShowExactAmount = true,
+            Seo = new Domain.Entities.SeoMetadata { MetaDescription = "کمپین تأمین هزینه رفت‌وآمد بیماران دیالیزی روستایی" }
+        });
+        await db.SaveChangesAsync(ct);
     }
 
     /// <summary>

@@ -1,8 +1,47 @@
 @inject HamrahKolie.Web.Infrastructure.Vite.ViteManifestService Vite
+@using HamrahKolie.Application.PageBuilder
+@using HamrahKolie.Domain.Enums
 @model HamrahKolie.Web.ViewModels.HomeViewModel
 @{
     ViewData["Title"] = null;
     ViewData["MetaDescription"] = "همراه کلیه؛ مؤسسه خیریه حمایت از بیماران دیالیزی مناطق محروم. از روستا تا زندگی، مسیر درمان را با هم هموار می‌کنیم.";
+
+    // صفحه‌ساز فقط محتوا را تأمین می‌کند؛ پوستهٔ تصویری صفحهٔ اصلی همیشه ثابت می‌ماند.
+    var heroSection = Model.Sections.FirstOrDefault(x => x.Type == SectionType.Hero);
+    var featureSection = Model.Sections.FirstOrDefault(x => x.Type == SectionType.FeatureCards);
+    var statsSection = Model.Sections.FirstOrDefault(x => x.Type == SectionType.Stats);
+    var stepsSection = Model.Sections.FirstOrDefault(x => x.Type == SectionType.Steps);
+    var latestSection = Model.Sections.FirstOrDefault(x => x.Type == SectionType.LatestContent);
+    var calloutSection = Model.Sections.FirstOrDefault(x => x.Type == SectionType.CallToAction);
+
+    var heroTitle = heroSection?.Title ?? "از روستا تا زندگی";
+    var heroSubtitle = heroSection?.Subtitle ?? "با حمایت شما، مسیر سخت درمان را هموار می‌کنیم تا بیماران دیالیزی مناطق محروم با آرامش بیشتری به درمان و زندگی در کنار خانواده ادامه دهند.";
+    var heroImage = heroSection?.Image?.Url ?? Url.Content("~/img/home-journey-hero.png");
+    var primaryText = string.IsNullOrWhiteSpace(heroSection?.ButtonText) ? "حمایت مالی" : heroSection!.ButtonText!.Replace("❤", "").Trim();
+    var primaryUrl = string.IsNullOrWhiteSpace(heroSection?.ButtonUrl) ? Url.Action("Donate", "Home") : heroSection!.ButtonUrl;
+    var secondaryText = string.IsNullOrWhiteSpace(heroSection?.SecondaryButtonText) ? "آشنایی با فعالیت‌ها" : heroSection!.SecondaryButtonText;
+    var secondaryUrl = string.IsNullOrWhiteSpace(heroSection?.SecondaryButtonUrl) ? Url.Action("Services", "Home") : heroSection!.SecondaryButtonUrl;
+
+    var featureCards = featureSection?.GetCards() ?? new[]
+    {
+        new CardItem("فاصله و مسیر سخت", "رفت‌وآمد چندباره در هفته به مراکز شهری، زمان و توان بیمار و خانواده را می‌گیرد."),
+        new CardItem("هزینه‌های پیوسته", "دارو، آزمایش، تغذیه و ایاب‌وذهاب، فشار سنگینی بر اقتصاد خانواده وارد می‌کند."),
+        new CardItem("فرسودگی خانواده", "ادامه درمان، علاوه بر کمک مالی، به دلگرمی و یک شبکهٔ حمایت انسانی نیاز دارد.")
+    };
+    var stats = statsSection?.GetStats() ?? new[]
+    {
+        new StatItem("۱۲۰", "بیمار تحت حمایت"),
+        new StatItem("۴۵", "روستای تحت پوشش"),
+        new StatItem("۱۸٬۰۰۰", "جلسه دیالیز حمایت‌شده"),
+        new StatItem("۳۵۰", "خیر همراه")
+    };
+    var steps = stepsSection?.GetCards() ?? new[]
+    {
+        new CardItem("شناسایی بیمار", "معرفی از سوی مراکز درمانی و مددکاران محلی"),
+        new CardItem("بررسی و تأیید", "ارزیابی پزشکی و مددکاری با حفظ کرامت بیمار"),
+        new CardItem("تأمین حمایت", "پیوند کمک خیرین با نیازهای درمانی و رفت‌وآمد"),
+        new CardItem("تداوم درمان", "پیگیری منظم تا بیمار مسیر درمان را تنها طی نکند")
+    };
 }
 
 @section Styles {
@@ -13,20 +52,9 @@
     }
 }
 
-@if (Model.Sections.Any())
-{
-    @* اگر در «صفحه‌ساز» سکشن تعریف شده باشد، صفحه اصلی از روی آن رندر می‌شود *@
-    foreach (var section in Model.Sections)
-    {
-        <partial name="_PageSection" model="section" />
-    }
-}
-else
-{
-
 <section class="home-hero" aria-labelledby="home-hero-title">
     <img class="home-hero__image"
-         src="~/img/home-journey-hero.png"
+         src="@heroImage"
          alt="مسیر یک خانواده روستایی تا مرکز دیالیز"
          width="1536"
          height="1024"
@@ -41,21 +69,24 @@ else
                 <span aria-hidden="true"></span>
             </p>
             <h1 id="home-hero-title">
-                از <span class="home-hero__green">روستا</span>
-                تا <span class="home-hero__blue">زندگی</span>
+                @if (heroTitle == "از روستا تا زندگی")
+                {
+                    <text>از <span class="home-hero__green">روستا</span> تا <span class="home-hero__blue">زندگی</span></text>
+                }
+                else
+                {
+                    @heroTitle
+                }
             </h1>
-            <p class="home-hero__lead">
-                با حمایت شما، مسیر سخت درمان را هموار می‌کنیم تا بیماران دیالیزی مناطق محروم
-                با آرامش بیشتری به درمان و زندگی در کنار خانواده ادامه دهند.
-            </p>
+            <p class="home-hero__lead">@heroSubtitle</p>
 
             <div class="home-hero__actions">
-                <a class="btn btn-primary btn-lg home-hero__primary" asp-action="Donate">
+                <a class="btn btn-primary btn-lg home-hero__primary" href="@primaryUrl">
                     <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.7-7.5 1.1-1.1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
-                    حمایت مالی
+                    @primaryText
                 </a>
-                <a class="btn btn-lg home-hero__secondary" asp-action="Services">
-                    آشنایی با فعالیت‌ها
+                <a class="btn btn-lg home-hero__secondary" href="@secondaryUrl">
+                    @secondaryText
                     <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.8 3.2c-5 .2-8.3 2.1-9.8 5.8-1.1 2.7-.7 5.1-.3 6.5M3.5 20.5c2.4-4.8 5.9-7.8 10.7-9.3M4 4.5c4.4.2 7.1 1.8 8.4 4.7"/></svg>
                 </a>
             </div>
@@ -70,13 +101,12 @@ else
 
     <div class="container home-hero__stats-wrap">
         <div class="impact-stats" aria-label="آمار فعالیت‌های همراه کلیه">
-            <div id="island-stats"
-                 data-stats='[{"value":120,"label":"بیمار تحت حمایت"},{"value":45,"label":"روستای تحت پوشش"},{"value":18000,"label":"جلسه دیالیز حمایت‌شده"},{"value":350,"label":"خیر همراه"}]'>
+            <div class="home-impact-stats">
                 <div class="grid grid-4">
-                    <div class="stat"><div class="stat-value">۱۲۰</div><div class="stat-label">بیمار تحت حمایت</div></div>
-                    <div class="stat"><div class="stat-value">۴۵</div><div class="stat-label">روستای تحت پوشش</div></div>
-                    <div class="stat"><div class="stat-value">۱۸٬۰۰۰</div><div class="stat-label">جلسه دیالیز حمایت‌شده</div></div>
-                    <div class="stat"><div class="stat-value">۳۵۰</div><div class="stat-label">خیر همراه</div></div>
+                    @foreach (var stat in stats)
+                    {
+                        <div class="stat"><div class="stat-value">@stat.Value</div><div class="stat-label">@stat.Label</div></div>
+                    }
                 </div>
             </div>
         </div>
@@ -87,37 +117,35 @@ else
     <div class="container">
         <div class="home-heading">
             <p class="home-kicker">یک مسیر، چند مانع جدی</p>
-            <h2 id="needs-title">چرا این همراهی حیاتی است؟</h2>
-            <p>دیالیز درمانی مداوم است؛ اما برای یک بیمار روستایی، رسیدن به درمان گاهی از خود درمان دشوارتر می‌شود.</p>
+            <h2 id="needs-title">@(featureSection?.Title ?? "چرا این همراهی حیاتی است؟")</h2>
+            <p>@(featureSection?.Subtitle ?? "دیالیز درمانی مداوم است؛ اما برای یک بیمار روستایی، رسیدن به درمان گاهی از خود درمان دشوارتر می‌شود.")</p>
         </div>
 
         <div class="home-needs__grid">
-            <article class="need-card need-card--route">
-                <div class="need-card__icon" aria-hidden="true">
-                    <svg viewBox="0 0 48 48"><path d="M7 37c6-11 11-16 18-16 6 0 8-5 16-13M34 8h7v7M9 37h.1M20 26h.1M31 17h.1"/></svg>
-                </div>
-                <span class="need-card__number">۰۱</span>
-                <h3>فاصله و مسیر سخت</h3>
-                <p>رفت‌وآمد چندباره در هفته به مراکز شهری، زمان و توان بیمار و خانواده را می‌گیرد.</p>
-            </article>
-
-            <article class="need-card need-card--cost">
-                <div class="need-card__icon" aria-hidden="true">
-                    <svg viewBox="0 0 48 48"><path d="M8 15h32v24H8zM8 20h32M31 31h5M13 10h22"/></svg>
-                </div>
-                <span class="need-card__number">۰۲</span>
-                <h3>هزینه‌های پیوسته</h3>
-                <p>دارو، آزمایش، تغذیه و ایاب‌وذهاب، فشار سنگینی بر اقتصاد خانواده وارد می‌کند.</p>
-            </article>
-
-            <article class="need-card need-card--care">
-                <div class="need-card__icon" aria-hidden="true">
-                    <svg viewBox="0 0 48 48"><path d="M24 40S7 31 7 18a9 9 0 0 1 16-5 9 9 0 0 1 18 5c0 13-17 22-17 22Z"/></svg>
-                </div>
-                <span class="need-card__number">۰۳</span>
-                <h3>فرسودگی خانواده</h3>
-                <p>ادامه درمان، علاوه بر کمک مالی، به دلگرمی و یک شبکهٔ حمایت انسانی نیاز دارد.</p>
-            </article>
+            @for (var cardIndex = 0; cardIndex < featureCards.Count; cardIndex++)
+            {
+                var card = featureCards[cardIndex];
+                var cardClass = cardIndex % 3 == 0 ? "need-card--route" : cardIndex % 3 == 1 ? "need-card--cost" : "need-card--care";
+                <article class="need-card @cardClass">
+                    <div class="need-card__icon" aria-hidden="true">
+                        @if (cardIndex % 3 == 0)
+                        {
+                            <svg viewBox="0 0 48 48"><path d="M7 37c6-11 11-16 18-16 6 0 8-5 16-13M34 8h7v7M9 37h.1M20 26h.1M31 17h.1"/></svg>
+                        }
+                        else if (cardIndex % 3 == 1)
+                        {
+                            <svg viewBox="0 0 48 48"><path d="M8 15h32v24H8zM8 20h32M31 31h5M13 10h22"/></svg>
+                        }
+                        else
+                        {
+                            <svg viewBox="0 0 48 48"><path d="M24 40S7 31 7 18a9 9 0 0 1 16-5 9 9 0 0 1 18 5c0 13-17 22-17 22Z"/></svg>
+                        }
+                    </div>
+                    <span class="need-card__number">@((cardIndex + 1).ToString("00", System.Globalization.CultureInfo.GetCultureInfo("fa-IR")))</span>
+                    <h3>@card.Title</h3>
+                    <p>@card.Text</p>
+                </article>
+            }
         </div>
     </div>
 </section>
@@ -126,8 +154,8 @@ else
     <div class="container home-path__layout">
         <div class="home-path__intro">
             <p class="home-kicker">از شناسایی تا بازگشت به زندگی</p>
-            <h2 id="path-title">کمک شما چطور به بیمار می‌رسد؟</h2>
-            <p>هر حمایت از یک مسیر شفاف عبور می‌کند تا درست در جایی قرار بگیرد که بیشترین اثر را دارد.</p>
+            <h2 id="path-title">@(stepsSection?.Title ?? "کمک شما چطور به بیمار می‌رسد؟")</h2>
+            <p>@(stepsSection?.Subtitle ?? "هر حمایت از یک مسیر شفاف عبور می‌کند تا درست در جایی قرار بگیرد که بیشترین اثر را دارد.")</p>
             <a class="home-text-link" asp-action="Services">
                 جزئیات فعالیت‌های ما
                 <span aria-hidden="true">←</span>
@@ -135,35 +163,32 @@ else
         </div>
 
         <ol class="home-path__steps">
-            <li>
-                <span class="home-path__step-number">۱</span>
-                <div><h3>شناسایی بیمار</h3><p>معرفی از سوی مراکز درمانی و مددکاران محلی</p></div>
-            </li>
-            <li>
-                <span class="home-path__step-number">۲</span>
-                <div><h3>بررسی و تأیید</h3><p>ارزیابی پزشکی و مددکاری با حفظ کرامت بیمار</p></div>
-            </li>
-            <li>
-                <span class="home-path__step-number">۳</span>
-                <div><h3>تأمین حمایت</h3><p>پیوند کمک خیرین با نیازهای درمانی و رفت‌وآمد</p></div>
-            </li>
-            <li>
-                <span class="home-path__step-number">۴</span>
-                <div><h3>تداوم درمان</h3><p>پیگیری منظم تا بیمار مسیر درمان را تنها طی نکند</p></div>
-            </li>
+            @for (var stepIndex = 0; stepIndex < steps.Count; stepIndex++)
+            {
+                var step = steps[stepIndex];
+                <li>
+                    <span class="home-path__step-number">@((stepIndex + 1).ToString(System.Globalization.CultureInfo.GetCultureInfo("fa-IR")))</span>
+                    <div><h3>@step.Title</h3><p>@step.Text</p></div>
+                </li>
+            }
         </ol>
     </div>
 </section>
+
+@foreach (var richTextSection in Model.Sections.Where(x => x.Type == SectionType.RichText))
+{
+    <partial name="_PageSection" model="richTextSection" />
+}
 
 <section class="home-callout" aria-labelledby="callout-title">
     <div class="container home-callout__inner">
         <div>
             <p class="home-kicker">سهمی در ادامهٔ یک زندگی</p>
-            <h2 id="callout-title">فاصله نباید درمان را متوقف کند.</h2>
-            <p>هر همراهی، بخشی از مسیر یک بیمار تا مرکز درمان را کوتاه‌تر می‌کند.</p>
+            <h2 id="callout-title">@(calloutSection?.Title ?? "فاصله نباید درمان را متوقف کند.")</h2>
+            <p>@(calloutSection?.Subtitle ?? "هر همراهی، بخشی از مسیر یک بیمار تا مرکز درمان را کوتاه‌تر می‌کند.")</p>
         </div>
-        <a class="btn btn-lg home-callout__button" asp-action="Donate">
-            همین حالا همراه شوید
+        <a class="btn btn-lg home-callout__button" href="@(calloutSection?.ButtonUrl ?? Url.Action("Donate", "Home"))">
+            @(calloutSection?.ButtonText ?? "همین حالا همراه شوید")
             <span aria-hidden="true">←</span>
         </a>
     </div>
@@ -176,7 +201,7 @@ else
             <div class="home-news__heading">
                 <div>
                     <p class="home-kicker">روایت همراهی</p>
-                    <h2 id="news-title">آخرین اخبار و مطالب</h2>
+                    <h2 id="news-title">@(latestSection?.Title ?? "آخرین اخبار و مطالب")</h2>
                 </div>
                 <a class="home-text-link" href="/news">مشاهده همه اخبار <span aria-hidden="true">←</span></a>
             </div>
@@ -203,8 +228,6 @@ else
         </div>
     </section>
 }
-
-} @* پایان طرح ثابت پیش‌فرض *@
 
 @section Scripts {
     @{ var islandScript = Vite.GetScriptPath("src/main.ts"); }

@@ -12,12 +12,43 @@ namespace HamrahKolie.Web.Areas.Admin.Controllers;
 public class DashboardController : Controller
 {
     private readonly ApplicationDbContext _db;
+    private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _configuration;
 
-    public DashboardController(ApplicationDbContext db) => _db = db;
+    public DashboardController(
+        ApplicationDbContext db,
+        IWebHostEnvironment environment,
+        IConfiguration configuration)
+    {
+        _db = db;
+        _environment = environment;
+        _configuration = configuration;
+    }
 
     public async Task<IActionResult> Index()
     {
         ViewData["Title"] = "داشبورد";
+
+        if (_environment.IsDevelopment()
+            && _configuration.GetValue<bool>("PresentationMode:Enabled")
+            && User.HasClaim("presentation_mode", "true"))
+        {
+            return View(new DashboardViewModel
+            {
+                UsersCount = 24,
+                RolesCount = Roles.All.Count,
+                PermissionsCount = Permissions.All.Count,
+                SettingsCount = 8,
+                AuditLogsToday = 12,
+                RecentAudits = new[]
+                {
+                    new RecentAuditItem(DateTime.UtcNow.AddMinutes(-8), "Content.Published", "مدیر نسخه نمایشی", "انتشار مطلب نمونه"),
+                    new RecentAuditItem(DateTime.UtcNow.AddMinutes(-21), "Media.Uploaded", "مدیر محتوا", "بارگذاری تصویر کمپین"),
+                    new RecentAuditItem(DateTime.UtcNow.AddHours(-1), "User.RoleChanged", "مدیر نسخه نمایشی", "تغییر نقش کاربر نمونه"),
+                },
+            });
+        }
+
         var today = DateTime.UtcNow.Date;
 
         var vm = new DashboardViewModel

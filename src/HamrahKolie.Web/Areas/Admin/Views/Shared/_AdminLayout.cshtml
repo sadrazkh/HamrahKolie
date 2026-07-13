@@ -42,8 +42,8 @@
                 @if (Can(Permissions.CampaignView) || Can(Permissions.DonationView))
                 {
                     <li class="nav-group-title">مالی و کمپین</li>
-                    @if (Can(Permissions.CampaignView)) { <li><a href="#">کمپین‌ها <span class="badge badge-primary">به‌زودی</span></a></li> }
-                    @if (Can(Permissions.DonationView)) { <li><a href="#">کمک‌ها <span class="badge badge-primary">به‌زودی</span></a></li> }
+                    @if (Can(Permissions.CampaignView)) { <li><a asp-area="Admin" asp-controller="Campaign" asp-action="Index">کمپین‌ها</a></li> }
+                    @if (Can(Permissions.DonationView)) { <li><a asp-area="Admin" asp-controller="Donations" asp-action="Index">کمک‌ها</a></li> }
                 }
 
                 @if (Can(Permissions.SupportRequestView) || Can(Permissions.VolunteerView) || Can(Permissions.CenterView))
