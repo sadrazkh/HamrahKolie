@@ -39,6 +39,12 @@ public class ApplicationDbContext : IdentityDbContext<
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<OfflinePayment> OfflinePayments => Set<OfflinePayment>();
 
+    // ── درخواست حمایت ────────────────────────────────────────────
+    public DbSet<SupportRequest> SupportRequests => Set<SupportRequest>();
+    public DbSet<SupportRequestDocument> SupportRequestDocuments => Set<SupportRequestDocument>();
+    public DbSet<SupportRequestStatusHistory> SupportRequestStatusHistory => Set<SupportRequestStatusHistory>();
+    public DbSet<SupportRequestMessage> SupportRequestMessages => Set<SupportRequestMessage>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

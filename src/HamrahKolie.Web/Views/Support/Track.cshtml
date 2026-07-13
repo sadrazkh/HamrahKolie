@@ -1,0 +1,58 @@
+@model HamrahKolie.Web.ViewModels.SupportTrackViewModel
+@{
+    ViewData["Title"] = "پیگیری درخواست";
+}
+<section class="section">
+    <div class="container" style="max-width:480px">
+        <h1>پیگیری درخواست حمایت</h1>
+
+        @if (!string.IsNullOrEmpty(Model.Error))
+        {
+            <div class="alert alert-danger">@Model.Error</div>
+        }
+
+        @if (Model.Step == "otp")
+        {
+            <div class="card">
+                <p>کد تأیید برای شماره <span dir="ltr">@Model.Mobile</span> ارسال شد. آن را وارد کنید.</p>
+                @if (!string.IsNullOrEmpty(Model.DevCode))
+                {
+                    <div class="alert alert-info">کد در حالت توسعه: <strong dir="ltr">@Model.DevCode</strong> (در نسخه نهایی با پیامک ارسال می‌شود)</div>
+                }
+                <form asp-action="VerifyOtp" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="TrackingCode" />
+                    <input type="hidden" asp-for="Mobile" />
+                    <div class="form-group">
+                        <label class="form-label">کد تأیید</label>
+                        <input class="form-control" name="code" dir="ltr" inputmode="numeric" maxlength="5" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">تأیید و مشاهده</button>
+                </form>
+                <form asp-action="SendOtp" method="post" style="margin-top:.5rem">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="TrackingCode" />
+                    <input type="hidden" asp-for="Mobile" />
+                    <button type="submit" class="btn btn-ghost btn-block">ارسال دوباره کد</button>
+                </form>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <form asp-action="SendOtp" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="form-group">
+                        <label class="form-label">کد پیگیری</label>
+                        <input class="form-control" asp-for="TrackingCode" dir="ltr" placeholder="SRXXXXXXXX" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">شماره موبایل</label>
+                        <input class="form-control" asp-for="Mobile" dir="ltr" placeholder="09xxxxxxxxx" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">دریافت کد تأیید</button>
+                </form>
+            </div>
+        }
+    </div>
+</section>

@@ -1,0 +1,19 @@
+@model string
+@{
+    ViewData["Title"] = "درخواست ثبت شد";
+}
+<section class="section">
+    <div class="container text-center" style="max-width:560px">
+        <div class="card">
+            <div style="font-size:3rem">📝</div>
+            <h1>درخواست شما ثبت شد</h1>
+            <p class="lead">کد پیگیری خود را یادداشت کنید. برای مشاهده وضعیت، به آن نیاز دارید.</p>
+            <div style="font-size:2rem;font-weight:800;color:var(--c-primary-600);letter-spacing:2px;margin:1rem 0" dir="ltr">@Model</div>
+            <p class="text-muted">کارشناسان ما درخواست شما را بررسی می‌کنند و در صورت نیاز از طریق همین سامانه با شما در ارتباط خواهند بود.</p>
+            <div class="d-flex gap-2 justify-center" style="margin-top:1rem">
+                <a class="btn btn-primary" href="/support/track">پیگیری درخواست</a>
+                <a class="btn btn-outline" href="/">بازگشت به خانه</a>
+            </div>
+        </div>
+    </div>
+</section>

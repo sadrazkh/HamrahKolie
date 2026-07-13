@@ -1,0 +1,88 @@
+@using HamrahKolie.Domain.Enums
+@model HamrahKolie.Application.SupportRequests.SupportRequestInput
+@{
+    ViewData["Title"] = "درخواست حمایت";
+}
+<section class="section">
+    <div class="container" style="max-width:720px">
+        <h1>درخواست حمایت</h1>
+        <p class="lead">برای ثبت درخواست نیازی به ساخت حساب نیست. پس از ثبت، یک «کد پیگیری» دریافت می‌کنید.</p>
+
+        <div class="card">
+            <form asp-action="Request" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
+
+                <h3 class="mt-0">اطلاعات متقاضی</h3>
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">نام و نام خانوادگی بیمار</label>
+                        <input class="form-control" asp-for="ApplicantName" />
+                        <span class="field-validation-error" asp-validation-for="ApplicantName"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">شماره موبایل</label>
+                        <input class="form-control" asp-for="Mobile" dir="ltr" placeholder="09xxxxxxxxx" />
+                        <span class="field-validation-error" asp-validation-for="Mobile"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">کد ملی (اختیاری)</label>
+                    <input class="form-control" asp-for="NationalId" dir="ltr" maxlength="10" />
+                    <span class="field-validation-error" asp-validation-for="NationalId"></span>
+                    <p class="form-hint">این اطلاعات محرمانه است و فقط برای کارشناسان مجاز قابل مشاهده خواهد بود.</p>
+                </div>
+
+                <h3>محل سکونت</h3>
+                <div class="grid grid-3">
+                    <div class="form-group"><label class="form-label">استان</label><input class="form-control" asp-for="Province" /></div>
+                    <div class="form-group"><label class="form-label">شهر</label><input class="form-control" asp-for="City" /></div>
+                    <div class="form-group"><label class="form-label">روستا</label><input class="form-control" asp-for="Village" /></div>
+                </div>
+
+                <h3>اطلاعات درمان</h3>
+                <div class="grid grid-2">
+                    <div class="form-group"><label class="form-label">مرکز درمانی</label><input class="form-control" asp-for="TreatmentCenter" /></div>
+                    <div class="form-group"><label class="form-label">پزشک/مددکار معرف</label><input class="form-control" asp-for="ReferredBy" /></div>
+                </div>
+                <div class="grid grid-3">
+                    <div class="form-group">
+                        <label class="form-label">نوع دیالیز</label>
+                        <select class="form-control" asp-for="DialysisType">
+                            <option value="0">نامشخص</option>
+                            <option value="1">همودیالیز</option>
+                            <option value="2">دیالیز صفاقی</option>
+                            <option value="3">سایر</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label class="form-label">تعداد جلسه در هفته</label><input class="form-control" asp-for="SessionsPerWeek" type="number" min="0" max="21" /></div>
+                    <div class="form-group"><label class="form-label">نوع نیاز</label><input class="form-control" asp-for="NeedType" placeholder="دارو، رفت‌وآمد، ..." /></div>
+                </div>
+                <div class="grid grid-3">
+                    <div class="form-group"><label class="form-label">هزینه تخمینی (تومان)</label><input class="form-control" asp-for="EstimatedCost" type="number" dir="ltr" /></div>
+                    <div class="form-group"><label class="form-label">وضعیت بیمه</label><input class="form-control" asp-for="InsuranceStatus" /></div>
+                    <div class="form-group"><label class="form-label">تعداد افراد خانوار</label><input class="form-control" asp-for="HouseholdSize" type="number" min="1" /></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">توضیحات</label>
+                    <textarea class="form-control" asp-for="Description" rows="3"></textarea>
+                </div>
+
+                <div class="alert alert-info">
+                    این سامانه جایگزین پزشک نیست. اطلاعات واردشده صرفاً برای بررسی امکان حمایت استفاده می‌شود.
+                </div>
+
+                <label class="d-flex items-center gap-2" style="font-weight:600;margin-bottom:.6rem">
+                    <input type="checkbox" asp-for="DataProcessingConsent" /> <span>با پردازش اطلاعات خود برای بررسی درخواست موافقم.</span>
+                </label>
+                <span class="field-validation-error" asp-validation-for="DataProcessingConsent"></span>
+                <label class="d-flex items-center gap-2" style="font-weight:600;margin:.6rem 0 1rem">
+                    <input type="checkbox" asp-for="PublicDisclosureConsent" /> <span>با انتشار عمومی داستان من (بدون اطلاعات هویتی) در صورت نیاز موافقم. (اختیاری)</span>
+                </label>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block">ثبت درخواست</button>
+            </form>
+        </div>
+        <p class="text-center" style="margin-top:1rem"><a href="/support/track">قبلاً درخواست ثبت کرده‌ام — پیگیری</a></p>
+    </div>
+</section>

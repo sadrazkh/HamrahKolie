@@ -86,6 +86,15 @@ try
         options.KnownProxies.Clear();
     });
 
+    // نشست (برای ناحیه پیگیری درخواست حمایت پس از تأیید OTP)
+    services.AddSession(o =>
+    {
+        o.IdleTimeout = TimeSpan.FromMinutes(20);
+        o.Cookie.HttpOnly = true;
+        o.Cookie.IsEssential = true;
+        o.Cookie.SameSite = SameSiteMode.Lax;
+    });
+
     // کارایی
     services.AddOutputCache();
     services.AddResponseCompression();
@@ -160,6 +169,7 @@ try
     app.UseRequestLocalization();
     app.UseRouting();
 
+    app.UseSession();
     app.UseRateLimiter();
     app.UseOutputCache();
 

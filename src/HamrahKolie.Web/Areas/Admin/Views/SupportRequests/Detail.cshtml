@@ -1,0 +1,162 @@
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@using HamrahKolie.Web.Helpers
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model SupportRequest
+@{
+    ViewData["Title"] = $"درخواست {Model.TrackingCode}";
+    var faCulture = new System.Globalization.CultureInfo("fa-IR");
+    bool Can(string p) => User.HasClaim("permission", "*") || User.HasClaim("permission", p);
+    var canSensitive = Can(Permissions.SupportRequestViewSensitive);
+    var duplicates = ViewData["Duplicates"] as IReadOnlyList<SupportRequest> ?? new List<SupportRequest>();
+    var assignees = ViewBag.Assignees as List<SelectListItem> ?? new();
+}
+
+<div class="grid" style="grid-template-columns: 1fr 320px; gap:1.5rem; align-items:start">
+    <div class="stack">
+        <div class="card">
+            <div class="d-flex justify-between items-center">
+                <h3 class="mt-0">اطلاعات درخواست</h3>
+                <span class="badge @SupportRequestDisplay.PriorityBadge(Model.Priority)">@SupportRequestDisplay.Priority(Model.Priority)</span>
+            </div>
+            <table class="table">
+                <tr><th>کد پیگیری</th><td dir="ltr">@Model.TrackingCode</td></tr>
+                <tr><th>نام متقاضی</th><td>@Model.ApplicantName</td></tr>
+                <tr><th>موبایل</th><td dir="ltr">@(canSensitive ? Model.Mobile : SupportRequestDisplay.MaskMobile(Model.Mobile))</td></tr>
+                <tr>
+                    <th>کد ملی</th>
+                    <td dir="ltr">
+                        @if (canSensitive) { @(Model.NationalId ?? "—") }
+                        else { <span title="برای مشاهده به دسترسی ویژه نیاز است">@SupportRequestDisplay.MaskNationalId(Model.NationalId)</span> }
+                    </td>
+                </tr>
+                <tr><th>محل</th><td>@Model.Province @Model.City @Model.Village</td></tr>
+                <tr><th>مرکز درمانی</th><td>@(Model.TreatmentCenter ?? "—")</td></tr>
+                <tr><th>معرف</th><td>@(Model.ReferredBy ?? "—")</td></tr>
+                <tr><th>نوع دیالیز</th><td>@SupportRequestDisplay.Dialysis(Model.DialysisType)</td></tr>
+                <tr><th>جلسه در هفته</th><td>@(Model.SessionsPerWeek?.ToString(faCulture) ?? "—")</td></tr>
+                <tr><th>نوع نیاز</th><td>@(Model.NeedType ?? "—")</td></tr>
+                <tr><th>هزینه تخمینی</th><td>@(Model.EstimatedCost?.ToString("N0", faCulture) ?? "—")</td></tr>
+                <tr><th>بیمه</th><td>@(Model.InsuranceStatus ?? "—")</td></tr>
+                <tr><th>افراد خانوار</th><td>@(Model.HouseholdSize?.ToString(faCulture) ?? "—")</td></tr>
+                <tr><th>رضایت انتشار عمومی</th><td>@(Model.PublicDisclosureConsent ? "بله" : "خیر")</td></tr>
+            </table>
+            @if (!string.IsNullOrWhiteSpace(Model.Description))
+            {
+                <p><strong>توضیحات:</strong> @Model.Description</p>
+            }
+        </div>
+
+        <div class="card">
+            <h3 class="mt-0">تاریخچه وضعیت</h3>
+            @foreach (var h in Model.History)
+            {
+                <div class="d-flex gap-4" style="padding:.3rem 0">
+                    <div style="min-width:140px" class="text-muted" dir="ltr">@h.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</div>
+                    <div>
+                        <strong>@SupportRequestDisplay.Status(h.ToStatus)</strong>
+                        @if (h.ChangedByName != null) { <span class="text-muted">— @h.ChangedByName</span> }
+                        @if (!string.IsNullOrWhiteSpace(h.Note)) { <div class="text-muted">@h.Note</div> }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card">
+            <h3 class="mt-0">پیام‌ها و یادداشت‌ها</h3>
+            @foreach (var m in Model.Messages)
+            {
+                <div class="alert @(m.Visibility == MessageVisibility.Internal ? "alert-warning" : (m.IsFromApplicant ? "alert-info" : "alert-success"))">
+                    <div style="font-size:.8rem" class="text-muted">
+                        @(m.Visibility == MessageVisibility.Internal ? "یادداشت داخلی" : (m.IsFromApplicant ? "متقاضی" : "کارشناس → متقاضی"))
+                        — @(m.AuthorName ?? "—") — @m.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")
+                    </div>
+                    @m.Body
+                </div>
+            }
+
+            <form asp-action="AddNote" asp-route-id="@Model.Id" method="post" style="margin-top:1rem">
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    <textarea class="form-control" name="body" rows="2" placeholder="متن یادداشت یا پیام" required></textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <select class="form-control" name="visibility" style="max-width:220px">
+                        <option value="0">یادداشت داخلی (فقط کارکنان)</option>
+                        <option value="1">پیام برای متقاضی</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">ثبت</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="stack">
+        @if (Can(Permissions.SupportRequestChangeStatus))
+        {
+            <div class="card">
+                <h3 class="mt-0">تغییر وضعیت</h3>
+                <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <select class="form-control" name="status" style="margin-bottom:.5rem">
+                        @foreach (SupportRequestStatus s in Enum.GetValues<SupportRequestStatus>())
+                        {
+                            <option value="@((int)s)" selected="@(s == Model.Status)">@SupportRequestDisplay.Status(s)</option>
+                        }
+                    </select>
+                    <input class="form-control" name="note" placeholder="یادداشت (اختیاری)" style="margin-bottom:.5rem" />
+                    <button type="submit" class="btn btn-primary btn-block">اعمال</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3 class="mt-0">اولویت</h3>
+                <form asp-action="SetPriority" asp-route-id="@Model.Id" method="post" class="d-flex gap-2">
+                    @Html.AntiForgeryToken()
+                    <select class="form-control" name="priority">
+                        @foreach (RequestPriority p in Enum.GetValues<RequestPriority>())
+                        {
+                            <option value="@((int)p)" selected="@(p == Model.Priority)">@SupportRequestDisplay.Priority(p)</option>
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-outline">ثبت</button>
+                </form>
+            </div>
+        }
+
+        @if (Can(Permissions.SupportRequestAssign))
+        {
+            <div class="card">
+                <h3 class="mt-0">ارجاع به کارشناس</h3>
+                <form asp-action="Assign" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <select class="form-control" name="userId" style="margin-bottom:.5rem">
+                        <option value="">— بدون ارجاع —</option>
+                        @foreach (var a in assignees)
+                        {
+                            <option value="@a.Value" selected="@a.Selected">@a.Text</option>
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-outline btn-block">ارجاع</button>
+                </form>
+            </div>
+        }
+
+        @if (duplicates.Count > 0)
+        {
+            <div class="card" style="border-color:var(--c-warning)">
+                <h3 class="mt-0">درخواست‌های مشابه احتمالی</h3>
+                <p class="text-muted" style="font-size:.85rem">با موبایل یا کد ملی یکسان.</p>
+                @foreach (var d in duplicates)
+                {
+                    <div style="margin-bottom:.4rem">
+                        <a asp-action="Detail" asp-route-id="@d.Id" dir="ltr">@d.TrackingCode</a>
+                        <span class="text-muted">— @SupportRequestDisplay.Status(d.Status)</span>
+                    </div>
+                }
+            </div>
+        }
+
+        <a class="btn btn-ghost btn-block" asp-action="Index">بازگشت به فهرست</a>
+    </div>
+</div>

@@ -1,0 +1,65 @@
+@using HamrahKolie.Application.Common.Models
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@using HamrahKolie.Web.Helpers
+@model PagedResult<SupportRequest>
+@{
+    ViewData["Title"] = "درخواست‌های حمایت";
+    var currentStatus = ViewData["Status"] as SupportRequestStatus?;
+    var search = ViewData["Search"] as string;
+    var openCount = ViewData["OpenCount"] as int? ?? 0;
+}
+
+<div class="d-flex justify-between items-center flex-wrap gap-2" style="margin-bottom:1rem">
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn @(currentStatus == null ? "btn-primary" : "btn-outline")" asp-action="Index">همه</a>
+        <a class="btn @(currentStatus == SupportRequestStatus.Submitted ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-status="Submitted">جدید</a>
+        <a class="btn @(currentStatus == SupportRequestStatus.SocialWorkerReview ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-status="SocialWorkerReview">بررسی مددکار</a>
+        <a class="btn @(currentStatus == SupportRequestStatus.MedicalReview ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-status="MedicalReview">بررسی پزشکی</a>
+        <a class="btn @(currentStatus == SupportRequestStatus.NeedsDocuments ? "btn-primary" : "btn-outline")" asp-action="Index" asp-route-status="NeedsDocuments">نیازمند مدرک</a>
+    </div>
+    <span class="badge badge-primary" style="font-size:.95rem">@openCount.ToString("N0", new System.Globalization.CultureInfo("fa-IR")) درخواست باز</span>
+</div>
+
+<div class="card" style="margin-bottom:1rem">
+    <form asp-action="Index" method="get" class="d-flex gap-2">
+        <input class="form-control" name="search" value="@search" placeholder="جست‌وجو: کد پیگیری، نام یا موبایل" />
+        <button type="submit" class="btn btn-outline">جست‌وجو</button>
+    </form>
+</div>
+
+<div class="card">
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty-state">درخواستی با این فیلتر یافت نشد.</div>
+    }
+    else
+    {
+        <table class="table">
+            <thead><tr><th>کد پیگیری</th><th>متقاضی</th><th>استان</th><th>نوع نیاز</th><th>اولویت</th><th>وضعیت</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var r in Model.Items)
+                {
+                    <tr>
+                        <td dir="ltr"><a asp-action="Detail" asp-route-id="@r.Id">@r.TrackingCode</a></td>
+                        <td>@r.ApplicantName<br /><small class="text-muted" dir="ltr">@SupportRequestDisplay.MaskMobile(r.Mobile)</small></td>
+                        <td>@(r.Province ?? "—")</td>
+                        <td>@(r.NeedType ?? "—")</td>
+                        <td><span class="badge @SupportRequestDisplay.PriorityBadge(r.Priority)">@SupportRequestDisplay.Priority(r.Priority)</span></td>
+                        <td><span class="badge">@SupportRequestDisplay.Status(r.Status)</span></td>
+                        <td><a class="btn btn-outline" asp-action="Detail" asp-route-id="@r.Id">بررسی</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="d-flex gap-2 items-center" style="margin-top:1rem">
+                @if (Model.HasPrevious) { <a class="btn btn-outline" asp-action="Index" asp-route-status="@currentStatus" asp-route-page="@(Model.Page - 1)">قبلی</a> }
+                <span class="btn btn-ghost">صفحه @Model.Page از @Model.TotalPages</span>
+                @if (Model.HasNext) { <a class="btn btn-outline" asp-action="Index" asp-route-status="@currentStatus" asp-route-page="@(Model.Page + 1)">بعدی</a> }
+            </div>
+        }
+    }
+</div>

@@ -49,7 +49,7 @@
                 @if (Can(Permissions.SupportRequestView) || Can(Permissions.VolunteerView) || Can(Permissions.CenterView))
                 {
                     <li class="nav-group-title">خدمات</li>
-                    @if (Can(Permissions.SupportRequestView)) { <li><a href="#">درخواست‌های حمایت <span class="badge badge-primary">به‌زودی</span></a></li> }
+                    @if (Can(Permissions.SupportRequestView)) { <li><a asp-area="Admin" asp-controller="SupportRequests" asp-action="Index">درخواست‌های حمایت</a></li> }
                     @if (Can(Permissions.VolunteerView)) { <li><a href="#">داوطلبان <span class="badge badge-primary">به‌زودی</span></a></li> }
                     @if (Can(Permissions.CenterView)) { <li><a href="#">مراکز دیالیز <span class="badge badge-primary">به‌زودی</span></a></li> }
                 }

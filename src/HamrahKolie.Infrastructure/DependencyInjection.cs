@@ -76,6 +76,11 @@ public static class DependencyInjection
         services.AddScoped<HamrahKolie.Application.Campaigns.ICampaignService, CampaignService>();
         services.AddScoped<HamrahKolie.Application.Donations.IDonationService, DonationService>();
 
+        // درخواست حمایت + OTP
+        services.AddScoped<HamrahKolie.Application.SupportRequests.ISupportRequestService, SupportRequestService>();
+        services.AddScoped<HamrahKolie.Application.Common.Interfaces.IOtpService, OtpService>();
+        services.AddScoped<HamrahKolie.Application.Common.Interfaces.IOtpSender, DevOtpSender>();
+
         // درگاه پرداخت (قابل تعویض). پیش‌فرض: درگاه آزمایشی.
         var paymentProvider = config["Payment:Provider"] ?? "Fake";
         switch (paymentProvider.ToLowerInvariant())
