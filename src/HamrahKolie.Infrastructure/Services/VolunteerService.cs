@@ -1,4 +1,5 @@
 using HamrahKolie.Application.Common.Models;
+using HamrahKolie.Application.Notifications;
 using HamrahKolie.Application.Volunteers;
 using HamrahKolie.Domain.Entities;
 using HamrahKolie.Domain.Enums;
@@ -10,7 +11,12 @@ namespace HamrahKolie.Infrastructure.Services;
 public sealed class VolunteerService : IVolunteerService
 {
     private readonly ApplicationDbContext _db;
-    public VolunteerService(ApplicationDbContext db) => _db = db;
+    private readonly INotificationService _notifications;
+    public VolunteerService(ApplicationDbContext db, INotificationService notifications)
+    {
+        _db = db;
+        _notifications = notifications;
+    }
 
     public async Task<long> SubmitAsync(VolunteerInput input, CancellationToken ct = default)
     {
@@ -30,6 +36,10 @@ public sealed class VolunteerService : IVolunteerService
         };
         _db.Volunteers.Add(v);
         await _db.SaveChangesAsync(ct);
+
+        await _notifications.NotifyStaffAsync("داوطلب جدید",
+            $"{v.FullName} برای همکاری ثبت‌نام کرد.", $"/Admin/Volunteers/Detail/{v.Id}", ct);
+
         return v.Id;
     }
 

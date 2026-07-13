@@ -60,11 +60,19 @@
                     <li><a asp-area="Admin" asp-controller="Reports" asp-action="Index">گزارش‌های مدیریتی</a></li>
                 }
 
+                @if (Can(Permissions.FormManage) || Can(Permissions.MessageView))
+                {
+                    <li class="nav-group-title">ارتباطات</li>
+                    @if (Can(Permissions.FormManage)) { <li><a asp-area="Admin" asp-controller="Forms" asp-action="Index">فرم‌ها</a></li> }
+                    <li><a asp-area="Admin" asp-controller="Notifications" asp-action="Index">اعلان‌ها</a></li>
+                }
+
                 @if (Can(Permissions.UserView) || Can(Permissions.RoleManage) || Can(Permissions.SettingsManage) || Can(Permissions.AuditLogView))
                 {
                     <li class="nav-group-title">سیستم</li>
                     @if (Can(Permissions.UserView)) { <li><a asp-area="Admin" asp-controller="Users" asp-action="Index">کاربران</a></li> }
                     @if (Can(Permissions.RoleManage)) { <li><a asp-area="Admin" asp-controller="Roles" asp-action="Index">نقش‌ها و دسترسی‌ها</a></li> }
+                    @if (Can(Permissions.SettingsManage)) { <li><a asp-area="Admin" asp-controller="NotificationTemplates" asp-action="Index">قالب‌های پیام</a></li> }
                     @if (Can(Permissions.SettingsManage)) { <li><a href="#">تنظیمات <span class="badge badge-primary">به‌زودی</span></a></li> }
                     @if (Can(Permissions.AuditLogView)) { <li><a asp-area="Admin" asp-controller="AuditLog" asp-action="Index">گزارش رویدادها</a></li> }
                     @if (Can(Permissions.SystemManage)) { <li><a href="/jobs">کارهای پس‌زمینه</a></li> }
@@ -79,6 +87,7 @@
                 </div>
                 <div class="d-flex items-center gap-4">
                     <a class="btn btn-ghost" asp-area="" asp-controller="Home" asp-action="Index" target="_blank">مشاهده سایت ↗</a>
+                    @await Component.InvokeAsync("NotificationsBell")
                     <span class="admin-user">👤 @displayName</span>
                     <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="mb-0">
                         <button type="submit" class="btn btn-outline">خروج</button>

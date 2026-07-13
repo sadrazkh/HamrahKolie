@@ -1,5 +1,6 @@
 using HamrahKolie.Application.Common.Interfaces;
 using HamrahKolie.Application.Common.Models;
+using HamrahKolie.Application.Notifications;
 using HamrahKolie.Application.SupportRequests;
 using HamrahKolie.Domain.Entities;
 using HamrahKolie.Domain.Enums;
@@ -13,15 +14,18 @@ public sealed class SupportRequestService : ISupportRequestService
     private readonly ApplicationDbContext _db;
     private readonly ICurrentUser _currentUser;
     private readonly IDateTimeProvider _clock;
+    private readonly INotificationService _notifications;
 
     private static readonly SupportRequestStatus[] ClosedStatuses =
         { SupportRequestStatus.Completed, SupportRequestStatus.Archived, SupportRequestStatus.Rejected };
 
-    public SupportRequestService(ApplicationDbContext db, ICurrentUser currentUser, IDateTimeProvider clock)
+    public SupportRequestService(ApplicationDbContext db, ICurrentUser currentUser, IDateTimeProvider clock,
+        INotificationService notifications)
     {
         _db = db;
         _currentUser = currentUser;
         _clock = clock;
+        _notifications = notifications;
     }
 
     public async Task<string> SubmitAsync(SupportRequestInput input, string consentVersion, CancellationToken ct = default)
@@ -60,6 +64,11 @@ public sealed class SupportRequestService : ISupportRequestService
 
         _db.SupportRequests.Add(request);
         await _db.SaveChangesAsync(ct);
+
+        await _notifications.NotifyStaffAsync("درخواست حمایت جدید",
+            $"درخواست {request.TrackingCode} از {request.Province ?? "—"} ثبت شد.",
+            $"/Admin/SupportRequests/Detail/{request.Id}", ct);
+
         return request.TrackingCode;
     }
 

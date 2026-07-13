@@ -1,0 +1,44 @@
+@using HamrahKolie.Domain.Entities
+@model IReadOnlyList<Notification>
+@{
+    ViewData["Title"] = "اعلان‌ها";
+}
+<div class="d-flex justify-between items-center" style="margin-bottom:1rem">
+    <p class="text-muted mb-0">اعلان‌های پنل مدیریت.</p>
+    @if (Model.Any(n => !n.IsRead))
+    {
+        <form asp-action="ReadAll" method="post" class="mb-0">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline">علامت‌گذاری همه به‌عنوان خوانده‌شده</button>
+        </form>
+    }
+</div>
+<div class="card">
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state">اعلانی وجود ندارد.</div>
+    }
+    else
+    {
+        @foreach (var n in Model)
+        {
+            <div class="d-flex justify-between items-center" style="padding:.8rem;border-bottom:1px solid var(--c-border);background:@(n.IsRead ? "transparent" : "var(--c-primary-50)")">
+                <div>
+                    <strong>@n.Title</strong>
+                    @if (!string.IsNullOrWhiteSpace(n.Message)) { <div class="text-muted">@n.Message</div> }
+                    <div class="text-muted" style="font-size:.8rem" dir="ltr">@n.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</div>
+                </div>
+                <div class="d-flex gap-2">
+                    @if (!string.IsNullOrEmpty(n.Url)) { <a class="btn btn-outline" href="@n.Url">مشاهده</a> }
+                    @if (!n.IsRead)
+                    {
+                        <form asp-action="Read" asp-route-id="@n.Id" method="post" class="mb-0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-ghost">خواندم</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

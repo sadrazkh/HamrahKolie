@@ -1,6 +1,7 @@
 using HamrahKolie.Application.Common.Interfaces;
 using HamrahKolie.Application.Common.Models;
 using HamrahKolie.Application.Donations;
+using HamrahKolie.Application.Notifications;
 using HamrahKolie.Application.Payments;
 using HamrahKolie.Domain.Entities;
 using HamrahKolie.Domain.Enums;
@@ -14,12 +15,15 @@ public sealed class DonationService : IDonationService
     private readonly ApplicationDbContext _db;
     private readonly IPaymentGateway _gateway;
     private readonly IDateTimeProvider _clock;
+    private readonly INotificationService _notifications;
 
-    public DonationService(ApplicationDbContext db, IPaymentGateway gateway, IDateTimeProvider clock)
+    public DonationService(ApplicationDbContext db, IPaymentGateway gateway, IDateTimeProvider clock,
+        INotificationService notifications)
     {
         _db = db;
         _gateway = gateway;
         _clock = clock;
+        _notifications = notifications;
     }
 
     public async Task<CreateOnlineResult> CreateOnlineAsync(DonationInput input, string callbackUrl, CancellationToken ct = default)
@@ -108,6 +112,7 @@ public sealed class DonationService : IDonationService
 
             await ApplySuccessSideEffectsAsync(donation, ct);
             await _db.SaveChangesAsync(ct);
+            await NotifyNewDonationAsync(donation, ct);
             return new CallbackResult(true, donation.TrackingCode, null);
         }
 
@@ -211,6 +216,7 @@ public sealed class DonationService : IDonationService
 
         await ApplySuccessSideEffectsAsync(donation, ct);
         await _db.SaveChangesAsync(ct);
+        await NotifyNewDonationAsync(donation, ct);
         return true;
     }
 
@@ -286,6 +292,11 @@ public sealed class DonationService : IDonationService
             donation.Campaign.SupporterCount += 1;
         }
     }
+
+    private Task NotifyNewDonationAsync(Donation donation, CancellationToken ct)
+        => _notifications.NotifyStaffAsync("کمک مالی جدید",
+            $"کمک {donation.Amount:N0} تومانی ({donation.TrackingCode}) ثبت شد.",
+            $"/Admin/Donations/Detail/{donation.Id}", ct);
 
     private async Task<Campaign?> ValidateCampaignAsync(long? campaignId, decimal amount, CancellationToken ct)
     {

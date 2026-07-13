@@ -76,6 +76,12 @@ public static class DependencyInjection
         services.AddScoped<HamrahKolie.Application.Campaigns.ICampaignService, CampaignService>();
         services.AddScoped<HamrahKolie.Application.Donations.IDonationService, DonationService>();
 
+        // اطلاع‌رسانی و فرم‌ساز
+        services.AddScoped<HamrahKolie.Application.Notifications.IEmailSender, DevEmailSender>();
+        services.AddScoped<HamrahKolie.Application.Notifications.ISmsSender, DevSmsSender>();
+        services.AddScoped<HamrahKolie.Application.Notifications.INotificationService, NotificationService>();
+        services.AddScoped<HamrahKolie.Application.Forms.IFormService, FormService>();
+
         // داوطلبان، مراکز، گزارش‌ها، نقشه
         services.AddScoped<HamrahKolie.Application.Volunteers.IVolunteerService, VolunteerService>();
         services.AddScoped<HamrahKolie.Application.Centers.ICenterService, CenterService>();

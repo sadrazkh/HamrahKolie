@@ -1,0 +1,38 @@
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@model NotificationTemplate
+@{
+    ViewData["Title"] = "ویرایش قالب";
+    string Ch(NotificationChannel c) => c switch { NotificationChannel.Email => "ایمیل", NotificationChannel.Sms => "پیامک", _ => "داخل سیستم" };
+}
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+    @Html.AntiForgeryToken()
+    <div class="card" style="max-width:680px">
+        <div class="d-flex justify-between">
+            <h3 class="mt-0" dir="ltr">@Model.Key</h3>
+            <span class="badge badge-primary">@Ch(Model.Channel)</span>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.AvailableTokens))
+        {
+            <div class="alert alert-info">متغیرهای مجاز: <code dir="ltr">@Model.AvailableTokens</code> — به‌صورت <code dir="ltr">{{token}}</code> استفاده کنید.</div>
+        }
+        @if (Model.Channel == NotificationChannel.Email)
+        {
+            <div class="form-group">
+                <label class="form-label">موضوع</label>
+                <input class="form-control" name="subject" value="@Model.Subject" />
+            </div>
+        }
+        <div class="form-group">
+            <label class="form-label">متن پیام</label>
+            <textarea class="form-control" name="body" rows="6" dir="rtl">@Model.Body</textarea>
+        </div>
+        <label class="d-flex items-center gap-2" style="font-weight:600;margin-bottom:1rem">
+            <input type="checkbox" name="isEnabled" value="true" checked="@Model.IsEnabled" /> فعال
+        </label>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">ذخیره</button>
+            <a class="btn btn-ghost" asp-action="Index">بازگشت</a>
+        </div>
+    </div>
+</form>

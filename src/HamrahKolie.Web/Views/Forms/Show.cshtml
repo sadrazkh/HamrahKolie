@@ -1,0 +1,83 @@
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@model FormDefinition
+@{
+    var errors = ViewData["Errors"] as IReadOnlyDictionary<string, string>;
+    var values = ViewData["Values"] as IReadOnlyDictionary<string, string>;
+    var success = ViewData["SuccessMessage"] as string;
+    string Val(string name) => values != null && values.TryGetValue(name, out var v) ? v : "";
+    string? Err(string name) => errors != null && errors.TryGetValue(name, out var e) ? e : null;
+    string[] Opts(FormField f) => (f.Options ?? "").Split(new[] { '\n', ',', '،' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+}
+<section class="section">
+    <div class="container" style="max-width:640px">
+        <h1>@Model.Title</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Description)) { <p class="lead">@Model.Description</p> }
+
+        @if (!string.IsNullOrEmpty(success))
+        {
+            <div class="alert alert-success">@success</div>
+        }
+        else
+        {
+            <div class="card">
+                <form asp-action="Submit" asp-route-slug="@Model.Slug" method="post">
+                    @Html.AntiForgeryToken()
+                    @foreach (var f in Model.Fields.OrderBy(x => x.SortOrder))
+                    {
+                        <div class="form-group">
+                            @if (f.Type != FormFieldType.Consent)
+                            {
+                                <label class="form-label">@f.Label @if (f.Required) { <span style="color:var(--c-danger)">*</span> }</label>
+                            }
+
+                            @switch (f.Type)
+                            {
+                                case FormFieldType.Textarea:
+                                    <textarea class="form-control" name="@f.Name" rows="4" placeholder="@f.Placeholder">@Val(f.Name)</textarea>
+                                    break;
+                                case FormFieldType.Select:
+                                    <select class="form-control" name="@f.Name">
+                                        <option value="">— انتخاب کنید —</option>
+                                        @foreach (var o in Opts(f)) { <option value="@o" selected="@(Val(f.Name) == o)">@o</option> }
+                                    </select>
+                                    break;
+                                case FormFieldType.Radio:
+                                    <div class="d-flex gap-4 flex-wrap">
+                                        @foreach (var o in Opts(f))
+                                        {
+                                            <label class="d-flex items-center gap-2"><input type="radio" name="@f.Name" value="@o" checked="@(Val(f.Name) == o)" /> @o</label>
+                                        }
+                                    </div>
+                                    break;
+                                case FormFieldType.Checkbox:
+                                    <label class="d-flex items-center gap-2" style="font-weight:600"><input type="checkbox" name="@f.Name" value="true" checked="@(Val(f.Name) == "true")" /> @f.Label</label>
+                                    break;
+                                case FormFieldType.Consent:
+                                    <label class="d-flex items-center gap-2" style="font-weight:600"><input type="checkbox" name="@f.Name" value="true" /> @f.Label @if (f.Required) { <span style="color:var(--c-danger)">*</span> }</label>
+                                    break;
+                                case FormFieldType.Number:
+                                    <input class="form-control" type="number" name="@f.Name" value="@Val(f.Name)" placeholder="@f.Placeholder" dir="ltr" />
+                                    break;
+                                case FormFieldType.Date:
+                                    <input class="form-control" type="date" name="@f.Name" value="@Val(f.Name)" dir="ltr" />
+                                    break;
+                                case FormFieldType.Mobile:
+                                case FormFieldType.Email:
+                                    <input class="form-control" name="@f.Name" value="@Val(f.Name)" placeholder="@f.Placeholder" dir="ltr" />
+                                    break;
+                                default:
+                                    <input class="form-control" name="@f.Name" value="@Val(f.Name)" placeholder="@f.Placeholder" />
+                                    break;
+                            }
+
+                            @if (!string.IsNullOrEmpty(f.HelpText)) { <p class="form-hint">@f.HelpText</p> }
+                            @if (Err(f.Name) is string e) { <span class="field-validation-error">@e</span> }
+                        </div>
+                    }
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">@Model.SubmitLabel</button>
+                </form>
+            </div>
+        }
+    </div>
+</section>

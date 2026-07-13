@@ -1,0 +1,40 @@
+@using HamrahKolie.Application.Common.Models
+@using HamrahKolie.Domain.Entities
+@model PagedResult<FormSubmission>
+@{
+    var form = ViewData["Form"] as FormDefinition;
+    ViewData["Title"] = $"پاسخ‌های «{form?.Title}»";
+}
+<div class="d-flex justify-between items-center" style="margin-bottom:1rem">
+    <a class="btn btn-ghost" asp-action="Edit" asp-route-id="@form?.Id">→ بازگشت به فرم</a>
+</div>
+<div class="card">
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty-state">هنوز پاسخی ثبت نشده است.</div>
+    }
+    else
+    {
+        <table class="table">
+            <thead><tr><th>تاریخ</th><th>وضعیت</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var s in Model.Items)
+                {
+                    <tr>
+                        <td dir="ltr">@s.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td>
+                        <td>@(s.IsReviewed ? Html.Raw("<span class=\"badge badge-primary\">بررسی‌شده</span>") : Html.Raw("<span class=\"badge\">جدید</span>"))</td>
+                        <td><a class="btn btn-outline" asp-action="Submission" asp-route-id="@s.Id">مشاهده</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (Model.TotalPages > 1)
+        {
+            <div class="d-flex gap-2 items-center" style="margin-top:1rem">
+                @if (Model.HasPrevious) { <a class="btn btn-outline" asp-action="Submissions" asp-route-id="@form?.Id" asp-route-page="@(Model.Page - 1)">قبلی</a> }
+                <span class="btn btn-ghost">صفحه @Model.Page از @Model.TotalPages</span>
+                @if (Model.HasNext) { <a class="btn btn-outline" asp-action="Submissions" asp-route-id="@form?.Id" asp-route-page="@(Model.Page + 1)">بعدی</a> }
+            </div>
+        }
+    }
+</div>

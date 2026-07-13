@@ -49,6 +49,14 @@ public class ApplicationDbContext : IdentityDbContext<
     public DbSet<Volunteer> Volunteers => Set<Volunteer>();
     public DbSet<DialysisCenter> DialysisCenters => Set<DialysisCenter>();
 
+    // ── اطلاع‌رسانی و فرم‌ساز ─────────────────────────────────────
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<NotificationTemplate> NotificationTemplates => Set<NotificationTemplate>();
+    public DbSet<NotificationLog> NotificationLogs => Set<NotificationLog>();
+    public DbSet<FormDefinition> FormDefinitions => Set<FormDefinition>();
+    public DbSet<FormField> FormFields => Set<FormField>();
+    public DbSet<FormSubmission> FormSubmissions => Set<FormSubmission>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

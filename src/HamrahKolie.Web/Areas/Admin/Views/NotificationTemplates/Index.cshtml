@@ -1,0 +1,31 @@
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@model IReadOnlyList<NotificationTemplate>
+@{
+    ViewData["Title"] = "قالب‌های پیام";
+    string Ch(NotificationChannel c) => c switch { NotificationChannel.Email => "ایمیل", NotificationChannel.Sms => "پیامک", _ => "داخل سیستم" };
+}
+<div class="card">
+    <p class="text-muted">قالب‌های پیام تأیید و اطلاع‌رسانی. ارسال واقعی ایمیل/پیامک پس از تنظیم Provider فعال می‌شود.</p>
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state">قالبی وجود ندارد.</div>
+    }
+    else
+    {
+        <table class="table">
+            <thead><tr><th>کلید</th><th>کانال</th><th>وضعیت</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var t in Model)
+                {
+                    <tr>
+                        <td dir="ltr">@t.Key</td>
+                        <td>@Ch(t.Channel)</td>
+                        <td>@(t.IsEnabled ? Html.Raw("<span class=\"badge badge-primary\">فعال</span>") : Html.Raw("<span class=\"badge\">غیرفعال</span>"))</td>
+                        <td><a class="btn btn-outline" asp-action="Edit" asp-route-id="@t.Id">ویرایش</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

@@ -33,6 +33,82 @@ public static class DbSeeder
         await SeedCmsAsync(db, ct);
         await SeedCampaignsAsync(db, ct);
         await SeedCentersAsync(db, ct);
+        await SeedTemplatesAsync(db, ct);
+        await SeedFormsAsync(db, ct);
+    }
+
+    private static async Task SeedTemplatesAsync(ApplicationDbContext db, CancellationToken ct)
+    {
+        var existing = await db.NotificationTemplates.Select(t => new { t.Key, t.Channel }).ToListAsync(ct);
+        bool Has(string k, NotificationChannel c) => existing.Any(x => x.Key == k && x.Channel == c);
+
+        var toAdd = new List<NotificationTemplate>();
+        if (!Has("donation.success", NotificationChannel.Sms))
+            toAdd.Add(new NotificationTemplate
+            {
+                Key = "donation.success", Channel = NotificationChannel.Sms,
+                Body = "{{name}} عزیز، کمک {{amount}} تومانی شما با کد پیگیری {{tracking}} ثبت شد. سپاسگزاریم — همراه کلیه",
+                AvailableTokens = "name, amount, tracking",
+            });
+        if (!Has("donation.success", NotificationChannel.Email))
+            toAdd.Add(new NotificationTemplate
+            {
+                Key = "donation.success", Channel = NotificationChannel.Email,
+                Subject = "رسید کمک شما — همراه کلیه",
+                Body = "<p>{{name}} عزیز،</p><p>کمک {{amount}} تومانی شما با کد پیگیری <b>{{tracking}}</b> با موفقیت ثبت شد. از همراهی شما سپاسگزاریم.</p>",
+                AvailableTokens = "name, amount, tracking",
+            });
+        if (!Has("support.status_changed", NotificationChannel.Sms))
+            toAdd.Add(new NotificationTemplate
+            {
+                Key = "support.status_changed", Channel = NotificationChannel.Sms,
+                Body = "وضعیت درخواست {{tracking}} به «{{status}}» تغییر کرد. پیگیری: سامانه همراه کلیه",
+                AvailableTokens = "tracking, status",
+            });
+
+        if (toAdd.Count > 0)
+        {
+            db.NotificationTemplates.AddRange(toAdd);
+            await db.SaveChangesAsync(ct);
+        }
+    }
+
+    private static async Task SeedFormsAsync(ApplicationDbContext db, CancellationToken ct)
+    {
+        if (await db.FormDefinitions.AnyAsync(ct)) return;
+
+        var contact = new FormDefinition
+        {
+            Title = "تماس با ما", Slug = "contact",
+            Description = "پیام خود را برای ما بفرستید؛ در اسرع وقت پاسخ می‌دهیم.",
+            SuccessMessage = "پیام شما دریافت شد. سپاسگزاریم.", SubmitLabel = "ارسال پیام", IsEnabled = true,
+            Fields = new List<FormField>
+            {
+                new() { Label = "نام و نام خانوادگی", Name = "name", Type = FormFieldType.Text, Required = true, SortOrder = 1 },
+                new() { Label = "شماره موبایل", Name = "mobile", Type = FormFieldType.Mobile, Required = true, SortOrder = 2 },
+                new() { Label = "ایمیل", Name = "email", Type = FormFieldType.Email, SortOrder = 3 },
+                new() { Label = "موضوع", Name = "subject", Type = FormFieldType.Text, SortOrder = 4 },
+                new() { Label = "پیام", Name = "message", Type = FormFieldType.Textarea, Required = true, SortOrder = 5 },
+            }
+        };
+
+        var complaint = new FormDefinition
+        {
+            Title = "شکایات و پیشنهادها", Slug = "complaint",
+            Description = "انتقاد، شکایت یا پیشنهاد خود را با ما در میان بگذارید.",
+            SuccessMessage = "پیام شما ثبت شد و بررسی خواهد شد.", SubmitLabel = "ثبت", IsEnabled = true,
+            Fields = new List<FormField>
+            {
+                new() { Label = "نام (اختیاری)", Name = "name", Type = FormFieldType.Text, SortOrder = 1 },
+                new() { Label = "شماره موبایل", Name = "mobile", Type = FormFieldType.Mobile, Required = true, SortOrder = 2 },
+                new() { Label = "نوع", Name = "kind", Type = FormFieldType.Select, Options = "شکایت\nپیشنهاد\nانتقاد", SortOrder = 3 },
+                new() { Label = "توضیحات", Name = "message", Type = FormFieldType.Textarea, Required = true, SortOrder = 4 },
+                new() { Label = "صحت اطلاعات را تأیید می‌کنم", Name = "consent", Type = FormFieldType.Consent, Required = true, SortOrder = 5 },
+            }
+        };
+
+        db.FormDefinitions.AddRange(contact, complaint);
+        await db.SaveChangesAsync(ct);
     }
 
     private static async Task SeedCentersAsync(ApplicationDbContext db, CancellationToken ct)
@@ -295,8 +371,12 @@ public static class DbSeeder
         UserManager<ApplicationUser> userManager, IConfiguration config, ILogger logger, CancellationToken ct)
     {
         // اطلاعات از Environment Variable / appsettings خوانده می‌شود؛ رمز ثابت در کد وجود ندارد.
-        var email = config["SuperAdmin:Email"] ?? Environment.GetEnvironmentVariable("SUPERADMIN_EMAIL");
-        var password = config["SuperAdmin:Password"] ?? Environment.GetEnvironmentVariable("SUPERADMIN_PASSWORD");
+        // مقدار خالی در appsettings نباید متغیر محیطی را پنهان کند؛ پس مقدار تهی/خالی نادیده گرفته می‌شود.
+        static string? FirstNonEmpty(params string?[] values)
+            => values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
+
+        var email = FirstNonEmpty(config["SuperAdmin:Email"], Environment.GetEnvironmentVariable("SUPERADMIN_EMAIL"));
+        var password = FirstNonEmpty(config["SuperAdmin:Password"], Environment.GetEnvironmentVariable("SUPERADMIN_PASSWORD"));
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {

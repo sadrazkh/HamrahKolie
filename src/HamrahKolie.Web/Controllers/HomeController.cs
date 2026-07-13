@@ -62,11 +62,7 @@ public class HomeController : Controller
 
     public IActionResult Donate() => RedirectToActionPermanent("Index", "Donate");
 
-    public IActionResult Contact()
-    {
-        ViewData["Title"] = "تماس با ما";
-        return View();
-    }
+    public IActionResult Contact() => RedirectToActionPermanent("Show", "Forms", new { slug = "contact" });
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()

@@ -1,0 +1,96 @@
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
+@model FormDefinition
+@{
+    ViewData["Title"] = "ویرایش فرم";
+    string TypeName(FormFieldType t) => t switch
+    {
+        FormFieldType.Text => "متن", FormFieldType.Textarea => "متن چندخطی", FormFieldType.Number => "عدد",
+        FormFieldType.Mobile => "موبایل", FormFieldType.Email => "ایمیل", FormFieldType.Date => "تاریخ",
+        FormFieldType.Select => "انتخاب کشویی", FormFieldType.Radio => "انتخاب تکی", FormFieldType.Checkbox => "چک‌باکس",
+        FormFieldType.Consent => "پذیرش قوانین", _ => t.ToString()
+    };
+}
+<div class="grid" style="grid-template-columns: 1fr 340px; gap:1.5rem; align-items:start">
+    <div class="stack">
+        <div class="card">
+            <div class="d-flex justify-between items-center">
+                <h3 class="mt-0">فیلدهای فرم</h3>
+                <a class="btn btn-ghost" href="/forms/@Model.Slug" target="_blank">پیش‌نمایش ↗</a>
+            </div>
+            @if (!Model.Fields.Any())
+            {
+                <p class="text-muted">هنوز فیلدی اضافه نشده است.</p>
+            }
+            else
+            {
+                <table class="table">
+                    <thead><tr><th>#</th><th>برچسب</th><th>نام</th><th>نوع</th><th>الزامی</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var f in Model.Fields.OrderBy(x => x.SortOrder))
+                        {
+                            <tr>
+                                <td>@f.SortOrder</td>
+                                <td>@f.Label</td>
+                                <td dir="ltr">@f.Name</td>
+                                <td>@TypeName(f.Type)</td>
+                                <td>@(f.Required ? "بله" : "خیر")</td>
+                                <td>
+                                    <form asp-action="DeleteField" method="post" onsubmit="return confirm('حذف شود؟');" class="mb-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="fieldId" value="@f.Id" />
+                                        <input type="hidden" name="formId" value="@Model.Id" />
+                                        <button type="submit" class="btn btn-ghost">حذف</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            <form asp-action="AddField" method="post" style="border-top:1px solid var(--c-border);padding-top:1rem;margin-top:.5rem">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="formId" value="@Model.Id" />
+                <h4 class="mt-0">افزودن فیلد</h4>
+                <div class="grid grid-2">
+                    <div class="form-group"><label class="form-label">برچسب</label><input class="form-control" name="Label" required /></div>
+                    <div class="form-group">
+                        <label class="form-label">نوع</label>
+                        <select class="form-control" name="Type">
+                            @foreach (FormFieldType t in Enum.GetValues<FormFieldType>())
+                            {
+                                <option value="@((int)t)">@TypeName(t)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">گزینه‌ها (برای انتخاب کشویی/تکی — هر گزینه در یک خط)</label>
+                    <textarea class="form-control" name="Options" rows="2"></textarea>
+                </div>
+                <div class="grid grid-2">
+                    <div class="form-group"><label class="form-label">متن راهنما</label><input class="form-control" name="Placeholder" /></div>
+                    <label class="d-flex items-center gap-2" style="font-weight:600;align-self:end;padding-bottom:1rem"><input type="checkbox" name="Required" value="true" /> الزامی</label>
+                </div>
+                <button type="submit" class="btn btn-outline btn-block">+ افزودن فیلد</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 class="mt-0">تنظیمات فرم</h3>
+        <form asp-action="UpdateForm" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" value="@Model.Id" />
+            <div class="form-group"><label class="form-label">عنوان</label><input class="form-control" name="Title" value="@Model.Title" required /></div>
+            <div class="form-group"><label class="form-label">نامک</label><input class="form-control" name="Slug" value="@Model.Slug" dir="ltr" /></div>
+            <div class="form-group"><label class="form-label">توضیح</label><textarea class="form-control" name="Description" rows="2">@Model.Description</textarea></div>
+            <div class="form-group"><label class="form-label">پیام موفقیت</label><input class="form-control" name="SuccessMessage" value="@Model.SuccessMessage" /></div>
+            <div class="form-group"><label class="form-label">متن دکمه</label><input class="form-control" name="SubmitLabel" value="@Model.SubmitLabel" /></div>
+            <label class="d-flex items-center gap-2" style="font-weight:600;margin-bottom:.5rem"><input type="checkbox" name="IsEnabled" value="true" checked="@Model.IsEnabled" /> فعال</label>
+            <label class="d-flex items-center gap-2" style="font-weight:600;margin-bottom:1rem"><input type="checkbox" name="NotifyStaff" value="true" checked="@Model.NotifyStaff" /> اطلاع به کارکنان</label>
+            <button type="submit" class="btn btn-primary btn-block">ذخیره تنظیمات</button>
+        </form>
+    </div>
+</div>
