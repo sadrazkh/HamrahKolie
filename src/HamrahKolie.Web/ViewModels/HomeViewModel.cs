@@ -9,4 +9,7 @@ public class HomeViewModel
 
     /// <summary>سکشن‌های صفحه‌ساز برای صفحه اصلی. اگر خالی باشد، طرح ثابت پیش‌فرض نمایش داده می‌شود.</summary>
     public IReadOnlyList<PageSection> Sections { get; set; } = Array.Empty<PageSection>();
+
+    /// <summary>برای تشخیص حالت «صفحه‌ساز خالی/غیرفعال» از قالب پیش‌فرضِ بدون داده.</summary>
+    public bool HasPageBuilderContent { get; set; }
 }

@@ -33,7 +33,7 @@
                 {
                     <li class="nav-group-title">محتوا</li>
                     @if (Can(Permissions.ContentView)) { <li><a asp-area="Admin" asp-controller="Content" asp-action="Index">مطالب و صفحات</a></li> }
-                    @if (Can(Permissions.PageBuilderManage)) { <li><a asp-area="Admin" asp-controller="PageBuilder" asp-action="Index">صفحه‌ساز صفحه اصلی</a></li> }
+                    @if (Can(Permissions.PageBuilderManage)) { <li><a asp-area="Admin" asp-controller="PageBuilder" asp-action="Index">ویرایشگر بصری صفحات</a></li> }
                     @if (Can(Permissions.ContentEdit)) { <li><a asp-area="Admin" asp-controller="Categories" asp-action="Index">دسته‌بندی‌ها</a></li> }
                     @if (Can(Permissions.MediaView)) { <li><a asp-area="Admin" asp-controller="Media" asp-action="Index">رسانه‌ها</a></li> }
                     @if (Can(Permissions.MenuManage)) { <li><a asp-area="Admin" asp-controller="Menus" asp-action="Index">منوها</a></li> }

@@ -11,5 +11,8 @@ public interface IPageBuilderService
     /// <summary>همه سکشن‌های فعال برای پیش‌نمایش مدیریت (شامل پیش‌نویس‌ها).</summary>
     Task<IReadOnlyList<PageSection>> GetEnabledForPreviewAsync(string pageKey, CancellationToken ct = default);
 
+    /// <summary>آیا برای این صفحه در صفحه‌ساز داده‌ای وجود دارد؛ حتی اگر همه بخش‌ها غیرفعال باشند.</summary>
+    Task<bool> HasSectionsAsync(string pageKey, CancellationToken ct = default);
+
     void InvalidateCache(string pageKey);
 }

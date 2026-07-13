@@ -1,0 +1,37 @@
+@using HamrahKolie.Web.Areas.Admin.ViewModels
+@model PageBuilderCanvasViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = $"پیش‌نمایش {Model.PageTitle}";
+    ViewData["Robots"] = "noindex,nofollow";
+}
+
+@if (Model.Sections.Count == 0)
+{
+    <section class="section" data-pb-empty="true">
+        <div class="container empty-state">
+            <h2>این صفحه هنوز سکشن ندارد</h2>
+            <p>یک ابزار را از پنل سمت راست بکشید و روی این بوم رها کنید.</p>
+        </div>
+    </section>
+}
+else
+{
+    foreach (var section in Model.Sections)
+    {
+        <partial name="~/Views/Shared/_PageSection.cshtml" model="section" />
+    }
+}
+
+@if (Model.PageKey is "campaigns" or "donate" or "contact")
+{
+    <section class="section pb-system-widget" data-pb-locked="true">
+        <div class="container">
+            <div class="card text-center">
+                <span class="badge badge-primary">ویجت سیستمی قفل‌شده</span>
+                <h3 style="margin-top:.8rem">@(Model.PageKey == "campaigns" ? "فهرست کمپین‌ها" : Model.PageKey == "donate" ? "فرم پرداخت و حمایت" : "فرم تماس")</h3>
+                <p class="text-muted mb-0">این بخش داده و منطق سامانه را نمایش می‌دهد؛ سکشن‌های قابل‌ویرایش را می‌توانید پیش یا پس از آن بچینید.</p>
+            </div>
+        </div>
+    </section>
+}

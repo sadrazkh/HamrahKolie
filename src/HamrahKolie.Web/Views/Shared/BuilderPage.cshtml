@@ -1,0 +1,17 @@
+@using HamrahKolie.Web.Areas.Admin.ViewModels
+@model PageBuilderCanvasViewModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+}
+
+@if (Model.Sections.Count == 0)
+{
+    <section class="section"><div class="container empty-state">محتوای این صفحه هنوز آماده نشده است.</div></section>
+}
+else
+{
+    foreach (var section in Model.Sections)
+    {
+        <partial name="_PageSection" model="section" />
+    }
+}

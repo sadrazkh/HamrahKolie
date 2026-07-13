@@ -27,6 +27,7 @@ public class HomeController : Controller
         var vm = new HamrahKolie.Web.ViewModels.HomeViewModel();
         try
         {
+            vm.HasPageBuilderContent = await _pageBuilder.HasSectionsAsync("home");
             vm.Sections = await _pageBuilder.GetVisibleAsync("home");
         }
         catch
@@ -46,15 +47,21 @@ public class HomeController : Controller
         return View(vm);
     }
 
-    public IActionResult About()
+    public async Task<IActionResult> About()
     {
         ViewData["Title"] = "درباره مؤسسه";
+        var sections = await SafeSectionsAsync("about");
+        if (sections.Count > 0)
+            return View("~/Views/Shared/BuilderPage.cshtml", new HamrahKolie.Web.Areas.Admin.ViewModels.PageBuilderCanvasViewModel { PageKey = "about", PageTitle = "درباره مؤسسه", Sections = sections });
         return View();
     }
 
-    public IActionResult Services()
+    public async Task<IActionResult> Services()
     {
         ViewData["Title"] = "خدمات حمایتی";
+        var sections = await SafeSectionsAsync("services");
+        if (sections.Count > 0)
+            return View("~/Views/Shared/BuilderPage.cshtml", new HamrahKolie.Web.Areas.Admin.ViewModels.PageBuilderCanvasViewModel { PageKey = "services", PageTitle = "خدمات حمایتی", Sections = sections });
         return View();
     }
 
@@ -63,6 +70,12 @@ public class HomeController : Controller
     public IActionResult Donate() => RedirectToActionPermanent("Index", "Donate");
 
     public IActionResult Contact() => RedirectToActionPermanent("Show", "Forms", new { slug = "contact" });
+
+    private async Task<IReadOnlyList<HamrahKolie.Domain.Entities.PageSection>> SafeSectionsAsync(string pageKey)
+    {
+        try { return await _pageBuilder.GetVisibleAsync(pageKey); }
+        catch { return Array.Empty<HamrahKolie.Domain.Entities.PageSection>(); }
+    }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()

@@ -1,4 +1,5 @@
 using HamrahKolie.Application.Forms;
+using HamrahKolie.Application.PageBuilder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -8,7 +9,12 @@ namespace HamrahKolie.Web.Controllers;
 public class FormsController : Controller
 {
     private readonly IFormService _forms;
-    public FormsController(IFormService forms) => _forms = forms;
+    private readonly IPageBuilderService _pageBuilder;
+    public FormsController(IFormService forms, IPageBuilderService pageBuilder)
+    {
+        _forms = forms;
+        _pageBuilder = pageBuilder;
+    }
 
     [HttpGet("/forms/{slug}")]
     public async Task<IActionResult> Show(string slug)
@@ -16,6 +22,7 @@ public class FormsController : Controller
         var form = await _forms.GetEnabledBySlugAsync(slug);
         if (form is null) return NotFound();
         ViewData["Title"] = form.Title;
+        await LoadPageSectionsAsync(slug);
         return View(form);
     }
 
@@ -27,6 +34,7 @@ public class FormsController : Controller
         var form = await _forms.GetEnabledBySlugAsync(slug);
         if (form is null) return NotFound();
         ViewData["Title"] = form.Title;
+        await LoadPageSectionsAsync(slug);
 
         var values = Request.Form
             .Where(kv => kv.Key != "__RequestVerificationToken")
@@ -44,5 +52,12 @@ public class FormsController : Controller
         ViewData["Errors"] = result.Errors;
         ViewData["Values"] = values;
         return View("Show", form);
+    }
+
+    private async Task LoadPageSectionsAsync(string slug)
+    {
+        var pageKey = slug.Equals("contact", StringComparison.OrdinalIgnoreCase) ? "contact" : $"form:{slug.ToLowerInvariant()}";
+        try { ViewData["PageBuilderSections"] = await _pageBuilder.GetVisibleAsync(pageKey); }
+        catch { }
     }
 }

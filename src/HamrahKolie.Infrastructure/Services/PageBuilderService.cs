@@ -41,6 +41,9 @@ public sealed class PageBuilderService : IPageBuilderService
             .ToListAsync(ct);
     }
 
+    public Task<bool> HasSectionsAsync(string pageKey, CancellationToken ct = default)
+        => _db.PageSections.AsNoTracking().AnyAsync(s => s.PageKey == pageKey, ct);
+
     public void InvalidateCache(string pageKey) => _cache.Remove(CacheKey(pageKey));
 
     private static string CacheKey(string pageKey) => $"pagebuilder:{pageKey}";

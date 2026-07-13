@@ -1,4 +1,5 @@
 using HamrahKolie.Application.Campaigns;
+using HamrahKolie.Application.PageBuilder;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HamrahKolie.Web.Controllers;
@@ -7,14 +8,20 @@ public class CampaignsController : Controller
 {
     private const int PageSize = 9;
     private readonly ICampaignService _campaigns;
+    private readonly IPageBuilderService _pageBuilder;
 
-    public CampaignsController(ICampaignService campaigns) => _campaigns = campaigns;
+    public CampaignsController(ICampaignService campaigns, IPageBuilderService pageBuilder)
+    {
+        _campaigns = campaigns;
+        _pageBuilder = pageBuilder;
+    }
 
     [HttpGet("/campaigns")]
     public async Task<IActionResult> Index(int page = 1)
     {
         ViewData["Title"] = "کمپین‌ها";
         ViewData["Canonical"] = $"{Request.Scheme}://{Request.Host}/campaigns";
+        try { ViewData["PageBuilderSections"] = await _pageBuilder.GetVisibleAsync("campaigns"); } catch { }
         var result = await _campaigns.GetPublishedListAsync(page, PageSize);
         return View(result);
     }

@@ -1,5 +1,6 @@
 using HamrahKolie.Application.Common.Interfaces;
 using HamrahKolie.Application.Donations;
+using HamrahKolie.Application.PageBuilder;
 using HamrahKolie.Domain.Enums;
 using HamrahKolie.Infrastructure.Persistence;
 using HamrahKolie.Web.ViewModels;
@@ -16,18 +17,21 @@ public class DonateController : Controller
     private readonly IDonationService _donations;
     private readonly ApplicationDbContext _db;
     private readonly ISettingService _settings;
+    private readonly IPageBuilderService _pageBuilder;
 
-    public DonateController(IDonationService donations, ApplicationDbContext db, ISettingService settings)
+    public DonateController(IDonationService donations, ApplicationDbContext db, ISettingService settings, IPageBuilderService pageBuilder)
     {
         _donations = donations;
         _db = db;
         _settings = settings;
+        _pageBuilder = pageBuilder;
     }
 
     [HttpGet("")]
     public async Task<IActionResult> Index([FromQuery] string? campaign)
     {
         ViewData["Title"] = "حمایت مالی";
+        await LoadPageSectionsAsync();
         var vm = new DonateViewModel { Campaigns = await ActiveCampaignsAsync() };
 
         if (!string.IsNullOrWhiteSpace(campaign))
@@ -51,7 +55,10 @@ public class DonateController : Controller
     {
         ViewData["Title"] = "حمایت مالی";
         if (!ModelState.IsValid)
+        {
+            await LoadPageSectionsAsync();
             return View(new DonateViewModel { Input = input, Campaigns = await ActiveCampaignsAsync() });
+        }
 
         var callbackUrl = $"{Request.Scheme}://{Request.Host}/payment/callback";
         var result = await _donations.CreateOnlineAsync(input, callbackUrl);
@@ -59,6 +66,7 @@ public class DonateController : Controller
         if (!result.Success || result.RedirectUrl is null)
         {
             ModelState.AddModelError(string.Empty, result.Error ?? "خطا در ایجاد پرداخت.");
+            await LoadPageSectionsAsync();
             return View(new DonateViewModel { Input = input, Campaigns = await ActiveCampaignsAsync() });
         }
 
@@ -147,4 +155,10 @@ public class DonateController : Controller
             .OrderBy(c => c.Title)
             .Select(c => new SelectListItem(c.Title, c.Id.ToString()))
             .ToListAsync();
+
+    private async Task LoadPageSectionsAsync()
+    {
+        try { ViewData["PageBuilderSections"] = await _pageBuilder.GetVisibleAsync("donate"); }
+        catch { }
+    }
 }

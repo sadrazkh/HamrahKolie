@@ -17,6 +17,18 @@ public enum SectionType
     RichText = 5,
     /// <summary>فراخوان به اقدام (بنر با دکمه).</summary>
     CallToAction = 6,
+    /// <summary>عنوان و متن کوتاه مستقل.</summary>
+    Heading = 7,
+    /// <summary>تصویر در کنار متن و دکمه.</summary>
+    ImageText = 8,
+    /// <summary>پرسش‌های متداول بازشونده.</summary>
+    Faq = 9,
+    /// <summary>فاصلهٔ خالی قابل تنظیم.</summary>
+    Spacer = 10,
+    /// <summary>خط جداکننده.</summary>
+    Divider = 11,
+    /// <summary>ویدئو از رسانه یا نشانی مستقیم.</summary>
+    Video = 12,
 }
 
 /// <summary>پس‌زمینه سکشن.</summary>

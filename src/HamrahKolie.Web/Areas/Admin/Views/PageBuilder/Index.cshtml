@@ -1,131 +1,297 @@
-@using HamrahKolie.Domain.Entities
+@inject HamrahKolie.Web.Infrastructure.Vite.ViteManifestService Vite
+@using HamrahKolie.Application.PageBuilder
 @using HamrahKolie.Domain.Enums
-@model IReadOnlyList<PageSection>
+@model HamrahKolie.Web.Areas.Admin.ViewModels.PageBuilderEditorViewModel
 @{
-    ViewData["Title"] = "صفحه‌ساز صفحه اصلی";
-    string TypeName(SectionType t) => t switch
+    Layout = null;
+    string TypeName(SectionType type) => type switch
     {
-        SectionType.Hero => "بخش قهرمان (Hero)",
-        SectionType.Stats => "آمارها",
-        SectionType.FeatureCards => "کارت‌های ویژگی",
+        SectionType.Hero => "قهرمان",
+        SectionType.Stats => "آمار",
+        SectionType.FeatureCards => "کارت‌ها",
         SectionType.Steps => "مراحل",
         SectionType.LatestContent => "آخرین مطالب",
         SectionType.RichText => "متن غنی",
-        SectionType.CallToAction => "فراخوان به اقدام",
-        _ => t.ToString()
+        SectionType.CallToAction => "فراخوان",
+        SectionType.Heading => "عنوان",
+        SectionType.ImageText => "تصویر و متن",
+        SectionType.Faq => "سؤالات متداول",
+        SectionType.Spacer => "فاصله",
+        SectionType.Divider => "جداکننده",
+        SectionType.Video => "ویدئو",
+        _ => type.ToString()
     };
-    var addable = new[] { SectionType.Hero, SectionType.Stats, SectionType.FeatureCards, SectionType.Steps, SectionType.LatestContent, SectionType.RichText, SectionType.CallToAction };
+    string TypeIcon(SectionType type) => type switch
+    {
+        SectionType.Hero => "✦", SectionType.Stats => "۱۲۳", SectionType.FeatureCards => "▦",
+        SectionType.Steps => "⇢", SectionType.LatestContent => "◫", SectionType.RichText => "¶",
+        SectionType.CallToAction => "◉", SectionType.Heading => "H", SectionType.ImageText => "▧",
+        SectionType.Faq => "?", SectionType.Spacer => "↕", SectionType.Divider => "—",
+        SectionType.Video => "▶", _ => "+"
+    };
+    var widgets = Enum.GetValues<SectionType>();
 }
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ویرایش بصری @Model.PageTitle — همراه کلیه</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@@v33.003/Vazirmatn-font-face.css" />
+    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/page-builder.css" asp-append-version="true" />
+    @foreach (var css in Vite.GetStylePaths("src/admin.ts")) { <link rel="stylesheet" href="@css" /> }
+</head>
+<body class="pb-editor-body">
+    @Html.AntiForgeryToken()
+    <div id="pb-editor"
+         class="pb-editor"
+         data-page-key="@Model.PageKey"
+         data-selected-id="@Model.SelectedSectionId"
+         data-create-url="@Url.Action("Create")"
+         data-edit-url="@Url.Action("Edit")"
+         data-delete-url="@Url.Action("Delete")"
+         data-duplicate-url="@Url.Action("Duplicate")"
+         data-reorder-url="@Url.Action("Reorder")"
+         data-publish-url="@Url.Action("PublishPage")">
 
-@Html.AntiForgeryToken()
-
-<div class="d-flex justify-between items-center flex-wrap gap-4" style="margin-bottom:1rem">
-    <p class="text-muted mb-0">با ساختن سکشن، صفحه اصلی از این طرح استفاده می‌کند. اگر هیچ سکشنِ منتشرشده‌ای نباشد، طرح پیش‌فرض فعلی نمایش داده می‌شود.</p>
-    <div class="d-flex gap-2">
-        <a class="btn btn-outline" asp-action="Preview" target="_blank">پیش‌نمایش ↗</a>
-        <a class="btn btn-ghost" asp-area="" asp-controller="Home" asp-action="Index" target="_blank">مشاهده سایت ↗</a>
-    </div>
-</div>
-
-@if (Model.Count == 0)
-{
-    <div class="card empty-state">
-        <p>هنوز سکشنی ساخته نشده است. می‌توانید از طرح پیش‌فرض شروع کنید یا سکشن دلخواه بسازید.</p>
-        <form asp-action="CreateDefaults" method="post" class="mb-0" style="display:inline">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-primary">ایجاد سکشن‌های پیش‌فرض</button>
-        </form>
-    </div>
-}
-else
-{
-    <div class="card" id="sections-list">
-        @foreach (var s in Model)
-        {
-            <div class="section-row" draggable="true" data-id="@s.Id">
-                <span class="section-row__handle" title="برای جابه‌جایی بکشید">⠿</span>
-                <div style="flex:1">
-                    <strong>@TypeName(s.Type)</strong>
-                    @if (!string.IsNullOrWhiteSpace(s.Title)) { <span class="text-muted"> — @s.Title</span> }
-                    <div class="d-flex gap-2" style="margin-top:.3rem">
-                        @if (s.IsPublished) { <span class="badge badge-primary">منتشرشده</span> } else { <span class="badge">پیش‌نویس</span> }
-                        @if (!s.IsEnabled) { <span class="badge badge-danger">غیرفعال</span> }
-                    </div>
-                </div>
-                <div class="d-flex gap-2">
-                    <a class="btn btn-outline" asp-action="Edit" asp-route-id="@s.Id">ویرایش</a>
-                    <form asp-action="Delete" asp-route-id="@s.Id" method="post" onsubmit="return confirm('این سکشن حذف شود؟');" class="mb-0">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-ghost">حذف</button>
-                    </form>
-                </div>
+        <header class="pb-topbar">
+            <div class="pb-topbar__brand">
+                <a class="pb-icon-button" asp-area="Admin" asp-controller="Dashboard" asp-action="Index" title="بازگشت به پنل">×</a>
+                <img src="~/img/logo.svg" alt="" />
+                <div><strong>ویرایشگر بصری</strong><small>همراه کلیه</small></div>
             </div>
-        }
+
+            <div class="pb-page-picker">
+                <label for="pb-page-select">صفحه</label>
+                <select id="pb-page-select">
+                    @foreach (var pageOption in Model.Pages)
+                    {
+                        <option value="@pageOption.Key" selected="@(pageOption.Key == Model.PageKey)">@pageOption.Title — @pageOption.Kind</option>
+                    }
+                </select>
+            </div>
+
+            <div class="pb-topbar__tools">
+                <button type="button" class="pb-icon-button" id="pb-undo" title="بازگردانی" disabled>↶</button>
+                <button type="button" class="pb-icon-button" id="pb-redo" title="انجام دوباره" disabled>↷</button>
+                <span class="pb-separator"></span>
+                <button type="button" class="pb-device active" data-device="desktop" title="دسکتاپ">▱</button>
+                <button type="button" class="pb-device" data-device="tablet" title="تبلت">▯</button>
+                <button type="button" class="pb-device" data-device="mobile" title="موبایل">▯</button>
+                <span class="pb-separator"></span>
+                <label class="pb-autosave"><input type="checkbox" id="pb-autosave" checked /> ذخیره خودکار</label>
+            </div>
+
+            <div class="pb-topbar__actions">
+                <span id="pb-save-state" class="pb-save-state">همه تغییرات ذخیره شده</span>
+                <a class="btn btn-outline" href="@Model.PublicUrl" target="_blank">مشاهده ↗</a>
+                <button type="button" class="btn btn-primary" id="pb-publish">انتشار صفحه</button>
+            </div>
+        </header>
+
+        <main class="pb-workspace">
+            <aside class="pb-sidebar pb-sidebar--library">
+                <div class="pb-sidebar__tabs">
+                    <button type="button" class="active" data-left-tab="widgets">ابزارها</button>
+                    <button type="button" data-left-tab="layers">لایه‌ها</button>
+                </div>
+
+                <section class="pb-left-panel active" data-left-panel="widgets">
+                    <div class="pb-panel-heading">
+                        <h2>اجزای صفحه</h2>
+                        <p>بکشید و روی بوم رها کنید یا کلیک کنید.</p>
+                    </div>
+                    <div class="pb-widget-search"><span>⌕</span><input id="pb-widget-search" type="search" placeholder="جست‌وجوی ابزار…" /></div>
+                    <div class="pb-widget-grid">
+                        @foreach (var type in widgets)
+                        {
+                            <button type="button" class="pb-widget" draggable="true" data-widget-type="@((int)type)" data-widget-name="@TypeName(type)">
+                                <span>@TypeIcon(type)</span><strong>@TypeName(type)</strong>
+                            </button>
+                        }
+                    </div>
+                </section>
+
+                <section class="pb-left-panel" data-left-panel="layers">
+                    <div class="pb-panel-heading"><h2>ساختار صفحه</h2><p>برای تغییر ترتیب، لایه‌ها را جابه‌جا کنید.</p></div>
+                    <div id="pb-layers" class="pb-layers">
+                        @foreach (var block in Model.Sections)
+                        {
+                            <div class="pb-layer" draggable="true" data-section-id="@block.Id">
+                                <span class="pb-layer__drag">⠿</span>
+                                <button type="button" class="pb-layer__select" data-select-section="@block.Id">
+                                    <span class="pb-layer__icon">@TypeIcon(block.Type)</span>
+                                    <span><strong>@(string.IsNullOrWhiteSpace(block.Title) ? TypeName(block.Type) : block.Title)</strong><small>@TypeName(block.Type)</small></span>
+                                </button>
+                                <span class="pb-layer__state @(block.IsPublished ? "published" : "draft")" title="@(block.IsPublished ? "منتشرشده" : "پیش‌نویس")"></span>
+                            </div>
+                        }
+                    </div>
+                    @if (Model.Sections.Count == 0)
+                    {
+                        <form asp-action="CreateDefaults" method="post" class="pb-empty-template">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="pageKey" value="@Model.PageKey" />
+                            <p>این صفحه خالی است.</p>
+                            <button class="btn btn-primary" type="submit">درون‌ریزی طرح اولیه</button>
+                        </form>
+                    }
+                </section>
+            </aside>
+
+            <section class="pb-canvas-area">
+                <div class="pb-canvas-label"><span>@Model.PageTitle</span><span id="pb-viewport-label">عرض کامل</span></div>
+                <div class="pb-canvas-shell" id="pb-canvas-shell" data-device="desktop">
+                    <iframe id="pb-canvas" title="پیش‌نمایش زندهٔ @Model.PageTitle" src="@Url.Action("Canvas", new { pageKey = Model.PageKey })"></iframe>
+                </div>
+            </section>
+
+            <aside class="pb-sidebar pb-sidebar--inspector">
+                <div id="pb-no-selection" class="pb-no-selection @(Model.SelectedSectionId.HasValue ? "" : "active")">
+                    <span>✦</span>
+                    <h2>یک بخش را انتخاب کنید</h2>
+                    <p>روی هر قسمت از بوم کلیک کنید تا تمام تنظیمات محتوایی و ظاهری آن اینجا باز شود.</p>
+                </div>
+
+                @foreach (var block in Model.Sections)
+                {
+                    var style = block.GetStyle();
+                    var isCards = block.Type is SectionType.FeatureCards or SectionType.Steps or SectionType.Faq;
+                    var isStats = block.Type == SectionType.Stats;
+                    var hasItems = isCards || isStats;
+                    <form class="pb-inspector @(Model.SelectedSectionId == block.Id ? "active" : "")" data-inspector-id="@block.Id" method="post" action="@Url.Action("Edit")">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="Id" value="@block.Id" />
+                        <input type="hidden" name="PageKey" value="@block.PageKey" />
+                        <input type="hidden" name="Type" value="@((int)block.Type)" />
+
+                        <div class="pb-inspector__header">
+                            <div><span>@TypeIcon(block.Type)</span><div><strong>@TypeName(block.Type)</strong><small>شناسه @block.Id</small></div></div>
+                            <div>
+                                <button type="button" class="pb-mini-action" data-duplicate-section="@block.Id" title="تکثیر">⧉</button>
+                                <button type="button" class="pb-mini-action danger" data-delete-section="@block.Id" title="حذف">⌫</button>
+                            </div>
+                        </div>
+                        <div class="pb-inspector__tabs">
+                            <button type="button" class="active" data-inspector-tab="content">محتوا</button>
+                            <button type="button" data-inspector-tab="style">استایل</button>
+                            <button type="button" data-inspector-tab="advanced">پیشرفته</button>
+                        </div>
+
+                        <div class="pb-inspector__body active" data-inspector-panel="content">
+                            @if (block.Type is not SectionType.Spacer and not SectionType.Divider)
+                            {
+                                <label class="pb-field"><span>عنوان</span><input name="Title" value="@block.Title" /></label>
+                                <label class="pb-field"><span>توضیح کوتاه</span><textarea name="Subtitle" rows="3">@block.Subtitle</textarea></label>
+                            }
+                            @if (block.Type is SectionType.RichText or SectionType.ImageText)
+                            {
+                                <label class="pb-field"><span>متن کامل</span><textarea name="Body" rows="7">@block.Body</textarea></label>
+                            }
+                            else { <input type="hidden" name="Body" value="@block.Body" /> }
+
+                            @if (block.Type is SectionType.Hero or SectionType.CallToAction or SectionType.ImageText or SectionType.Video)
+                            {
+                                <div class="pb-field-row">
+                                    <label class="pb-field"><span>متن دکمه</span><input name="ButtonText" value="@block.ButtonText" /></label>
+                                    <label class="pb-field"><span>@(block.Type == SectionType.Video ? "نشانی ویدئو" : "لینک")</span><input name="ButtonUrl" value="@block.ButtonUrl" dir="ltr" /></label>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" name="ButtonText" value="@block.ButtonText" />
+                                <input type="hidden" name="ButtonUrl" value="@block.ButtonUrl" />
+                            }
+                            @if (block.Type == SectionType.Hero)
+                            {
+                                <div class="pb-field-row">
+                                    <label class="pb-field"><span>متن دکمه دوم</span><input name="SecondaryButtonText" value="@block.SecondaryButtonText" /></label>
+                                    <label class="pb-field"><span>لینک دوم</span><input name="SecondaryButtonUrl" value="@block.SecondaryButtonUrl" dir="ltr" /></label>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" name="SecondaryButtonText" value="@block.SecondaryButtonText" />
+                                <input type="hidden" name="SecondaryButtonUrl" value="@block.SecondaryButtonUrl" />
+                            }
+
+                            @if (block.Type is SectionType.Hero or SectionType.ImageText or SectionType.Video)
+                            {
+                                <label class="pb-field"><span>رسانه</span>
+                                    <select name="ImageId">
+                                        <option value="">بدون رسانه</option>
+                                        @foreach (var media in Model.Media)
+                                        {
+                                            <option value="@media.Id" selected="@(block.ImageId == media.Id)">@media.FileName</option>
+                                        }
+                                    </select>
+                                </label>
+                            }
+                            else { <input type="hidden" name="ImageId" value="@block.ImageId" /> }
+
+                            @if (hasItems)
+                            {
+                                <div class="pb-repeater" data-items-key="@(isStats ? "stats" : "cards")" data-items-kind="@(isStats ? "stats" : "cards")">
+                                    <div class="pb-repeater__head"><strong>@(isStats ? "آیتم‌های آمار" : block.Type == SectionType.Faq ? "پرسش‌ها" : "آیتم‌ها")</strong><button type="button" data-add-item>+ افزودن</button></div>
+                                    <div class="pb-repeater__rows"></div>
+                                </div>
+                            }
+                            <textarea class="pb-settings-json" name="SettingsJson" hidden>@block.SettingsJson</textarea>
+
+                            @if (block.Type == SectionType.LatestContent)
+                            {
+                                <label class="pb-field"><span>تعداد مطالب</span><input name="Count" type="number" min="1" max="12" value="@block.GetCount(3)" /></label>
+                            }
+                            else { <input type="hidden" name="Count" value="3" /> }
+                        </div>
+
+                        <div class="pb-inspector__body" data-inspector-panel="style">
+                            <div class="pb-color-grid">
+                                <label class="pb-field"><span>رنگ پس‌زمینه</span><div class="pb-color-input"><input type="color" value="@(style.BackgroundColor ?? "#ffffff")" data-color-target="BackgroundColor" /><input name="BackgroundColor" value="@style.BackgroundColor" placeholder="#ffffff" dir="ltr" /></div></label>
+                                <label class="pb-field"><span>رنگ متن</span><div class="pb-color-input"><input type="color" value="@(style.TextColor ?? "#1f2a24")" data-color-target="TextColor" /><input name="TextColor" value="@style.TextColor" placeholder="#1f2a24" dir="ltr" /></div></label>
+                                <label class="pb-field"><span>رنگ تأکیدی</span><div class="pb-color-input"><input type="color" value="@(style.AccentColor ?? "#2e9e5b")" data-color-target="AccentColor" /><input name="AccentColor" value="@style.AccentColor" placeholder="#2e9e5b" dir="ltr" /></div></label>
+                            </div>
+                            <label class="pb-field"><span>تراز متن</span><select name="TextAlign"><option value="start" selected="@(style.TextAlign == "start")">راست / آغاز</option><option value="center" selected="@(style.TextAlign == "center")">وسط</option><option value="end" selected="@(style.TextAlign == "end")">چپ / پایان</option></select></label>
+                            <label class="pb-range"><span>عرض محتوا <output>@style.ContentWidth</output>px</span><input name="ContentWidth" type="range" min="320" max="1600" step="10" value="@style.ContentWidth" /></label>
+                            <label class="pb-range"><span>حداقل ارتفاع <output>@style.MinHeight</output>px</span><input name="MinHeight" type="range" min="0" max="1200" step="10" value="@style.MinHeight" /></label>
+                            <div class="pb-field-row">
+                                <label class="pb-field"><span>فاصله بالا</span><input name="PaddingTop" type="number" min="0" max="240" value="@style.PaddingTop" /></label>
+                                <label class="pb-field"><span>فاصله پایین</span><input name="PaddingBottom" type="number" min="0" max="240" value="@style.PaddingBottom" /></label>
+                                <label class="pb-field"><span>فاصله کناری</span><input name="PaddingInline" type="number" min="0" max="120" value="@style.PaddingInline" /></label>
+                            </div>
+                            <label class="pb-range"><span>گردی گوشه <output>@style.BorderRadius</output>px</span><input name="BorderRadius" type="range" min="0" max="120" value="@style.BorderRadius" /></label>
+                            <label class="pb-field"><span>سایه</span><select name="Shadow"><option value="none" selected="@(style.Shadow == "none")">بدون سایه</option><option value="small" selected="@(style.Shadow == "small")">کم</option><option value="medium" selected="@(style.Shadow == "medium")">متوسط</option><option value="large" selected="@(style.Shadow == "large")">زیاد</option></select></label>
+                            <input type="hidden" name="Background" value="@((int)block.Background)" />
+                            <input type="hidden" name="Padding" value="@((int)block.Padding)" />
+                        </div>
+
+                        <div class="pb-inspector__body" data-inspector-panel="advanced">
+                            <div class="pb-switch-list">
+                                <label><span><strong>فعال</strong><small>در پیش‌نمایش نمایش داده شود</small></span><input type="checkbox" name="IsEnabled" value="true" checked="@block.IsEnabled" /><input type="hidden" name="IsEnabled" value="false" /></label>
+                                <label><span><strong>منتشرشده</strong><small>در سایت عمومی دیده شود</small></span><input type="checkbox" name="IsPublished" value="true" checked="@block.IsPublished" /><input type="hidden" name="IsPublished" value="false" /></label>
+                                <label><span><strong>نمایش دسکتاپ</strong></span><input type="checkbox" name="ShowOnDesktop" value="true" checked="@block.ShowOnDesktop" /><input type="hidden" name="ShowOnDesktop" value="false" /></label>
+                                <label><span><strong>نمایش موبایل</strong></span><input type="checkbox" name="ShowOnMobile" value="true" checked="@block.ShowOnMobile" /><input type="hidden" name="ShowOnMobile" value="false" /></label>
+                            </div>
+                            <div class="pb-field-row">
+                                <label class="pb-field"><span>حاشیه بالا</span><input name="MarginTop" type="number" min="-120" max="240" value="@style.MarginTop" /></label>
+                                <label class="pb-field"><span>حاشیه پایین</span><input name="MarginBottom" type="number" min="-120" max="240" value="@style.MarginBottom" /></label>
+                            </div>
+                            <label class="pb-field"><span>موقعیت پس‌زمینه</span><select name="BackgroundPosition"><option value="center" selected="@(style.BackgroundPosition == "center")">وسط</option><option value="top" selected="@(style.BackgroundPosition == "top")">بالا</option><option value="bottom" selected="@(style.BackgroundPosition == "bottom")">پایین</option><option value="right" selected="@(style.BackgroundPosition == "right")">راست</option><option value="left" selected="@(style.BackgroundPosition == "left")">چپ</option></select></label>
+                            <label class="pb-range"><span>تیرگی لایه <output>@style.OverlayOpacity</output>٪</span><input name="OverlayOpacity" type="range" min="0" max="90" value="@style.OverlayOpacity" /></label>
+                            <label class="pb-field"><span>انیمیشن ورود</span><select name="Animation"><option value="none" selected="@(style.Animation == "none")">بدون انیمیشن</option><option value="fade" selected="@(style.Animation == "fade")">محو شدن</option><option value="slide-up" selected="@(style.Animation == "slide-up")">حرکت از پایین</option><option value="zoom" selected="@(style.Animation == "zoom")">بزرگ‌نمایی</option></select></label>
+                            <label class="pb-field"><span>کلاس CSS سفارشی</span><input name="CssClass" value="@style.CssClass" dir="ltr" placeholder="my-section" /></label>
+                        </div>
+
+                        <footer class="pb-inspector__footer"><button class="btn btn-primary btn-block" type="submit">ذخیره تغییرات</button></footer>
+                    </form>
+                }
+            </aside>
+        </main>
     </div>
-    <p class="form-hint">برای تغییر ترتیب، سکشن‌ها را بکشید و رها کنید.</p>
-}
 
-<div class="card" style="margin-top:1.5rem">
-    <h3 class="mt-0">افزودن سکشن جدید</h3>
-    <div class="d-flex gap-2 flex-wrap">
-        @foreach (var t in addable)
-        {
-            <form asp-action="Create" method="post" class="mb-0">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="type" value="@((int)t)" />
-                <button type="submit" class="btn btn-outline">+ @TypeName(t)</button>
-            </form>
-        }
-    </div>
-</div>
-
-@section Scripts {
-    <script>
-        (function () {
-            var list = document.getElementById('sections-list');
-            if (!list) return;
-            var dragged = null;
-            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-            list.querySelectorAll('.section-row').forEach(function (row) {
-                row.addEventListener('dragstart', function () { dragged = row; row.classList.add('dragging'); });
-                row.addEventListener('dragend', function () { row.classList.remove('dragging'); saveOrder(); });
-            });
-
-            list.addEventListener('dragover', function (e) {
-                e.preventDefault();
-                var after = getAfterElement(list, e.clientY);
-                if (!dragged) return;
-                if (after == null) list.appendChild(dragged);
-                else list.insertBefore(dragged, after);
-            });
-
-            function getAfterElement(container, y) {
-                var els = [].slice.call(container.querySelectorAll('.section-row:not(.dragging)'));
-                return els.reduce(function (closest, child) {
-                    var box = child.getBoundingClientRect();
-                    var offset = y - box.top - box.height / 2;
-                    if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
-                    return closest;
-                }, { offset: -Infinity }).element;
-            }
-
-            function saveOrder() {
-                var ids = [].slice.call(list.querySelectorAll('.section-row')).map(function (r) { return parseInt(r.dataset.id); });
-                fetch('@Url.Action("Reorder")', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
-                    body: JSON.stringify(ids)
-                });
-            }
-        })();
-    </script>
-}
-
-@section Styles {
-    <style>
-        .section-row { display:flex; align-items:center; gap:1rem; padding:1rem; border:1px solid var(--c-border); border-radius:var(--radius-sm); margin-bottom:.6rem; background:var(--c-surface); cursor:default; }
-        .section-row__handle { cursor:grab; font-size:1.4rem; color:var(--c-text-muted); }
-        .section-row.dragging { opacity:.5; }
-    </style>
-}
+    <script src="~/js/page-builder.js" asp-append-version="true"></script>
+    @{ var adminScript = Vite.GetScriptPath("src/admin.ts"); }
+    @if (adminScript is not null) { <script type="module" src="@adminScript"></script> }
+</body>
+</html>

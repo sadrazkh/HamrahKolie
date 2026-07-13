@@ -5,6 +5,13 @@
     ViewData["Title"] = "کمپین‌ها";
     var faCulture = new System.Globalization.CultureInfo("fa-IR");
 }
+@if (ViewData["PageBuilderSections"] is IReadOnlyList<PageSection> builderSections)
+{
+    foreach (var builderSection in builderSections)
+    {
+        <partial name="~/Views/Shared/_PageSection.cshtml" model="builderSection" />
+    }
+}
 <section class="section">
     <div class="container">
         <h1>کمپین‌های فعال</h1>

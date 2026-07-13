@@ -20,7 +20,7 @@
 .home-hero__image {
   z-index: -3;
   object-fit: cover;
-  object-position: center 52%;
+  object-position: var(--home-background-position, center 52%);
 }
 
 .home-hero__shade {
@@ -628,4 +628,33 @@
   .need-card,
   .home-text-link,
   .home-news__more { transition: none; }
+}
+.home-builder-flow {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-builder-item {
+  min-width: 0;
+}
+
+.home-hero__shade {
+  opacity: var(--home-overlay-opacity, 1);
+}
+
+.home-builder-styled > .container {
+  max-width: min(var(--pb-content-width, 1180px), calc(100% - 32px));
+}
+
+.home-builder-styled :is(h1, h2, h3, p, a, .stat-value, .stat-label) {
+  color: var(--home-builder-text-color);
+}
+
+.home-builder-styled :is(.btn-primary, .home-callout__button) {
+  background-color: var(--pb-accent);
+  border-color: var(--pb-accent);
+}
+
+.home-builder-hidden {
+  display: none !important;
 }

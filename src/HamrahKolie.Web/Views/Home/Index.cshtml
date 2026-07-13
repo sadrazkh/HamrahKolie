@@ -13,6 +13,60 @@
     var stepsSection = Model.Sections.FirstOrDefault(x => x.Type == SectionType.Steps);
     var latestSection = Model.Sections.FirstOrDefault(x => x.Type == SectionType.LatestContent);
     var calloutSection = Model.Sections.FirstOrDefault(x => x.Type == SectionType.CallToAction);
+    var hasBuilderSections = Model.HasPageBuilderContent;
+    var useBuilderOrder = Model.Sections.Any(x => x.UsesBuilderOrder());
+    int HomeOrder(HamrahKolie.Domain.Entities.PageSection? pageSection, int legacyOrder)
+        => useBuilderOrder && pageSection is not null ? pageSection.SortOrder : legacyOrder;
+    string HomeClasses(HamrahKolie.Domain.Entities.PageSection? pageSection)
+    {
+        if (pageSection is null) return "";
+        var classes = new List<string>();
+        if (!pageSection.ShowOnMobile) classes.Add("hide-mobile");
+        if (!pageSection.ShowOnDesktop) classes.Add("hide-desktop");
+        if (pageSection.HasStyleSettings())
+        {
+            var sectionStyle = pageSection.GetStyle();
+            classes.Add("home-builder-styled");
+            if (!string.IsNullOrWhiteSpace(sectionStyle.CssClass)) classes.Add(sectionStyle.CssClass);
+            if (sectionStyle.Animation != "none") classes.Add($"pb-animate-{sectionStyle.Animation}");
+        }
+        return string.Join(" ", classes);
+    }
+    string HomeStyle(HamrahKolie.Domain.Entities.PageSection? pageSection)
+    {
+        if (pageSection is null || !pageSection.HasStyleSettings()) return "";
+        var sectionStyle = pageSection.GetStyle();
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(sectionStyle.BackgroundColor)) parts.Add($"background-color:{sectionStyle.BackgroundColor}");
+        if (!string.IsNullOrWhiteSpace(sectionStyle.TextColor))
+        {
+            parts.Add($"color:{sectionStyle.TextColor}");
+            parts.Add($"--home-builder-text-color:{sectionStyle.TextColor}");
+        }
+        if (!string.IsNullOrWhiteSpace(sectionStyle.AccentColor)) parts.Add($"--pb-accent:{sectionStyle.AccentColor}");
+        if (sectionStyle.TextAlign != "start") parts.Add($"text-align:{sectionStyle.TextAlign}");
+        if (sectionStyle.ContentWidth != 1180) parts.Add($"--pb-content-width:{sectionStyle.ContentWidth}px");
+        if (sectionStyle.MinHeight != 0) parts.Add($"min-height:{sectionStyle.MinHeight}px");
+        if (sectionStyle.PaddingTop != 64) parts.Add($"padding-top:{sectionStyle.PaddingTop}px");
+        if (sectionStyle.PaddingBottom != 64) parts.Add($"padding-bottom:{sectionStyle.PaddingBottom}px");
+        if (sectionStyle.PaddingInline != 16) parts.Add($"padding-inline:{sectionStyle.PaddingInline}px");
+        if (sectionStyle.MarginTop != 0) parts.Add($"margin-top:{sectionStyle.MarginTop}px");
+        if (sectionStyle.MarginBottom != 0) parts.Add($"margin-bottom:{sectionStyle.MarginBottom}px");
+        if (sectionStyle.BorderRadius != 0) parts.Add($"border-radius:{sectionStyle.BorderRadius}px");
+        var shadow = sectionStyle.Shadow switch
+        {
+            "small" => "0 4px 14px rgba(31,42,36,.08)",
+            "medium" => "0 12px 34px rgba(31,42,36,.14)",
+            "large" => "0 22px 60px rgba(31,42,36,.2)",
+            _ => null,
+        };
+        if (shadow is not null) parts.Add($"box-shadow:{shadow}");
+        if (sectionStyle.BackgroundPosition != "center") parts.Add($"--home-background-position:{sectionStyle.BackgroundPosition}");
+        if (sectionStyle.OverlayOpacity != 0) parts.Add($"--home-overlay-opacity:{sectionStyle.OverlayOpacity / 100d}");
+        return string.Join(";", parts);
+    }
+    var statsInHero = !useBuilderOrder
+        || (heroSection is not null && statsSection is not null && statsSection.SortOrder == heroSection.SortOrder + 1);
 
     var heroTitle = heroSection?.Title ?? "از روستا تا زندگی";
     var heroSubtitle = heroSection?.Subtitle ?? "با حمایت شما، مسیر سخت درمان را هموار می‌کنیم تا بیماران دیالیزی مناطق محروم با آرامش بیشتری به درمان و زندگی در کنار خانواده ادامه دهند.";
@@ -52,7 +106,8 @@
     }
 }
 
-<section class="home-hero" aria-labelledby="home-hero-title">
+<div class="home-builder-flow">
+<section class="home-hero @(hasBuilderSections && heroSection is null ? "home-builder-hidden" : "") @HomeClasses(heroSection)" style="order:@(HomeOrder(heroSection, 10));@HomeStyle(heroSection)" aria-labelledby="home-hero-title" data-pb-section-id="@heroSection?.Id" data-pb-section-type="Hero">
     <img class="home-hero__image"
          src="@heroImage"
          alt="مسیر یک خانواده روستایی تا مرکز دیالیز"
@@ -99,21 +154,31 @@
         </div>
     </div>
 
-    <div class="container home-hero__stats-wrap">
-        <div class="impact-stats" aria-label="آمار فعالیت‌های همراه کلیه">
-            <div class="home-impact-stats">
-                <div class="grid grid-4">
-                    @foreach (var stat in stats)
-                    {
-                        <div class="stat"><div class="stat-value">@stat.Value</div><div class="stat-label">@stat.Label</div></div>
-                    }
+    @if (statsInHero && (statsSection is not null || !hasBuilderSections))
+    {
+        <div class="container home-hero__stats-wrap">
+            <div class="impact-stats @HomeClasses(statsSection)" style="@HomeStyle(statsSection)" aria-label="آمار فعالیت‌های همراه کلیه" data-pb-section-id="@statsSection?.Id" data-pb-section-type="Stats">
+                <div class="home-impact-stats">
+                    <div class="grid grid-4">
+                        @foreach (var stat in stats)
+                        {
+                            <div class="stat"><div class="stat-value">@stat.Value</div><div class="stat-label">@stat.Label</div></div>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
 </section>
 
-<section class="home-section home-needs" aria-labelledby="needs-title">
+@if (statsSection is not null && !statsInHero)
+{
+    <div class="home-builder-item" style="order:@statsSection.SortOrder">
+        <partial name="_PageSection" model="statsSection" />
+    </div>
+}
+
+<section class="home-section home-needs @(hasBuilderSections && featureSection is null ? "home-builder-hidden" : "") @HomeClasses(featureSection)" style="order:@(HomeOrder(featureSection, 20));@HomeStyle(featureSection)" aria-labelledby="needs-title" data-pb-section-id="@featureSection?.Id" data-pb-section-type="FeatureCards">
     <div class="container">
         <div class="home-heading">
             <p class="home-kicker">یک مسیر، چند مانع جدی</p>
@@ -150,7 +215,7 @@
     </div>
 </section>
 
-<section class="home-section home-path" aria-labelledby="path-title">
+<section class="home-section home-path @(hasBuilderSections && stepsSection is null ? "home-builder-hidden" : "") @HomeClasses(stepsSection)" style="order:@(HomeOrder(stepsSection, 30));@HomeStyle(stepsSection)" aria-labelledby="path-title" data-pb-section-id="@stepsSection?.Id" data-pb-section-type="Steps">
     <div class="container home-path__layout">
         <div class="home-path__intro">
             <p class="home-kicker">از شناسایی تا بازگشت به زندگی</p>
@@ -177,10 +242,19 @@
 
 @foreach (var richTextSection in Model.Sections.Where(x => x.Type == SectionType.RichText))
 {
-    <partial name="_PageSection" model="richTextSection" />
+    <div class="home-builder-item" style="order:@(HomeOrder(richTextSection, 40 + richTextSection.SortOrder))">
+        <partial name="_PageSection" model="richTextSection" />
+    </div>
 }
 
-<section class="home-callout" aria-labelledby="callout-title">
+@foreach (var flexibleSection in Model.Sections.Where(x => x.Type is SectionType.Heading or SectionType.ImageText or SectionType.Faq or SectionType.Spacer or SectionType.Divider or SectionType.Video))
+{
+    <div class="home-builder-item" style="order:@(HomeOrder(flexibleSection, 40 + flexibleSection.SortOrder))">
+        <partial name="_PageSection" model="flexibleSection" />
+    </div>
+}
+
+<section class="home-callout @(hasBuilderSections && calloutSection is null ? "home-builder-hidden" : "") @HomeClasses(calloutSection)" style="order:@(HomeOrder(calloutSection, 50));@HomeStyle(calloutSection)" aria-labelledby="callout-title" data-pb-section-id="@calloutSection?.Id" data-pb-section-type="CallToAction">
     <div class="container home-callout__inner">
         <div>
             <p class="home-kicker">سهمی در ادامهٔ یک زندگی</p>
@@ -194,9 +268,9 @@
     </div>
 </section>
 
-@if (Model.LatestNews.Any() || Model.LatestArticles.Any())
+@if ((latestSection is not null || !hasBuilderSections) && (Model.LatestNews.Any() || Model.LatestArticles.Any()))
 {
-    <section class="home-section home-news" aria-labelledby="news-title">
+    <section class="home-section home-news @HomeClasses(latestSection)" style="order:@(HomeOrder(latestSection, 60));@HomeStyle(latestSection)" aria-labelledby="news-title" data-pb-section-id="@latestSection?.Id" data-pb-section-type="LatestContent">
         <div class="container">
             <div class="home-news__heading">
                 <div>
@@ -228,6 +302,7 @@
         </div>
     </section>
 }
+</div>
 
 @section Scripts {
     @{ var islandScript = Vite.GetScriptPath("src/main.ts"); }

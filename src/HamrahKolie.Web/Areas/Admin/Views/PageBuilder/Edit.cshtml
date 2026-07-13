@@ -19,7 +19,25 @@
 <form asp-action="Edit" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="PageKey" />
     <input type="hidden" asp-for="Type" />
+    <input type="hidden" asp-for="BackgroundColor" />
+    <input type="hidden" asp-for="TextColor" />
+    <input type="hidden" asp-for="AccentColor" />
+    <input type="hidden" asp-for="TextAlign" />
+    <input type="hidden" asp-for="ContentWidth" />
+    <input type="hidden" asp-for="MinHeight" />
+    <input type="hidden" asp-for="PaddingTop" />
+    <input type="hidden" asp-for="PaddingBottom" />
+    <input type="hidden" asp-for="PaddingInline" />
+    <input type="hidden" asp-for="MarginTop" />
+    <input type="hidden" asp-for="MarginBottom" />
+    <input type="hidden" asp-for="BorderRadius" />
+    <input type="hidden" asp-for="Shadow" />
+    <input type="hidden" asp-for="CssClass" />
+    <input type="hidden" asp-for="BackgroundPosition" />
+    <input type="hidden" asp-for="OverlayOpacity" />
+    <input type="hidden" asp-for="Animation" />
 
     <div class="grid" style="grid-template-columns: 1fr 300px; gap:1.5rem; align-items:start">
         <div class="stack">

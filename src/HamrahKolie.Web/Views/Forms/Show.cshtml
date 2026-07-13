@@ -9,6 +9,13 @@
     string? Err(string name) => errors != null && errors.TryGetValue(name, out var e) ? e : null;
     string[] Opts(FormField f) => (f.Options ?? "").Split(new[] { '\n', ',', '،' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 }
+@if (ViewData["PageBuilderSections"] is IReadOnlyList<PageSection> builderSections)
+{
+    foreach (var builderSection in builderSections)
+    {
+        <partial name="~/Views/Shared/_PageSection.cshtml" model="builderSection" />
+    }
+}
 <section class="section">
     <div class="container" style="max-width:640px">
         <h1>@Model.Title</h1>
