@@ -48,6 +48,8 @@ try
     services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
     services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
     services.AddSingleton<ViteManifestService>();
+    services.AddScoped<HamrahKolie.Application.Common.Interfaces.IOutputCacheInvalidator,
+        HamrahKolie.Web.Infrastructure.OutputCacheInvalidator>();
 
     // کوکی ورود
     services.ConfigureApplicationCookie(options =>
@@ -96,7 +98,14 @@ try
     });
 
     // کارایی
-    services.AddOutputCache();
+    services.AddOutputCache(options =>
+    {
+        // سیاست کش صفحات عمومی با تگ «content» تا پس از انتشار محتوا بتوان آن را باطل کرد.
+        options.AddPolicy("PublicContent", b => b
+            .Expire(TimeSpan.FromMinutes(5))
+            .Tag("content")
+            .SetVaryByQuery("page", "province", "category", "tag", "search"));
+    });
     services.AddResponseCompression();
 
     // محدودسازی نرخ (روی فرم‌های عمومی حساس اعمال می‌شود)
@@ -149,6 +158,25 @@ try
 
     // ── Pipeline ────────────────────────────────────────────────────
     app.UseForwardedHeaders();
+
+    // هدرهای امنیتی
+    app.Use(async (context, next) =>
+    {
+        var headers = context.Response.Headers;
+        headers["X-Content-Type-Options"] = "nosniff";
+        headers["X-Frame-Options"] = "SAMEORIGIN";
+        headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+        headers["X-XSS-Protection"] = "0";
+        headers["Content-Security-Policy"] =
+            "default-src 'self'; " +
+            "img-src 'self' data: https:; " +
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " +
+            "font-src 'self' https://cdn.jsdelivr.net; " +
+            "script-src 'self' 'unsafe-inline'; " +
+            "connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'";
+        await next();
+    });
+
     app.UseSerilogRequestLogging();
 
     if (!app.Environment.IsDevelopment())

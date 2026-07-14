@@ -1,5 +1,6 @@
 using HamrahKolie.Application.Centers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace HamrahKolie.Web.Controllers;
@@ -12,6 +13,7 @@ public class CentersController : Controller
     public CentersController(ICenterService centers) => _centers = centers;
 
     [HttpGet("/centers")]
+    [OutputCache(PolicyName = "PublicContent")]
     public async Task<IActionResult> Index(string? province, string? search, int page = 1)
     {
         ViewData["Title"] = "مراکز دیالیز";
@@ -24,6 +26,7 @@ public class CentersController : Controller
     }
 
     [HttpGet("/centers/{slug}")]
+    [OutputCache(PolicyName = "PublicContent")]
     public async Task<IActionResult> Detail(string slug)
     {
         var center = await _centers.GetApprovedBySlugAsync(slug);

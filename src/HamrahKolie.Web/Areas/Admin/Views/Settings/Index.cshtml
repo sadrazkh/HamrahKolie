@@ -1,0 +1,43 @@
+@model HamrahKolie.Web.Areas.Admin.ViewModels.SettingsViewModel
+@{
+    ViewData["Title"] = "تنظیمات مؤسسه";
+}
+<form asp-action="Index" method="post">
+    @Html.AntiForgeryToken()
+    <div class="grid grid-2" style="align-items:start">
+        <div class="card">
+            <h3 class="mt-0">اطلاعات مؤسسه</h3>
+            <div class="form-group"><label class="form-label">نام مؤسسه</label><input class="form-control" asp-for="OrganizationName" /></div>
+            <div class="form-group"><label class="form-label">شعار</label><input class="form-control" asp-for="Slogan" /></div>
+            <div class="form-group"><label class="form-label">پیام اصلی</label><input class="form-control" asp-for="Message" /></div>
+            <div class="grid grid-2">
+                <div class="form-group"><label class="form-label">ایمیل</label><input class="form-control" asp-for="Email" dir="ltr" /></div>
+                <div class="form-group"><label class="form-label">تلفن</label><input class="form-control" asp-for="Phone" dir="ltr" /></div>
+            </div>
+            <div class="form-group"><label class="form-label">آدرس</label><textarea class="form-control" asp-for="Address" rows="2"></textarea></div>
+        </div>
+
+        <div class="stack">
+            <div class="card">
+                <h3 class="mt-0">سئوی پیش‌فرض</h3>
+                <div class="form-group"><label class="form-label">عنوان پیش‌فرض</label><input class="form-control" asp-for="SeoTitle" /></div>
+                <div class="form-group"><label class="form-label">توضیح پیش‌فرض</label><textarea class="form-control" asp-for="SeoDescription" rows="2"></textarea></div>
+            </div>
+            <div class="card">
+                <h3 class="mt-0">پرداخت</h3>
+                <div class="form-group">
+                    <label class="form-label">اطلاعات حساب برای پرداخت آفلاین</label>
+                    <textarea class="form-control" asp-for="OfflineAccount" rows="2" placeholder="شماره کارت / شبا / نام صاحب حساب"></textarea>
+                    <p class="form-hint">این متن در صفحه «پرداخت آفلاین» به کاربران نمایش داده می‌شود.</p>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="mt-0">سیستم</h3>
+                <label class="d-flex items-center gap-2" style="font-weight:600">
+                    <input type="checkbox" asp-for="MaintenanceMode" /> حالت تعمیر و نگهداری
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">ذخیره تنظیمات</button>
+        </div>
+    </div>
+</form>

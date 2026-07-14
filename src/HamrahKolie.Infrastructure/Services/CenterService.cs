@@ -11,11 +11,13 @@ public sealed class CenterService : ICenterService
 {
     private readonly ApplicationDbContext _db;
     private readonly ISlugService _slug;
+    private readonly IOutputCacheInvalidator _cache;
 
-    public CenterService(ApplicationDbContext db, ISlugService slug)
+    public CenterService(ApplicationDbContext db, ISlugService slug, IOutputCacheInvalidator cache)
     {
         _db = db;
         _slug = slug;
+        _cache = cache;
     }
 
     // ── عمومی ────────────────────────────────────────────────────
@@ -88,6 +90,7 @@ public sealed class CenterService : ICenterService
         if (c is null) return false;
         await MapAsync(c, input, isNew: false, ct);
         await _db.SaveChangesAsync(ct);
+        await _cache.InvalidateAsync("content", ct);
         return true;
     }
 
@@ -98,6 +101,7 @@ public sealed class CenterService : ICenterService
         c.IsApproved = approved;
         c.LastReviewedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync(ct);
+        await _cache.InvalidateAsync("content", ct);
         return true;
     }
 

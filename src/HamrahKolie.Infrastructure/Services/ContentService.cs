@@ -14,14 +14,17 @@ public sealed class ContentService : IContentService
     private readonly ISlugService _slug;
     private readonly IHtmlSanitizerService _sanitizer;
     private readonly IDateTimeProvider _clock;
+    private readonly IOutputCacheInvalidator _cache;
 
     public ContentService(
-        ApplicationDbContext db, ISlugService slug, IHtmlSanitizerService sanitizer, IDateTimeProvider clock)
+        ApplicationDbContext db, ISlugService slug, IHtmlSanitizerService sanitizer, IDateTimeProvider clock,
+        IOutputCacheInvalidator cache)
     {
         _db = db;
         _slug = slug;
         _sanitizer = sanitizer;
         _clock = clock;
+        _cache = cache;
     }
 
     public async Task<PagedResult<ContentListItemDto>> GetAdminListAsync(
@@ -92,6 +95,7 @@ public sealed class ContentService : IContentService
         await _db.SaveChangesAsync(ct);
         await SyncTagsAsync(content, input.Tags, ct);
         await _db.SaveChangesAsync(ct);
+        await _cache.InvalidateAsync("content", ct);
         return content.Id;
     }
 
@@ -105,6 +109,7 @@ public sealed class ContentService : IContentService
         await MapAsync(content, input, isNew: false, ct);
         await SyncTagsAsync(content, input.Tags, ct);
         await _db.SaveChangesAsync(ct);
+        await _cache.InvalidateAsync("content", ct);
         return true;
     }
 
@@ -117,6 +122,7 @@ public sealed class ContentService : IContentService
         if (status == ContentStatus.Published && content.PublishedAt is null)
             content.PublishedAt = _clock.UtcNow;
         await _db.SaveChangesAsync(ct);
+        await _cache.InvalidateAsync("content", ct);
         return true;
     }
 
@@ -126,6 +132,7 @@ public sealed class ContentService : IContentService
         if (content is null) return false;
         _db.Contents.Remove(content); // به‌واسطه Interceptor به حذف نرم تبدیل می‌شود
         await _db.SaveChangesAsync(ct);
+        await _cache.InvalidateAsync("content", ct);
         return true;
     }
 

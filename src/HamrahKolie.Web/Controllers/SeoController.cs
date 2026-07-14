@@ -22,7 +22,7 @@ public class SeoController : Controller
         var items = await _content.GetAllPublishedForSitemapAsync();
 
         var sb = new StringBuilder();
-        var settings = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding(false), Async = false };
+        var settings = new XmlWriterSettings { Indent = true, Encoding = new UTF8Encoding(false), Async = true };
         await using (var sw = new StringWriter(sb))
         await using (var xml = XmlWriter.Create(sw, settings))
         {

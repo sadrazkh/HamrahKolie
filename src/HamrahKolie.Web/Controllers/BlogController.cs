@@ -1,10 +1,12 @@
 using HamrahKolie.Application.Cms;
 using HamrahKolie.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 
 namespace HamrahKolie.Web.Controllers;
 
 /// <summary>فهرست و جزئیات محتوای عمومی (اخبار، مقالات، داستان‌ها). صفحات کاملاً سمت سرور رندر می‌شوند.</summary>
+[OutputCache(PolicyName = "PublicContent")]
 public class BlogController : Controller
 {
     private const int PageSize = 9;

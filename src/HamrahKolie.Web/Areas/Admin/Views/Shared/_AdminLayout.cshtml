@@ -73,7 +73,7 @@
                     @if (Can(Permissions.UserView)) { <li><a asp-area="Admin" asp-controller="Users" asp-action="Index">کاربران</a></li> }
                     @if (Can(Permissions.RoleManage)) { <li><a asp-area="Admin" asp-controller="Roles" asp-action="Index">نقش‌ها و دسترسی‌ها</a></li> }
                     @if (Can(Permissions.SettingsManage)) { <li><a asp-area="Admin" asp-controller="NotificationTemplates" asp-action="Index">قالب‌های پیام</a></li> }
-                    @if (Can(Permissions.SettingsManage)) { <li><a href="#">تنظیمات <span class="badge badge-primary">به‌زودی</span></a></li> }
+                    @if (Can(Permissions.SettingsManage)) { <li><a asp-area="Admin" asp-controller="Settings" asp-action="Index">تنظیمات</a></li> }
                     @if (Can(Permissions.AuditLogView)) { <li><a asp-area="Admin" asp-controller="AuditLog" asp-action="Index">گزارش رویدادها</a></li> }
                     @if (Can(Permissions.SystemManage)) { <li><a href="/jobs">کارهای پس‌زمینه</a></li> }
                 }

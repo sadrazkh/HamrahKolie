@@ -99,24 +99,25 @@ dotnet ef migrations add <Name> \
 
 ---
 
-## وضعیت پیاده‌سازی (مرحله ۱ — اسکلت)
+## قابلیت‌های پیاده‌سازی‌شده
 
-**انجام‌شده:**
-- ساختار Solution (Domain/Application/Infrastructure/Web/Tests)
-- EF Core + Identity + انتخاب Provider (PostgreSQL/SQL Server) + Migration اولیه
-- RBAC مبتنی بر Permission (۱۵ نقش، ~۴۰ دسترسی) + Seed خودکار
-- Audit Log، سرویس تنظیمات (Cache‌شده)، حذف نرم سراسری، توکن همزمانی (xmin)
-- Serilog، Health Checks، Output Cache، Response Compression، Rate Limiting، Hangfire
-- Design System اختصاصی (RTL)، Layout عمومی و پنل، لوگوی SVG قابل تعویض
-- سایت عمومی پایه (صفحه اصلی قصه‌محور + صفحات فرعی) و صفحات خطای اختصاصی
-- پنل مدیریت: ورود/خروج، داشبورد، کاربران، نقش‌ها، گزارش رویدادها
-- مسیر «جزیره‌های Vue» (Vite/Vue/TS) اثبات‌شده با کامپوننت شمارنده آمار
-- Docker/Compose/Nginx، آزمون‌های یکپارچگی RBAC
+**زیرساخت:** معماری Modular Monolith، EF Core + Identity + انتخاب Provider (PostgreSQL/SQL Server)، **RBAC مبتنی بر Permission** (۱۵ نقش، ~۴۰ دسترسی)، Audit Log، Serilog، Health Checks، Output Cache (با باطل‌سازی تگ‌محور)، Response Compression، Rate Limiting، Hangfire، هدرهای امنیتی + CSP، حذف نرم سراسری، Design System اختصاصی RTL، جزیره‌های Vue (Vite/TS).
 
-**نیازمند سرویس/کلید بیرونی (در مراحل بعد فعال می‌شوند):**
-- درگاه پرداخت واقعی، پیامک واقعی، سرویس نقشه، Google Analytics — ساختار Adapter آماده می‌شود اما بدون Credential واقعی فعال نمی‌گردد.
+**CMS (مرحله ۲):** محتوای یکپارچه (صفحه/خبر/مقاله/داستان بیمار)، دسته/برچسب، **کتابخانه رسانه**، منوها، ادیتور غنی **TipTap**، SEO کامل (Meta/OG/Canonical، JSON-LD، `/sitemap.xml`، `/robots.txt`).
 
-نقشه راه کامل مراحل ۲ تا ۶ در گفت‌وگوی توسعه ثبت شده است (CMS، رسانه، منو، کمپین، کمک مالی، درخواست حمایت، داوطلبان، مراکز، فرم‌ساز، اطلاع‌رسانی، گزارش‌ها، SEO کامل).
+**صفحه‌ساز (مرحله ۲+):** Page Section Builder سکشن‌محور با Drag & Drop، پیش‌نمایش و پیش‌نویس/انتشار.
+
+**کمپین و کمک مالی (مرحله ۳):** کمپین‌ها، **درگاه پرداخت قابل‌تعویض** (`IPaymentGateway`) + درگاه آزمایشی، جریان کامل آنلاین با **Idempotency**، پرداخت آفلاین + صف بررسی، پیگیری و رسید، بازپرداخت.
+
+**درخواست حمایت (مرحله ۴):** ثبت بدون حساب، **پیگیری با OTP**، گردش‌کار ۱۲ مرحله‌ای با تاریخچه، ارجاع/یادداشت/پیام، **حریم خصوصی سطح‌فیلد** (Masking).
+
+**داوطلبان/مراکز/گزارش (مرحله ۵A):** ثبت‌نام داوطلب، دایرکتوری مراکز دیالیز با نقشه Provider-based، گزارش مدیریتی + صفحه عمومی **شفافیت مالی**.
+
+**فرم‌ساز و اطلاع‌رسانی (مرحله ۵B):** فرم‌ساز داینامیک (۱۰ نوع فیلد)، سیستم اطلاع‌رسانی (in-app + ایمیل/پیامک با Template و Provider قابل‌تعویض).
+
+**استقرار (مرحله ۶):** تنظیمات پنل، Docker/Compose/Nginx، CI، چک‌لیست Production ([docs/PRODUCTION_CHECKLIST.md](docs/PRODUCTION_CHECKLIST.md)).
+
+**نیازمند سرویس/کلید بیرونی (Adapter آماده، بدون Credential فعال نمی‌شود):** درگاه پرداخت واقعی، پیامک/ایمیل واقعی، سرویس نقشه، Analytics خارجی.
 
 ---
 
