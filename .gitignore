@@ -15,6 +15,9 @@ node_modules/
 # خروجی Build فرانت‌اند؛ با «npm run build» بازتولید می‌شود.
 src/HamrahKolie.Web/wwwroot/dist/
 
+# فایل‌های آپلودشده کاربران (روی Volume/Storage نگه‌داری می‌شوند)
+src/HamrahKolie.Web/wwwroot/uploads/
+
 # Secrets / محیط
 .env
 .env.*
