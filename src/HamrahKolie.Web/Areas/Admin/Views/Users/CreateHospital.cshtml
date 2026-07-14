@@ -1,0 +1,39 @@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model HamrahKolie.Web.Areas.Admin.Controllers.CreateHospitalInput
+@{
+    ViewData["Title"] = "ساخت حساب مرکز درمانی";
+    var centers = ViewBag.Centers as List<SelectListItem> ?? new();
+}
+<form asp-action="CreateHospital" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
+    <div class="card" style="max-width:560px">
+        <p class="text-muted">این حساب برای ورود کارکنان یک مرکز درمانی و ثبت بیماران آن مرکز است.</p>
+        <div class="form-group">
+            <label class="form-label">مرکز درمانی</label>
+            <select class="form-control" asp-for="CenterId">
+                <option value="">— انتخاب مرکز —</option>
+                @foreach (var c in centers) { <option value="@c.Value">@c.Text</option> }
+            </select>
+            <span class="field-validation-error" asp-validation-for="CenterId"></span>
+        </div>
+        <div class="form-group">
+            <label class="form-label">نام نمایشی</label>
+            <input class="form-control" asp-for="DisplayName" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">ایمیل (نام کاربری)</label>
+            <input class="form-control" asp-for="Email" dir="ltr" />
+            <span class="field-validation-error" asp-validation-for="Email"></span>
+        </div>
+        <div class="form-group">
+            <label class="form-label">رمز عبور</label>
+            <input class="form-control" asp-for="Password" type="password" dir="ltr" />
+            <span class="field-validation-error" asp-validation-for="Password"></span>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">ساخت حساب</button>
+            <a class="btn btn-ghost" asp-action="Index">بازگشت</a>
+        </div>
+    </div>
+</form>

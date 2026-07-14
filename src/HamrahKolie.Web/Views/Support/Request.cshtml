@@ -9,7 +9,7 @@
         <p class="lead">برای ثبت درخواست نیازی به ساخت حساب نیست. پس از ثبت، یک «کد پیگیری» دریافت می‌کنید.</p>
 
         <div class="card">
-            <form asp-action="Request" method="post">
+            <form asp-action="Request" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
 
@@ -66,6 +66,13 @@
                 <div class="form-group">
                     <label class="form-label">توضیحات</label>
                     <textarea class="form-control" asp-for="Description" rows="3"></textarea>
+                </div>
+
+                <h3>مدارک (اختیاری)</h3>
+                <div class="form-group">
+                    <label class="form-label">بارگذاری مدارک (تصویر یا PDF، حداکثر ۱۰ مگابایت)</label>
+                    <input class="form-control" type="file" name="documents" multiple accept="image/*,application/pdf" />
+                    <p class="form-hint">می‌توانید مدارک را همین حالا یا بعداً از صفحه پیگیری بارگذاری کنید.</p>
                 </div>
 
                 <div class="alert alert-info">

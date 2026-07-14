@@ -13,7 +13,7 @@
         }
 
         <div class="card">
-            <form asp-action="Offline" method="post">
+            <form asp-action="Offline" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
 
@@ -56,7 +56,11 @@
                     <textarea class="form-control" asp-for="Input.Note" rows="2"></textarea>
                 </div>
 
-                <p class="form-hint">بارگذاری مستقیم تصویر فیش در نسخه بعد افزوده می‌شود؛ فعلاً شماره مرجع تراکنش را وارد کنید.</p>
+                <div class="form-group">
+                    <label class="form-label">تصویر فیش (اختیاری)</label>
+                    <input class="form-control" type="file" name="receipt" accept="image/*,application/pdf" />
+                    <p class="form-hint">تصویر یا PDF فیش واریزی، حداکثر ۱۰ مگابایت.</p>
+                </div>
 
                 <label class="d-flex items-center gap-2" style="font-weight:600;margin:.5rem 0 1rem">
                     <input type="checkbox" asp-for="Input.AcceptTerms" /> <span>قوانین و شرایط را می‌پذیرم</span>

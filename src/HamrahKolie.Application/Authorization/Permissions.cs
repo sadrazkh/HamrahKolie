@@ -47,6 +47,9 @@ public static class Permissions
     public const string SupportRequestChangeStatus = "support_request.change_status";
     public const string SupportRequestExport = "support_request.export";
 
+    // ── پورتال مرکز درمانی ──────────────────────────────────────────
+    public const string HospitalPortal = "hospital.portal";
+
     // ── داوطلبان ────────────────────────────────────────────────────
     public const string VolunteerView = "volunteer.view";
     public const string VolunteerManage = "volunteer.manage";
@@ -107,6 +110,8 @@ public static class Permissions
         new(SupportRequestAssign, "ارجاع درخواست", "درخواست حمایت"),
         new(SupportRequestChangeStatus, "تغییر وضعیت درخواست", "درخواست حمایت"),
         new(SupportRequestExport, "خروجی درخواست‌ها", "درخواست حمایت"),
+
+        new(HospitalPortal, "دسترسی پورتال مرکز درمانی", "مرکز درمانی"),
 
         new(VolunteerView, "مشاهده داوطلبان", "داوطلبان"),
         new(VolunteerManage, "مدیریت داوطلبان", "داوطلبان"),

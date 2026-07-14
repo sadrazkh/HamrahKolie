@@ -61,12 +61,38 @@
             </form>
         </div>
 
-        @if (r.Documents.Any())
-        {
-            <div class="card">
-                <h3 class="mt-0">مدارک</h3>
-                <ul>@foreach (var d in r.Documents) { <li>@d.Title</li> }</ul>
-            </div>
-        }
+        <div class="card">
+            <h3 class="mt-0">مدارک</h3>
+            @if (r.Documents.Any())
+            {
+                <ul>
+                    @foreach (var d in r.Documents)
+                    {
+                        <li>
+                            @if (d.MediaFile != null) { <a href="@d.MediaFile.Url" target="_blank" rel="noopener">@d.Title</a> }
+                            else { @d.Title }
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="text-muted">هنوز مدرکی بارگذاری نشده است.</p>
+            }
+
+            <form asp-action="Upload" method="post" enctype="multipart/form-data" style="border-top:1px solid var(--c-border);padding-top:1rem;margin-top:.5rem">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="code" value="@r.TrackingCode" />
+                <input type="hidden" name="requestId" value="@r.Id" />
+                <div class="form-group">
+                    <label class="form-label">عنوان مدرک</label>
+                    <input class="form-control" name="title" placeholder="مثلاً برگه آزمایش" />
+                </div>
+                <div class="form-group">
+                    <input class="form-control" type="file" name="file" accept="image/*,application/pdf" required />
+                </div>
+                <button type="submit" class="btn btn-outline">بارگذاری مدرک</button>
+            </form>
+        </div>
     </div>
 </section>

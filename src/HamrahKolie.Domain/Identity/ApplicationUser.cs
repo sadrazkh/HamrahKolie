@@ -23,6 +23,9 @@ public class ApplicationUser : IdentityUser
     /// <summary>آیا حساب فعال است؟ (غیرفعال‌سازی نرم بدون حذف)</summary>
     public bool IsActive { get; set; } = true;
 
+    /// <summary>در صورت حساب «مرکز درمانی»، شناسه مرکز مرتبط.</summary>
+    public long? CenterId { get; set; }
+
     /// <summary>نام کامل نمایشی.</summary>
     public string FullName => string.Join(" ", new[] { FirstName, LastName }.Where(s => !string.IsNullOrWhiteSpace(s)));
 }

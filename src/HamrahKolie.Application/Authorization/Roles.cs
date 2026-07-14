@@ -20,6 +20,7 @@ public static class Roles
     public const string VolunteerManager = "VolunteerManager";
     public const string Support = "Support";
     public const string ReportViewer = "ReportViewer";
+    public const string MedicalCenter = "MedicalCenter";
     public const string PublicUser = "PublicUser";
 
     public record RoleDefinition(string Name, string DisplayName, string Description, string[] Permissions);
@@ -111,6 +112,11 @@ public static class Roles
         new(ReportViewer, "مشاهده‌گر گزارش", "مشاهده گزارش‌ها بدون تغییر", new[]
         {
             Permissions.DashboardView, Permissions.ReportView,
+        }),
+
+        new(MedicalCenter, "مرکز درمانی", "پورتال ثبت و مدیریت بیماران توسط بیمارستان", new[]
+        {
+            Permissions.HospitalPortal,
         }),
 
         new(PublicUser, "کاربر عمومی", "کاربر عادی سایت", Array.Empty<string>()),

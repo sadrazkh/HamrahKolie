@@ -28,13 +28,14 @@ public sealed class SupportRequestService : ISupportRequestService
         _notifications = notifications;
     }
 
-    public async Task<string> SubmitAsync(SupportRequestInput input, string consentVersion, CancellationToken ct = default)
+    public async Task<(long Id, string TrackingCode)> SubmitAsync(SupportRequestInput input, string consentVersion, CancellationToken ct = default)
     {
         var request = new SupportRequest
         {
             TrackingCode = await GenerateTrackingAsync(ct),
             Status = SupportRequestStatus.Submitted,
             Priority = RequestPriority.Normal,
+            ReferringCenterId = input.ReferringCenterId,
             ApplicantName = input.ApplicantName.Trim(),
             Mobile = input.Mobile.Trim(),
             NationalId = input.NationalId?.Trim(),
@@ -69,8 +70,46 @@ public sealed class SupportRequestService : ISupportRequestService
             $"درخواست {request.TrackingCode} از {request.Province ?? "—"} ثبت شد.",
             $"/Admin/SupportRequests/Detail/{request.Id}", ct);
 
-        return request.TrackingCode;
+        return (request.Id, request.TrackingCode);
     }
+
+    public async Task<bool> AddDocumentAsync(long requestId, long mediaFileId, string title, bool uploadedByApplicant, CancellationToken ct = default)
+    {
+        if (!await _db.SupportRequests.AnyAsync(r => r.Id == requestId, ct)) return false;
+        _db.SupportRequestDocuments.Add(new SupportRequestDocument
+        {
+            SupportRequestId = requestId,
+            MediaFileId = mediaFileId,
+            Title = string.IsNullOrWhiteSpace(title) ? "مدرک" : title.Trim(),
+            UploadedByApplicant = uploadedByApplicant,
+        });
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<bool> AddApplicantDocumentAsync(long requestId, string mobile, long mediaFileId, string title, CancellationToken ct = default)
+    {
+        var owns = await _db.SupportRequests.AnyAsync(r => r.Id == requestId && r.Mobile == mobile.Trim(), ct);
+        if (!owns) return false;
+        return await AddDocumentAsync(requestId, mediaFileId, title, uploadedByApplicant: true, ct);
+    }
+
+    public async Task<PagedResult<SupportRequest>> GetForCenterAsync(long centerId, int page, int pageSize, CancellationToken ct = default)
+    {
+        page = Math.Max(1, page);
+        var q = _db.SupportRequests.AsNoTracking().Where(r => r.ReferringCenterId == centerId);
+        var total = await q.CountAsync(ct);
+        var items = await q.OrderByDescending(r => r.CreatedAt)
+            .Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        return new PagedResult<SupportRequest> { Items = items, Page = page, PageSize = pageSize, TotalCount = total };
+    }
+
+    public Task<SupportRequest?> GetForCenterDetailAsync(long id, long centerId, CancellationToken ct = default)
+        => _db.SupportRequests
+            .Include(r => r.Documents).ThenInclude(d => d.MediaFile)
+            .Include(r => r.History.OrderBy(h => h.CreatedAt))
+            .Include(r => r.Messages.Where(m => m.Visibility == MessageVisibility.Applicant).OrderBy(m => m.CreatedAt))
+            .FirstOrDefaultAsync(r => r.Id == id && r.ReferringCenterId == centerId, ct);
 
     public Task<SupportRequest?> GetForApplicantAsync(string trackingCode, string mobile, CancellationToken ct = default)
     {
@@ -78,7 +117,7 @@ public sealed class SupportRequestService : ISupportRequestService
         var m = mobile.Trim();
         return _db.SupportRequests
             .AsNoTracking()
-            .Include(r => r.Documents)
+            .Include(r => r.Documents).ThenInclude(d => d.MediaFile)
             .Include(r => r.History.OrderBy(h => h.CreatedAt))
             .Include(r => r.Messages.Where(msg => msg.Visibility == MessageVisibility.Applicant).OrderBy(msg => msg.CreatedAt))
             .FirstOrDefaultAsync(r => r.TrackingCode == code && r.Mobile == m, ct);

@@ -18,13 +18,16 @@ public class DonateController : Controller
     private readonly ApplicationDbContext _db;
     private readonly ISettingService _settings;
     private readonly IPageBuilderService _pageBuilder;
+    private readonly HamrahKolie.Web.Services.IFileUploadService _uploads;
 
-    public DonateController(IDonationService donations, ApplicationDbContext db, ISettingService settings, IPageBuilderService pageBuilder)
+    public DonateController(IDonationService donations, ApplicationDbContext db, ISettingService settings,
+        IPageBuilderService pageBuilder, HamrahKolie.Web.Services.IFileUploadService uploads)
     {
         _donations = donations;
         _db = db;
         _settings = settings;
         _pageBuilder = pageBuilder;
+        _uploads = uploads;
     }
 
     [HttpGet("")]
@@ -131,7 +134,7 @@ public class DonateController : Controller
     [HttpPost("offline")]
     [ValidateAntiForgeryToken]
     [EnableRateLimiting("public-forms")]
-    public async Task<IActionResult> Offline(OfflineDonationInput input)
+    public async Task<IActionResult> Offline(OfflineDonationInput input, IFormFile? receipt)
     {
         ViewData["Title"] = "پرداخت آفلاین (ثبت فیش)";
         if (!ModelState.IsValid)
@@ -142,6 +145,13 @@ public class DonateController : Controller
                 Campaigns = await ActiveCampaignsAsync(),
                 BankAccountInfo = await _settings.GetAsync("payment.offline_account"),
             });
+        }
+
+        // آپلود تصویر فیش (اختیاری).
+        if (receipt is { Length: > 0 })
+        {
+            var up = await _uploads.SaveAsync(receipt);
+            if (up.Success) input.ReceiptImageId = up.Media!.Id;
         }
 
         var tracking = await _donations.SubmitOfflineAsync(input);

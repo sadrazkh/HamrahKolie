@@ -1,0 +1,47 @@
+@using HamrahKolie.Application.Common.Models
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Web.Helpers
+@model PagedResult<SupportRequest>
+@{
+    ViewData["Title"] = "بیماران معرفی‌شده";
+}
+<div class="d-flex justify-between items-center" style="margin-bottom:1rem">
+    <h2 class="mb-0">بیماران معرفی‌شده</h2>
+    <a class="btn btn-primary" asp-action="New">+ ثبت بیمار جدید</a>
+</div>
+<div class="card">
+    @if (Model.Items.Count == 0)
+    {
+        <div class="empty-state">
+            <p>هنوز بیماری ثبت نکرده‌اید.</p>
+            <a class="btn btn-primary" asp-action="New">ثبت اولین بیمار</a>
+        </div>
+    }
+    else
+    {
+        <table class="table">
+            <thead><tr><th>کد پیگیری</th><th>نام بیمار</th><th>نوع نیاز</th><th>وضعیت</th><th>تاریخ</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var r in Model.Items)
+                {
+                    <tr>
+                        <td dir="ltr"><a asp-action="Patient" asp-route-id="@r.Id">@r.TrackingCode</a></td>
+                        <td>@r.ApplicantName</td>
+                        <td>@(r.NeedType ?? "—")</td>
+                        <td><span class="badge">@SupportRequestDisplay.Status(r.Status)</span></td>
+                        <td dir="ltr">@r.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd")</td>
+                        <td><a class="btn btn-outline" asp-action="Patient" asp-route-id="@r.Id">جزئیات</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (Model.TotalPages > 1)
+        {
+            <div class="d-flex gap-2 items-center" style="margin-top:1rem">
+                @if (Model.HasPrevious) { <a class="btn btn-outline" asp-action="Index" asp-route-page="@(Model.Page - 1)">قبلی</a> }
+                <span class="btn btn-ghost">صفحه @Model.Page از @Model.TotalPages</span>
+                @if (Model.HasNext) { <a class="btn btn-outline" asp-action="Index" asp-route-page="@(Model.Page + 1)">بعدی</a> }
+            </div>
+        }
+    }
+</div>

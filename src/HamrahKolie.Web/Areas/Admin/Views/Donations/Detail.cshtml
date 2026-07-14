@@ -40,6 +40,7 @@
             <table class="table">
                 <tr><th>وضعیت بررسی</th><td>@Model.OfflinePayment.ReviewStatus</td></tr>
                 <tr><th>شماره مرجع</th><td dir="ltr">@(Model.OfflinePayment.ReferenceNumber ?? "—")</td></tr>
+                <tr><th>تصویر فیش</th><td>@if (Model.OfflinePayment.ReceiptImage != null) { <a href="@Model.OfflinePayment.ReceiptImage.Url" target="_blank" rel="noopener">مشاهده فیش</a> } else { <span>—</span> }</td></tr>
                 @if (Model.OfflinePayment.ReviewedBy != null) { <tr><th>بررسی‌کننده</th><td>@Model.OfflinePayment.ReviewedBy</td></tr> }
                 @if (!string.IsNullOrWhiteSpace(Model.OfflinePayment.ReviewNote)) { <tr><th>یادداشت بررسی</th><td>@Model.OfflinePayment.ReviewNote</td></tr> }
             </table>

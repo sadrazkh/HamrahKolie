@@ -48,6 +48,24 @@
         </div>
 
         <div class="card">
+            <h3 class="mt-0">مدارک</h3>
+            @if (Model.Documents.Any())
+            {
+                <ul>
+                    @foreach (var d in Model.Documents)
+                    {
+                        <li>
+                            @if (d.MediaFile != null) { <a href="@d.MediaFile.Url" target="_blank" rel="noopener">@d.Title</a> }
+                            else { @d.Title }
+                            <span class="text-muted" style="font-size:.8rem">— @(d.UploadedByApplicant ? "متقاضی" : "مرکز/کارشناس")</span>
+                        </li>
+                    }
+                </ul>
+            }
+            else { <p class="text-muted">مدرکی بارگذاری نشده است.</p> }
+        </div>
+
+        <div class="card">
             <h3 class="mt-0">تاریخچه وضعیت</h3>
             @foreach (var h in Model.History)
             {

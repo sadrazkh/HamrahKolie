@@ -1,5 +1,6 @@
 using HamrahKolie.Application.Common.Interfaces;
 using HamrahKolie.Application.SupportRequests;
+using HamrahKolie.Web.Services;
 using HamrahKolie.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -16,12 +17,14 @@ public class SupportController : Controller
     private readonly ISupportRequestService _service;
     private readonly IOtpService _otp;
     private readonly IWebHostEnvironment _env;
+    private readonly IFileUploadService _uploads;
 
-    public SupportController(ISupportRequestService service, IOtpService otp, IWebHostEnvironment env)
+    public SupportController(ISupportRequestService service, IOtpService otp, IWebHostEnvironment env, IFileUploadService uploads)
     {
         _service = service;
         _otp = otp;
         _env = env;
+        _uploads = uploads;
     }
 
     // ── ثبت درخواست ──────────────────────────────────────────────
@@ -35,12 +38,24 @@ public class SupportController : Controller
     [HttpPost("request")]
     [ValidateAntiForgeryToken]
     [EnableRateLimiting("public-forms")]
-    public async Task<IActionResult> Request(SupportRequestInput input)
+    public async Task<IActionResult> Request(SupportRequestInput input, List<IFormFile>? documents)
     {
         ViewData["Title"] = "درخواست حمایت";
         if (!ModelState.IsValid) return View(input);
 
-        var tracking = await _service.SubmitAsync(input, ConsentVersion);
+        var (id, tracking) = await _service.SubmitAsync(input, ConsentVersion);
+
+        // آپلود مدارک همراه ثبت اولیه (اختیاری).
+        if (documents is not null)
+        {
+            foreach (var file in documents.Where(f => f.Length > 0).Take(10))
+            {
+                var up = await _uploads.SaveAsync(file);
+                if (up.Success)
+                    await _service.AddDocumentAsync(id, up.Media!.Id, up.Media.FileName, uploadedByApplicant: true);
+            }
+        }
+
         TempData["Tracking"] = tracking;
         return RedirectToAction(nameof(Submitted));
     }
@@ -131,6 +146,28 @@ public class SupportController : Controller
 
         await _service.AddApplicantMessageAsync(requestId, mobile, body);
         TempData["Success"] = "پیام شما ثبت شد.";
+        return RedirectToAction(nameof(View), new { code = normalizedCode });
+    }
+
+    [HttpPost("upload")]
+    [ValidateAntiForgeryToken]
+    [EnableRateLimiting("public-forms")]
+    public async Task<IActionResult> Upload(string code, long requestId, string? title, IFormFile? file)
+    {
+        var normalizedCode = code.Trim().ToUpperInvariant();
+        var mobile = HttpContext.Session.GetString(SessionKey(normalizedCode));
+        if (string.IsNullOrEmpty(mobile)) return RedirectToAction(nameof(Track));
+
+        var up = await _uploads.SaveAsync(file);
+        if (!up.Success)
+        {
+            TempData["Error"] = up.Error;
+            return RedirectToAction(nameof(View), new { code = normalizedCode });
+        }
+
+        var docTitle = string.IsNullOrWhiteSpace(title) ? up.Media!.FileName : title.Trim();
+        await _service.AddApplicantDocumentAsync(requestId, mobile, up.Media!.Id, docTitle);
+        TempData["Success"] = "مدرک شما بارگذاری شد.";
         return RedirectToAction(nameof(View), new { code = normalizedCode });
     }
 

@@ -29,6 +29,10 @@ public class SupportRequest : BaseEntity
     // ── درمان ───────────────────────────────────────────────────
     public string? TreatmentCenter { get; set; }
     public string? ReferredBy { get; set; }
+
+    /// <summary>مرکز درمانی معرفی‌کننده (در صورت ثبت از طریق پورتال بیمارستان).</summary>
+    public long? ReferringCenterId { get; set; }
+    public DialysisCenter? ReferringCenter { get; set; }
     public DialysisType DialysisType { get; set; } = DialysisType.Unknown;
     public int? SessionsPerWeek { get; set; }
     public string? NeedType { get; set; }

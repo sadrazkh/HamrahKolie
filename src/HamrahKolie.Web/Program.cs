@@ -50,6 +50,7 @@ try
     services.AddSingleton<ViteManifestService>();
     services.AddScoped<HamrahKolie.Application.Common.Interfaces.IOutputCacheInvalidator,
         HamrahKolie.Web.Infrastructure.OutputCacheInvalidator>();
+    services.AddScoped<HamrahKolie.Web.Services.IFileUploadService, HamrahKolie.Web.Services.FileUploadService>();
 
     // کوکی ورود
     services.ConfigureApplicationCookie(options =>

@@ -111,6 +111,12 @@ public class AccountController : Controller
                 return Redirect(model.ReturnUrl);
             }
 
+            // کاربران مرکز درمانی به پورتال خودشان هدایت می‌شوند (نه پنل مدیریت).
+            if (await _userManager.IsInRoleAsync(user, Roles.MedicalCenter))
+            {
+                return RedirectToAction("Index", "Hospital");
+            }
+
             return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
         }
 

@@ -1,0 +1,75 @@
+@using HamrahKolie.Domain.Entities
+@using HamrahKolie.Web.Helpers
+@model SupportRequest
+@{
+    ViewData["Title"] = $"بیمار {Model.TrackingCode}";
+}
+<div class="d-flex justify-between items-center" style="margin-bottom:1rem">
+    <div class="d-flex items-center gap-2">
+        <h2 class="mb-0">@Model.ApplicantName</h2>
+        <span class="badge badge-primary">@SupportRequestDisplay.Status(Model.Status)</span>
+    </div>
+    <a class="btn btn-ghost" asp-action="Index">→ بازگشت</a>
+</div>
+
+<div class="grid" style="grid-template-columns: 1fr 340px; gap:1.5rem; align-items:start">
+    <div class="stack">
+        <div class="card">
+            <h3 class="mt-0">خلاصه بیمار</h3>
+            <table class="table">
+                <tr><th>کد پیگیری</th><td dir="ltr">@Model.TrackingCode</td></tr>
+                <tr><th>موبایل</th><td dir="ltr">@Model.Mobile</td></tr>
+                <tr><th>نوع دیالیز</th><td>@SupportRequestDisplay.Dialysis(Model.DialysisType)</td></tr>
+                <tr><th>نوع نیاز</th><td>@(Model.NeedType ?? "—")</td></tr>
+                <tr><th>محل</th><td>@Model.Province @Model.City @Model.Village</td></tr>
+                <tr><th>تاریخ ثبت</th><td dir="ltr">@Model.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd")</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3 class="mt-0">مراحل بررسی</h3>
+            @foreach (var h in Model.History)
+            {
+                <div class="d-flex gap-4" style="padding:.3rem 0">
+                    <div style="min-width:130px" class="text-muted" dir="ltr">@h.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</div>
+                    <div><strong>@SupportRequestDisplay.Status(h.ToStatus)</strong>@if (!string.IsNullOrWhiteSpace(h.Note)) { <div class="text-muted">@h.Note</div> }</div>
+                </div>
+            }
+        </div>
+
+        @if (Model.Messages.Any())
+        {
+            <div class="card">
+                <h3 class="mt-0">پیام‌های کارشناسان</h3>
+                @foreach (var m in Model.Messages)
+                {
+                    <div class="alert alert-success">
+                        <div style="font-size:.8rem" class="text-muted">@m.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</div>
+                        @m.Body
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="card">
+        <h3 class="mt-0">مدارک</h3>
+        @if (Model.Documents.Any())
+        {
+            <ul>
+                @foreach (var d in Model.Documents)
+                {
+                    <li>@if (d.MediaFile != null) { <a href="@d.MediaFile.Url" target="_blank" rel="noopener">@d.Title</a> } else { @d.Title }</li>
+                }
+            </ul>
+        }
+        else { <p class="text-muted">مدرکی بارگذاری نشده است.</p> }
+
+        <form asp-action="Upload" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" style="border-top:1px solid var(--c-border);padding-top:1rem;margin-top:.5rem">
+            @Html.AntiForgeryToken()
+            <div class="form-group"><label class="form-label">عنوان مدرک</label><input class="form-control" name="title" placeholder="مثلاً برگه آزمایش" /></div>
+            <div class="form-group"><input class="form-control" type="file" name="file" accept="image/*,application/pdf" required /></div>
+            <button type="submit" class="btn btn-outline btn-block">بارگذاری مدرک</button>
+        </form>
+    </div>
+</div>

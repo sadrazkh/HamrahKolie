@@ -34,6 +34,12 @@ public class SupportRequestConfiguration : IEntityTypeConfiguration<SupportReque
         b.HasIndex(x => x.Status);
         b.HasIndex(x => x.Mobile);
         b.HasIndex(x => x.AssignedToUserId);
+        b.HasIndex(x => x.ReferringCenterId);
+
+        b.HasOne(x => x.ReferringCenter)
+            .WithMany()
+            .HasForeignKey(x => x.ReferringCenterId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
 

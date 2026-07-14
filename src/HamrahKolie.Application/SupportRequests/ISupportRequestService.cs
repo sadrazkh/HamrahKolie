@@ -8,14 +8,24 @@ namespace HamrahKolie.Application.SupportRequests;
 public interface ISupportRequestService
 {
     // ── عمومی ────────────────────────────────────────────────────
-    /// <summary>ثبت اولیه درخواست؛ کد پیگیری بازگردانده می‌شود.</summary>
-    Task<string> SubmitAsync(SupportRequestInput input, string consentVersion, CancellationToken ct = default);
+    /// <summary>ثبت اولیه درخواست؛ شناسه و کد پیگیری بازگردانده می‌شود.</summary>
+    Task<(long Id, string TrackingCode)> SubmitAsync(SupportRequestInput input, string consentVersion, CancellationToken ct = default);
 
     /// <summary>یافتن درخواست با کد پیگیری و موبایل (پس از تأیید OTP).</summary>
     Task<SupportRequest?> GetForApplicantAsync(string trackingCode, string mobile, CancellationToken ct = default);
 
     /// <summary>ثبت پاسخ متقاضی (پیام) روی درخواست.</summary>
     Task<bool> AddApplicantMessageAsync(long requestId, string mobile, string body, CancellationToken ct = default);
+
+    /// <summary>افزودن مدرک به درخواست (فایل قبلاً در رسانه ذخیره شده و شناسه آن داده می‌شود).</summary>
+    Task<bool> AddDocumentAsync(long requestId, long mediaFileId, string title, bool uploadedByApplicant, CancellationToken ct = default);
+
+    /// <summary>افزودن مدرک توسط متقاضی با بررسی مالکیت (موبایل).</summary>
+    Task<bool> AddApplicantDocumentAsync(long requestId, string mobile, long mediaFileId, string title, CancellationToken ct = default);
+
+    // ── پورتال مرکز درمانی ───────────────────────────────────────
+    Task<PagedResult<SupportRequest>> GetForCenterAsync(long centerId, int page, int pageSize, CancellationToken ct = default);
+    Task<SupportRequest?> GetForCenterDetailAsync(long id, long centerId, CancellationToken ct = default);
 
     // ── مدیریت ───────────────────────────────────────────────────
     Task<PagedResult<SupportRequest>> GetAdminListAsync(

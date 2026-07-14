@@ -1,6 +1,14 @@
 @model IReadOnlyList<UserListItem>
 @{
     ViewData["Title"] = "کاربران";
+    bool Can(string p) => User.HasClaim("permission", "*") || User.HasClaim("permission", p);
+}
+@if (Can(Permissions.UserManage))
+{
+    <div class="d-flex justify-between items-center" style="margin-bottom:1rem">
+        <p class="text-muted mb-0">مدیریت کاربران سامانه.</p>
+        <a class="btn btn-primary" asp-action="CreateHospital">+ حساب مرکز درمانی</a>
+    </div>
 }
 <div class="card">
     @if (Model.Count == 0)

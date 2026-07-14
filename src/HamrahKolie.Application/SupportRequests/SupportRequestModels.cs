@@ -38,4 +38,7 @@ public class SupportRequestInput
     public bool DataProcessingConsent { get; set; }
 
     public bool PublicDisclosureConsent { get; set; }
+
+    /// <summary>در صورت ثبت از پورتال بیمارستان، شناسه مرکز معرفی‌کننده.</summary>
+    public long? ReferringCenterId { get; set; }
 }
