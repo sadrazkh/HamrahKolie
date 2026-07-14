@@ -58,7 +58,8 @@
          data-delete-url="@Url.Action("Delete")"
          data-duplicate-url="@Url.Action("Duplicate")"
          data-reorder-url="@Url.Action("Reorder")"
-         data-publish-url="@Url.Action("PublishPage")">
+         data-publish-url="@Url.Action("PublishPage")"
+         data-upload-url="@Url.Action("UploadMedia")">
 
         <header class="pb-topbar">
             <div class="pb-topbar__brand">
@@ -234,6 +235,10 @@
                                             }
                                             <span data-media-caption>@(chosen?.FileName ?? "بدون رسانه انتخاب شده")</span>
                                         </div>
+                                        <label class="pb-media-upload" data-media-upload>
+                                            <input type="file" accept="image/*" hidden />
+                                            <span>⬆ بارگذاری تصویر جدید</span>
+                                        </label>
                                         <div class="pb-media-search"><input type="search" data-media-search placeholder="جست‌وجوی تصویر…" /></div>
                                         <div class="pb-media-grid">
                                             <button type="button" class="pb-media-item @(block.ImageId is null ? "selected" : "")" data-media-id="" data-media-name="" title="بدون رسانه">

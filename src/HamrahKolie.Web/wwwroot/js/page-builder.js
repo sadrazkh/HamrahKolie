@@ -51,7 +51,7 @@
       .forEach(attachLive);
   }
 
-  // ── انتخابگر بصری تصویر ────────────────────────────────────────
+  // ── انتخابگر بصری تصویر (با بارگذاری داخلی) ────────────────────
   function enhanceMediaPickers(scope) {
     scope.querySelectorAll('[data-media-picker]').forEach(function (picker) {
       if (picker.dataset.mediaReady) return;
@@ -60,30 +60,80 @@
       var caption = picker.querySelector('[data-media-caption]');
       var selectedBox = picker.querySelector('.pb-media-selected');
       var search = picker.querySelector('[data-media-search]');
+      var grid = picker.querySelector('.pb-media-grid');
+      var uploadBox = picker.querySelector('[data-media-upload]');
+
+      function selectItem(item) {
+        picker.querySelectorAll('.pb-media-item').forEach(function (x) { x.classList.remove('selected'); });
+        item.classList.add('selected');
+        hidden.value = item.dataset.mediaId || '';
+        var img = item.querySelector('img');
+        if (caption) caption.textContent = item.dataset.mediaName || 'بدون رسانه انتخاب شده';
+        if (selectedBox) {
+          var prev = selectedBox.querySelector('img');
+          if (prev) prev.remove();
+          if (img) { var clone = img.cloneNode(true); clone.removeAttribute('loading'); selectedBox.insertBefore(clone, caption); }
+        }
+        hidden.dispatchEvent(new Event('input', { bubbles: true }));
+      }
 
       picker.querySelectorAll('.pb-media-item').forEach(function (item) {
-        item.addEventListener('click', function () {
-          picker.querySelectorAll('.pb-media-item').forEach(function (x) { x.classList.remove('selected'); });
-          item.classList.add('selected');
-          hidden.value = item.dataset.mediaId || '';
-          var img = item.querySelector('img');
-          if (caption) caption.textContent = item.dataset.mediaName || 'بدون رسانه انتخاب شده';
-          if (selectedBox) {
-            var prev = selectedBox.querySelector('img');
-            if (prev) prev.remove();
-            if (img) { var clone = img.cloneNode(true); clone.removeAttribute('loading'); selectedBox.insertBefore(clone, caption); }
-          }
-          hidden.dispatchEvent(new Event('input', { bubbles: true }));
-        });
+        item.addEventListener('click', function () { selectItem(item); });
       });
 
       if (search) {
         search.addEventListener('input', function () {
           var q = search.value.trim().toLowerCase();
           picker.querySelectorAll('.pb-media-item').forEach(function (item) {
-            if (!item.dataset.mediaId) return; // «بدون» همیشه بماند
+            if (!item.dataset.mediaId) return;
             item.hidden = q.length > 0 && !(item.dataset.mediaName || '').toLowerCase().includes(q);
           });
+        });
+      }
+
+      function addUploadedItem(data) {
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'pb-media-item';
+        item.dataset.mediaId = String(data.id);
+        item.dataset.mediaName = data.fileName || '';
+        item.title = data.fileName || '';
+        if (data.isImage) {
+          var img = document.createElement('img');
+          img.src = data.url; img.alt = data.fileName || '';
+          item.appendChild(img);
+        } else {
+          item.innerHTML = '<span class="pb-media-video">▶</span>';
+        }
+        item.addEventListener('click', function () { selectItem(item); });
+        var first = grid.querySelector('.pb-media-item'); // «بدون»
+        if (first && first.nextSibling) grid.insertBefore(item, first.nextSibling); else grid.appendChild(item);
+        selectItem(item);
+      }
+
+      if (uploadBox && root.dataset.uploadUrl) {
+        var fileInput = uploadBox.querySelector('input[type="file"]');
+        fileInput.addEventListener('change', function () {
+          var file = fileInput.files && fileInput.files[0];
+          if (!file) return;
+          uploadBox.classList.add('uploading');
+          var label = uploadBox.querySelector('span');
+          var original = label ? label.textContent : '';
+          if (label) label.textContent = 'در حال بارگذاری…';
+          var fd = new FormData();
+          fd.append('file', file);
+          fetch(root.dataset.uploadUrl, { method: 'POST', headers: headers(false), body: fd })
+            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+            .then(function (res) {
+              if (res.ok && res.d.ok) { addUploadedItem(res.d); }
+              else { setStatus((res.d && res.d.message) || 'بارگذاری ناموفق بود.', 'error'); }
+            })
+            .catch(function (e) { setStatus(e.message, 'error'); })
+            .finally(function () {
+              uploadBox.classList.remove('uploading');
+              if (label) label.textContent = original;
+              fileInput.value = '';
+            });
         });
       }
     });

@@ -50,3 +50,6 @@
 .pb-media-video { font-size: 1.4rem; color: #1f6f40; }
 .pb-media-manage { display: inline-block; margin-top: 8px; font-size: .78rem; color: #1f6fb2; text-decoration: none; }
 .pb-media-manage:hover { text-decoration: underline; }
+.pb-media-upload { display: block; text-align: center; border: 1.5px dashed #86c99a; border-radius: 8px; padding: 8px; margin-bottom: 8px; cursor: pointer; color: #1f6f40; background: #f4fbf6; font-size: .82rem; font-weight: 700; }
+.pb-media-upload:hover { background: #eaf6ee; }
+.pb-media-upload.uploading { opacity: .6; pointer-events: none; }
