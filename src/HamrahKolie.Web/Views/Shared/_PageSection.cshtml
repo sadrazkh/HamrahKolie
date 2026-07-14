@@ -1,9 +1,31 @@
+@using System.Globalization
+@using System.Text.RegularExpressions
 @using HamrahKolie.Application.PageBuilder
 @using HamrahKolie.Domain.Entities
 @using HamrahKolie.Domain.Enums
 @inject HamrahKolie.Application.Cms.IContentService ContentService
+@inject HamrahKolie.Application.PageBuilder.IMetricsProvider Metrics
 @model PageSection
 @{
+    var metrics = await Metrics.GetMapAsync();
+
+    // جایگزینی توکن‌های داده زنده {{key}} با مقدار واقعی.
+    string Bind(string? raw)
+        => string.IsNullOrEmpty(raw) ? raw ?? "" : Regex.Replace(raw, @"\{\{\s*([a-zA-Z0-9_]+)\s*\}\}",
+            m => metrics.TryGetValue(m.Groups[1].Value, out var mv) ? mv.Formatted : m.Value);
+
+    // مقدار عددی هدف برای انیمیشن شمارنده (از توکن یا عدد فارسی/انگلیسی).
+    string? CountTarget(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+        var token = Regex.Match(raw, @"^\s*\{\{\s*([a-zA-Z0-9_]+)\s*\}\}\s*$");
+        if (token.Success && metrics.TryGetValue(token.Groups[1].Value, out var mv))
+            return ((long)mv.Value).ToString(CultureInfo.InvariantCulture);
+        var en = new string(raw.Select(c => c is >= '۰' and <= '۹' ? (char)('0' + (c - '۰'))
+            : c is >= '٠' and <= '٩' ? (char)('0' + (c - '٠')) : c).Where(char.IsDigit).ToArray());
+        return en.Length is > 0 and <= 15 ? en : null;
+    }
+
     var style = Model.GetStyle();
     var background = style.BackgroundColor ?? (Model.Background switch
     {
@@ -59,8 +81,8 @@ else
                 case SectionType.Hero:
                     <div class="pb-hero">
                         <div class="pb-hero__content">
-                            @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h1>@Model.Title</h1> }
-                            @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="lead">@Model.Subtitle</p> }
+                            @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h1>@Bind(Model.Title)</h1> }
+                            @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="lead">@Bind(Model.Subtitle)</p> }
                             <div class="pb-actions">
                                 @if (!string.IsNullOrWhiteSpace(Model.ButtonText)) { <a class="btn btn-primary btn-lg" href="@Model.ButtonUrl">@Model.ButtonText</a> }
                                 @if (!string.IsNullOrWhiteSpace(Model.SecondaryButtonText)) { <a class="btn btn-outline btn-lg" href="@Model.SecondaryButtonUrl">@Model.SecondaryButtonText</a> }
@@ -68,79 +90,83 @@ else
                         </div>
                         @if (Model.Image is not null)
                         {
-                            <img class="pb-hero__image" src="@Model.Image.Url" alt="@Model.Title" />
+                            <img class="pb-hero__image" src="@Model.Image.Url" alt="@Bind(Model.Title)" />
                         }
                     </div>
                     break;
 
                 case SectionType.Heading:
                     <div class="pb-heading">
-                        @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Model.Title</h2> }
-                        @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p>@Model.Subtitle</p> }
+                        @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Bind(Model.Title)</h2> }
+                        @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p>@Bind(Model.Subtitle)</p> }
                     </div>
                     break;
 
                 case SectionType.ImageText:
                     <div class="pb-image-text">
-                        @if (Model.Image is not null) { <img src="@Model.Image.Url" alt="@Model.Title" loading="lazy" /> }
+                        @if (Model.Image is not null) { <img src="@Model.Image.Url" alt="@Bind(Model.Title)" loading="lazy" /> }
                         <div>
-                            @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Model.Title</h2> }
-                            @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="lead">@Model.Subtitle</p> }
-                            @if (!string.IsNullOrWhiteSpace(Model.Body)) { <div class="content-body">@Html.Raw(Model.Body)</div> }
+                            @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Bind(Model.Title)</h2> }
+                            @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="lead">@Bind(Model.Subtitle)</p> }
+                            @if (!string.IsNullOrWhiteSpace(Model.Body)) { <div class="content-body">@Html.Raw(Bind(Model.Body))</div> }
                             @if (!string.IsNullOrWhiteSpace(Model.ButtonText)) { <a class="btn btn-primary" href="@Model.ButtonUrl">@Model.ButtonText</a> }
                         </div>
                     </div>
                     break;
 
                 case SectionType.Stats:
-                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Model.Title</h2> }
-                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Model.Subtitle</p> }
+                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Bind(Model.Title)</h2> }
+                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Bind(Model.Subtitle)</p> }
                     <div class="pb-stats">
                         @foreach (var item in Model.GetStats())
                         {
-                            <div class="stat"><div class="stat-value">@item.Value</div><div class="stat-label">@item.Label</div></div>
+                            var target = CountTarget(item.Value);
+                            <div class="stat">
+                                <div class="stat-value" data-count-to="@target">@Bind(item.Value)</div>
+                                <div class="stat-label">@Bind(item.Label)</div>
+                            </div>
                         }
                     </div>
                     break;
 
                 case SectionType.FeatureCards:
-                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Model.Title</h2> }
-                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Model.Subtitle</p> }
+                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Bind(Model.Title)</h2> }
+                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Bind(Model.Subtitle)</p> }
                     <div class="pb-cards">
                         @foreach (var item in Model.GetCards())
                         {
-                            <article class="card card-hover"><h3>@item.Title</h3><p class="text-muted mb-0">@item.Text</p></article>
+                            <article class="card card-hover"><h3>@Bind(item.Title)</h3><p class="text-muted mb-0">@Bind(item.Text)</p></article>
                         }
                     </div>
                     break;
 
                 case SectionType.Steps:
-                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Model.Title</h2> }
-                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Model.Subtitle</p> }
+                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Bind(Model.Title)</h2> }
+                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Bind(Model.Subtitle)</p> }
                     <div class="pb-steps">
                         @{ var stepNumber = 1; }
                         @foreach (var item in Model.GetCards())
                         {
-                            <div class="step"><div class="step-num">@stepNumber</div><h3>@item.Title</h3><p class="text-muted mb-0">@item.Text</p></div>
+                            <div class="step"><div class="step-num">@stepNumber</div><h3>@Bind(item.Title)</h3><p class="text-muted mb-0">@Bind(item.Text)</p></div>
                             stepNumber++;
                         }
                     </div>
                     break;
 
                 case SectionType.Faq:
-                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Model.Title</h2> }
-                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Model.Subtitle</p> }
+                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Bind(Model.Title)</h2> }
+                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Bind(Model.Subtitle)</p> }
                     <div class="pb-faq">
                         @foreach (var item in Model.GetCards())
                         {
-                            <details><summary>@item.Title</summary><p>@item.Text</p></details>
+                            <details><summary>@Bind(item.Title)</summary><p>@Bind(item.Text)</p></details>
                         }
                     </div>
                     break;
 
                 case SectionType.Video:
-                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Model.Title</h2> }
-                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Model.Subtitle</p> }
+                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Bind(Model.Title)</h2> }
+                    @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Bind(Model.Subtitle)</p> }
                     @if (Model.Image is not null && Model.Image.ContentType.StartsWith("video/"))
                     {
                         <video class="pb-video" controls preload="metadata"><source src="@Model.Image.Url" type="@Model.Image.ContentType" /></video>
@@ -153,15 +179,15 @@ else
 
                 case SectionType.CallToAction:
                     <div class="pb-cta">
-                        @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Model.Title</h2> }
-                        @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p>@Model.Subtitle</p> }
+                        @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Bind(Model.Title)</h2> }
+                        @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p>@Bind(Model.Subtitle)</p> }
                         @if (!string.IsNullOrWhiteSpace(Model.ButtonText)) { <a class="btn btn-accent btn-lg" href="@Model.ButtonUrl">@Model.ButtonText</a> }
                     </div>
                     break;
 
                 case SectionType.RichText:
-                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Model.Title</h2> }
-                    <div class="content-body">@Html.Raw(Model.Body)</div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Bind(Model.Title)</h2> }
+                    <div class="content-body">@Html.Raw(Bind(Model.Body))</div>
                     break;
 
                 case SectionType.LatestContent:
@@ -175,8 +201,8 @@ else
                             articles = await ContentService.GetLatestPublishedAsync(ContentType.Article, count);
                         }
                         catch { }
-                        if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Model.Title</h2> }
-                        if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Model.Subtitle</p> }
+                        if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Bind(Model.Title)</h2> }
+                        if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="text-muted">@Bind(Model.Subtitle)</p> }
                         <div class="pb-cards">
                             @foreach (var item in news)
                             {

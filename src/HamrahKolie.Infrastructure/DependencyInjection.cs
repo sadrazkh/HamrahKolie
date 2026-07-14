@@ -71,6 +71,7 @@ public static class DependencyInjection
         services.AddSingleton<IStorageService, LocalStorageService>();
         services.AddScoped<HamrahKolie.Application.Cms.IContentService, ContentService>();
         services.AddScoped<HamrahKolie.Application.PageBuilder.IPageBuilderService, PageBuilderService>();
+        services.AddScoped<HamrahKolie.Application.PageBuilder.IMetricsProvider, MetricsProvider>();
 
         // کمپین و کمک مالی
         services.AddScoped<HamrahKolie.Application.Campaigns.ICampaignService, CampaignService>();

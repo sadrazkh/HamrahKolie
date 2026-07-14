@@ -1,9 +1,13 @@
 @inject HamrahKolie.Web.Infrastructure.Vite.ViteManifestService Vite
+@inject HamrahKolie.Application.PageBuilder.IMetricsProvider Metrics
 @using HamrahKolie.Application.PageBuilder
 @using HamrahKolie.Domain.Enums
 @model HamrahKolie.Web.Areas.Admin.ViewModels.PageBuilderEditorViewModel
 @{
     Layout = null;
+    var metricsList = await Metrics.GetAllAsync();
+    var metricsJson = System.Text.Json.JsonSerializer.Serialize(
+        metricsList.Select(m => new { key = m.Key, label = m.Label, value = m.Formatted }));
     string TypeName(SectionType type) => type switch
     {
         SectionType.Hero => "قهرمان",
@@ -46,6 +50,7 @@
     @Html.AntiForgeryToken()
     <div id="pb-editor"
          class="pb-editor"
+         data-metrics="@metricsJson"
          data-page-key="@Model.PageKey"
          data-selected-id="@Model.SelectedSectionId"
          data-create-url="@Url.Action("Create")"

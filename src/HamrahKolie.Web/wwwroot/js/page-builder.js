@@ -15,6 +15,7 @@
   let autosaveTimer = null;
   const undoStack = [];
   const redoStack = [];
+  const metrics = (function () { try { return JSON.parse(root.dataset.metrics || '[]'); } catch (_) { return []; } })();
 
   function setStatus(text, mode) {
     state.textContent = text;
@@ -185,7 +186,27 @@
   function addRepeaterRow(repeater, item) {
     const isStats = repeater.dataset.itemsKind === 'stats';
     const row = document.createElement('div'); row.className = 'pb-repeat-row'; row.draggable = true;
-    row.innerHTML = `<span class="pb-repeat-row__drag">⠿</span><div class="pb-repeat-row__fields"><input data-item-field="${isStats ? 'value' : 'title'}" value="${escapeHtml(item[isStats ? 'value' : 'title'] || '')}" placeholder="${isStats ? 'مقدار' : 'عنوان'}"><input data-item-field="${isStats ? 'label' : 'text'}" value="${escapeHtml(item[isStats ? 'label' : 'text'] || '')}" placeholder="${isStats ? 'برچسب' : 'متن'}"></div><button type="button" title="حذف">×</button>`;
+    let metricPicker = '';
+    if (isStats && metrics.length) {
+      const opts = ['<option value="">— داده زنده (اختیاری) —</option>']
+        .concat(metrics.map(m => `<option value="${escapeHtml(m.key)}">${escapeHtml(m.label)} (${escapeHtml(m.value)})</option>`))
+        .join('');
+      metricPicker = `<select class="pb-metric-picker" title="اتصال به داده زنده سایت">${opts}</select>`;
+    }
+    row.innerHTML = `<span class="pb-repeat-row__drag">⠿</span><div class="pb-repeat-row__fields"><input data-item-field="${isStats ? 'value' : 'title'}" value="${escapeHtml(item[isStats ? 'value' : 'title'] || '')}" placeholder="${isStats ? 'مقدار یا {{data}}' : 'عنوان'}"><input data-item-field="${isStats ? 'label' : 'text'}" value="${escapeHtml(item[isStats ? 'label' : 'text'] || '')}" placeholder="${isStats ? 'برچسب' : 'متن'}">${metricPicker}</div><button type="button" title="حذف">×</button>`;
+    const picker = row.querySelector('.pb-metric-picker');
+    if (picker) {
+      picker.addEventListener('change', () => {
+        if (!picker.value) return;
+        const valueInput = row.querySelector('[data-item-field="value"]');
+        valueInput.value = '{{' + picker.value + '}}';
+        const labelInput = row.querySelector('[data-item-field="label"]');
+        const chosen = metrics.find(m => m.key === picker.value);
+        if (labelInput && !labelInput.value && chosen) labelInput.value = chosen.label;
+        repeater.dispatchEvent(new Event('input', { bubbles: true }));
+        picker.value = '';
+      });
+    }
     row.querySelector('button').addEventListener('click', () => { row.remove(); repeater.dispatchEvent(new Event('input', { bubbles:true })); });
     row.addEventListener('dragstart', () => row.classList.add('dragging'));
     row.addEventListener('dragend', () => row.classList.remove('dragging'));

@@ -125,11 +125,20 @@
 .pb-faq p { margin: .8rem 0 0; color: var(--c-text-muted); }
 .pb-video { display: block; width: min(100%, 980px); max-height: 620px; margin: 1.5rem auto 0; border-radius: 18px; background: #111; }
 .pb-divider hr { margin: 0; border: 0; border-top: 1px solid var(--c-border); }
-.pb-animate-fade { animation: pbFade .55s ease both; }
-.pb-animate-slide-up { animation: pbSlideUp .55s ease both; }
-.pb-animate-zoom { animation: pbZoom .5s ease both; }
-@keyframes pbFade { from { opacity: 0; } }
-@keyframes pbSlideUp { from { opacity: 0; transform: translateY(22px); } }
-@keyframes pbZoom { from { opacity: 0; transform: scale(.97); } }
+/* افکت ورود هنگام اسکرول (Scroll Reveal). فقط وقتی JS فعال است پنهان می‌شوند تا بدون JS محتوا دیده شود. */
+html.pb-js .pb-animate-fade,
+html.pb-js .pb-animate-slide-up,
+html.pb-js .pb-animate-zoom { opacity: 0; will-change: transform, opacity; }
+.pb-animate-fade.pb-in { animation: pbFade .6s ease both; }
+.pb-animate-slide-up.pb-in { animation: pbSlideUp .7s cubic-bezier(.22,.61,.36,1) both; }
+.pb-animate-zoom.pb-in { animation: pbZoom .6s ease both; }
+@keyframes pbFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pbSlideUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes pbZoom { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  html.pb-js .pb-animate-fade, html.pb-js .pb-animate-slide-up, html.pb-js .pb-animate-zoom { opacity: 1 !important; animation: none !important; }
+}
+/* شمارنده متحرک اعداد */
+.stat-value[data-count-to] { font-variant-numeric: tabular-nums; }
 @media (min-width: 850px) { .pb-hero { grid-template-columns: 1.05fr .95fr; } }
 @media (max-width: 720px) { .pb-image-text { grid-template-columns: 1fr; } }
