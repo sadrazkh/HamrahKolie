@@ -35,6 +35,22 @@ public static class DbSeeder
         await SeedCentersAsync(db, ct);
         await SeedTemplatesAsync(db, ct);
         await SeedFormsAsync(db, ct);
+        await SeedStaticPagesAsync(db, ct);
+    }
+
+    /// <summary>
+    /// صفحات ثابت (درباره ما، خدمات) را از ابتدا با سکشن‌های پیش‌فرض صفحه‌ساز پر می‌کند
+    /// تا مثل بقیهٔ سایت کاملاً از طریق ویرایشگر بصری قابل مدیریت و سازگار باشند.
+    /// Idempotent: اگر صفحه از قبل سکشن داشته باشد، کاری نمی‌کند.
+    /// </summary>
+    private static async Task SeedStaticPagesAsync(ApplicationDbContext db, CancellationToken ct)
+    {
+        foreach (var pageKey in new[] { "about", "services" })
+        {
+            if (await db.PageSections.AnyAsync(s => s.PageKey == pageKey, ct)) continue;
+            db.PageSections.AddRange(PageBuilderDefaults.Build(pageKey));
+            await db.SaveChangesAsync(ct);
+        }
     }
 
     private static async Task SeedTemplatesAsync(ApplicationDbContext db, CancellationToken ct)

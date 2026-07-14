@@ -86,9 +86,9 @@
     var heroTitle = Bind(heroSection?.Title ?? "از روستا تا زندگی");
     var heroSubtitle = Bind(heroSection?.Subtitle ?? "با حمایت شما، مسیر سخت درمان را هموار می‌کنیم تا بیماران دیالیزی مناطق محروم با آرامش بیشتری به درمان و زندگی در کنار خانواده ادامه دهند.");
     var heroImage = heroSection?.Image?.Url ?? Url.Content("~/img/home-journey-hero.png");
-    var primaryText = string.IsNullOrWhiteSpace(heroSection?.ButtonText) ? "حمایت مالی" : heroSection!.ButtonText!.Replace("❤", "").Trim();
+    var primaryText = Bind(string.IsNullOrWhiteSpace(heroSection?.ButtonText) ? "حمایت مالی" : heroSection!.ButtonText!.Replace("❤", "").Trim());
     var primaryUrl = string.IsNullOrWhiteSpace(heroSection?.ButtonUrl) ? Url.Action("Donate", "Home") : heroSection!.ButtonUrl;
-    var secondaryText = string.IsNullOrWhiteSpace(heroSection?.SecondaryButtonText) ? "آشنایی با فعالیت‌ها" : heroSection!.SecondaryButtonText;
+    var secondaryText = Bind(string.IsNullOrWhiteSpace(heroSection?.SecondaryButtonText) ? "آشنایی با فعالیت‌ها" : heroSection!.SecondaryButtonText);
     var secondaryUrl = string.IsNullOrWhiteSpace(heroSection?.SecondaryButtonUrl) ? Url.Action("Services", "Home") : heroSection!.SecondaryButtonUrl;
 
     var featureCards = featureSection?.GetCards() ?? new[]
@@ -278,7 +278,7 @@
             <p>@Bind(calloutSection?.Subtitle ?? "هر همراهی، بخشی از مسیر یک بیمار تا مرکز درمان را کوتاه‌تر می‌کند.")</p>
         </div>
         <a class="btn btn-lg home-callout__button" href="@(calloutSection?.ButtonUrl ?? Url.Action("Donate", "Home"))">
-            @(calloutSection?.ButtonText ?? "همین حالا همراه شوید")
+            @Bind(calloutSection?.ButtonText ?? "همین حالا همراه شوید")
             <span aria-hidden="true">←</span>
         </a>
     </div>

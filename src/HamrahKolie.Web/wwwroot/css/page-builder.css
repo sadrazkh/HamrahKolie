@@ -29,3 +29,24 @@
 /* انتخابگر داده زنده در ردیف‌های آمار */
 .pb-repeat-row__fields { flex-wrap: wrap; }
 .pb-metric-picker { flex: 1 1 100%; margin-top: 4px; font-size: .8rem; border: 1px dashed #86c99a; border-radius: 6px; padding: 4px; color: #1f6f40; background: #f4fbf6; }
+
+/* کنترل «درج داده زنده» کنار فیلدها */
+.pb-live-wrap { display: inline-block; margin-top: 4px; }
+.pb-live-insert { font-size: .72rem; border: 1px dashed #86c99a; border-radius: 6px; padding: 3px 6px; color: #1f6f40; background: #f4fbf6; cursor: pointer; max-width: 100%; }
+.pb-field .pb-live-wrap { display: block; }
+
+/* ── انتخابگر بصری تصویر ─────────────────────────────── */
+.pb-media-picker { border: 1px solid #e3e0d7; border-radius: 10px; padding: 8px; background: #fff; }
+.pb-media-selected { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: .82rem; color: #5c6b63; }
+.pb-media-selected img { width: 54px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid #e3e0d7; }
+.pb-media-search input { width: 100%; padding: 6px 8px; border: 1px solid #e3e0d7; border-radius: 6px; font-family: inherit; font-size: .82rem; margin-bottom: 8px; }
+.pb-media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 220px; overflow-y: auto; padding: 2px; }
+.pb-media-item { position: relative; aspect-ratio: 4/3; border: 2px solid transparent; border-radius: 8px; overflow: hidden; cursor: pointer; background: #f4f2ec; padding: 0; display: grid; place-items: center; }
+.pb-media-item img { width: 100%; height: 100%; object-fit: cover; }
+.pb-media-item:hover { border-color: #86c99a; }
+.pb-media-item.selected { border-color: #2e9e5b; box-shadow: 0 0 0 2px rgba(46,158,91,.25); }
+.pb-media-item.selected::after { content: "✓"; position: absolute; top: 2px; inset-inline-end: 4px; background: #2e9e5b; color: #fff; border-radius: 50%; width: 18px; height: 18px; display: grid; place-items: center; font-size: .7rem; }
+.pb-media-none { font-size: .72rem; color: #5c6b63; }
+.pb-media-video { font-size: 1.4rem; color: #1f6f40; }
+.pb-media-manage { display: inline-block; margin-top: 8px; font-size: .78rem; color: #1f6fb2; text-decoration: none; }
+.pb-media-manage:hover { text-decoration: underline; }

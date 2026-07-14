@@ -27,19 +27,43 @@ public class PageBuilderController : Controller
     private readonly IContentService _content;
     private readonly IHtmlSanitizerService _sanitizer;
     private readonly IAuditService _audit;
+    private readonly HamrahKolie.Web.Services.IFileUploadService _uploads;
 
     public PageBuilderController(
         ApplicationDbContext db,
         IPageBuilderService pageBuilder,
         IContentService content,
         IHtmlSanitizerService sanitizer,
-        IAuditService audit)
+        IAuditService audit,
+        HamrahKolie.Web.Services.IFileUploadService uploads)
     {
         _db = db;
         _pageBuilder = pageBuilder;
         _content = content;
         _sanitizer = sanitizer;
         _audit = audit;
+        _uploads = uploads;
+    }
+
+    /// <summary>بارگذاری تصویر مستقیماً از داخل انتخابگر رسانه (خروجی JSON برای AJAX).</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequestSizeLimit(11 * 1024 * 1024)]
+    public async Task<IActionResult> UploadMedia(IFormFile? file)
+    {
+        var result = await _uploads.SaveAsync(file);
+        if (!result.Success)
+            return BadRequest(new { ok = false, message = result.Error });
+
+        await _audit.LogAsync("Media.Upload", $"تصویر «{result.Media!.FileName}» از صفحه‌ساز بارگذاری شد.", "Media", result.Media.Id.ToString());
+        return Json(new
+        {
+            ok = true,
+            id = result.Media.Id,
+            url = result.Media.Url,
+            fileName = result.Media.FileName,
+            isImage = result.Media.ContentType.StartsWith("image/"),
+        });
     }
 
     /// <summary>ویرایشگر بصری چندصفحه‌ای.</summary>

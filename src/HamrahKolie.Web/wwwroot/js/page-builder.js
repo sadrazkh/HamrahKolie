@@ -17,6 +17,78 @@
   const redoStack = [];
   const metrics = (function () { try { return JSON.parse(root.dataset.metrics || '[]'); } catch (_) { return []; } })();
 
+  // ── درج داده زنده در هر فیلد متنی ──────────────────────────────
+  function metricSelectHtml() {
+    if (!metrics.length) return '';
+    var opts = ['<option value="">⚡ داده زنده</option>']
+      .concat(metrics.map(function (m) { return '<option value="' + escapeHtml(m.key) + '">' + escapeHtml(m.label) + '</option>'; }))
+      .join('');
+    return '<select class="pb-live-insert" title="درج مقدار زندهٔ سایت در محل مکان‌نما">' + opts + '</select>';
+  }
+  function insertToken(input, key) {
+    var tok = '{{' + key + '}}';
+    var start = input.selectionStart != null ? input.selectionStart : input.value.length;
+    var end = input.selectionEnd != null ? input.selectionEnd : input.value.length;
+    input.value = input.value.slice(0, start) + tok + input.value.slice(end);
+    input.focus();
+    if (input.setSelectionRange) { var p = start + tok.length; input.setSelectionRange(p, p); }
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  function attachLive(input) {
+    if (!metrics.length || input.dataset.liveAttached) return;
+    if (input.type === 'hidden' || input.getAttribute('dir') === 'ltr') return;
+    input.dataset.liveAttached = '1';
+    var wrap = document.createElement('span');
+    wrap.className = 'pb-live-wrap';
+    wrap.innerHTML = metricSelectHtml();
+    var sel = wrap.querySelector('select');
+    if (!sel) return;
+    sel.addEventListener('change', function () { if (sel.value) { insertToken(input, sel.value); sel.value = ''; } });
+    input.insertAdjacentElement('afterend', wrap);
+  }
+  function enhanceLiveData(scope) {
+    scope.querySelectorAll('[data-inspector-panel="content"] input[name]:not([type="hidden"]), [data-inspector-panel="content"] textarea[name]')
+      .forEach(attachLive);
+  }
+
+  // ── انتخابگر بصری تصویر ────────────────────────────────────────
+  function enhanceMediaPickers(scope) {
+    scope.querySelectorAll('[data-media-picker]').forEach(function (picker) {
+      if (picker.dataset.mediaReady) return;
+      picker.dataset.mediaReady = '1';
+      var hidden = picker.querySelector('input[name="ImageId"]');
+      var caption = picker.querySelector('[data-media-caption]');
+      var selectedBox = picker.querySelector('.pb-media-selected');
+      var search = picker.querySelector('[data-media-search]');
+
+      picker.querySelectorAll('.pb-media-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+          picker.querySelectorAll('.pb-media-item').forEach(function (x) { x.classList.remove('selected'); });
+          item.classList.add('selected');
+          hidden.value = item.dataset.mediaId || '';
+          var img = item.querySelector('img');
+          if (caption) caption.textContent = item.dataset.mediaName || 'بدون رسانه انتخاب شده';
+          if (selectedBox) {
+            var prev = selectedBox.querySelector('img');
+            if (prev) prev.remove();
+            if (img) { var clone = img.cloneNode(true); clone.removeAttribute('loading'); selectedBox.insertBefore(clone, caption); }
+          }
+          hidden.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      });
+
+      if (search) {
+        search.addEventListener('input', function () {
+          var q = search.value.trim().toLowerCase();
+          picker.querySelectorAll('.pb-media-item').forEach(function (item) {
+            if (!item.dataset.mediaId) return; // «بدون» همیشه بماند
+            item.hidden = q.length > 0 && !(item.dataset.mediaName || '').toLowerCase().includes(q);
+          });
+        });
+      }
+    });
+  }
+
   function setStatus(text, mode) {
     state.textContent = text;
     state.className = 'pb-save-state' + (mode ? ' ' + mode : '');
@@ -160,6 +232,8 @@
     });
     form.addEventListener('submit', event => { event.preventDefault(); saveForm(form); });
     hydrateRepeater(form);
+    enhanceLiveData(form);
+    enhanceMediaPickers(form);
   });
 
   async function saveForm(form) {
@@ -219,6 +293,8 @@
         repeater.dispatchEvent(new Event('input', { bubbles:true }));
       }
     });
+    // برای کارت‌ها/مراحل/سؤالات، امکان درج داده زنده در متن هر آیتم.
+    if (!isStats) row.querySelectorAll('[data-item-field]').forEach(attachLive);
     repeater.querySelector('.pb-repeater__rows').appendChild(row);
   }
   function serializeRepeater(form) {

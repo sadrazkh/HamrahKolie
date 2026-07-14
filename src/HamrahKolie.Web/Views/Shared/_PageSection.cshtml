@@ -84,8 +84,8 @@ else
                             @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h1>@Bind(Model.Title)</h1> }
                             @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="lead">@Bind(Model.Subtitle)</p> }
                             <div class="pb-actions">
-                                @if (!string.IsNullOrWhiteSpace(Model.ButtonText)) { <a class="btn btn-primary btn-lg" href="@Model.ButtonUrl">@Model.ButtonText</a> }
-                                @if (!string.IsNullOrWhiteSpace(Model.SecondaryButtonText)) { <a class="btn btn-outline btn-lg" href="@Model.SecondaryButtonUrl">@Model.SecondaryButtonText</a> }
+                                @if (!string.IsNullOrWhiteSpace(Model.ButtonText)) { <a class="btn btn-primary btn-lg" href="@Model.ButtonUrl">@Bind(Model.ButtonText)</a> }
+                                @if (!string.IsNullOrWhiteSpace(Model.SecondaryButtonText)) { <a class="btn btn-outline btn-lg" href="@Model.SecondaryButtonUrl">@Bind(Model.SecondaryButtonText)</a> }
                             </div>
                         </div>
                         @if (Model.Image is not null)
@@ -109,7 +109,7 @@ else
                             @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Bind(Model.Title)</h2> }
                             @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p class="lead">@Bind(Model.Subtitle)</p> }
                             @if (!string.IsNullOrWhiteSpace(Model.Body)) { <div class="content-body">@Html.Raw(Bind(Model.Body))</div> }
-                            @if (!string.IsNullOrWhiteSpace(Model.ButtonText)) { <a class="btn btn-primary" href="@Model.ButtonUrl">@Model.ButtonText</a> }
+                            @if (!string.IsNullOrWhiteSpace(Model.ButtonText)) { <a class="btn btn-primary" href="@Model.ButtonUrl">@Bind(Model.ButtonText)</a> }
                         </div>
                     </div>
                     break;
@@ -181,7 +181,7 @@ else
                     <div class="pb-cta">
                         @if (!string.IsNullOrWhiteSpace(Model.Title)) { <h2>@Bind(Model.Title)</h2> }
                         @if (!string.IsNullOrWhiteSpace(Model.Subtitle)) { <p>@Bind(Model.Subtitle)</p> }
-                        @if (!string.IsNullOrWhiteSpace(Model.ButtonText)) { <a class="btn btn-accent btn-lg" href="@Model.ButtonUrl">@Model.ButtonText</a> }
+                        @if (!string.IsNullOrWhiteSpace(Model.ButtonText)) { <a class="btn btn-accent btn-lg" href="@Model.ButtonUrl">@Bind(Model.ButtonText)</a> }
                     </div>
                     break;
 

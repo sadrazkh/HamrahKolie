@@ -223,15 +223,39 @@
 
                             @if (block.Type is SectionType.Hero or SectionType.ImageText or SectionType.Video)
                             {
-                                <label class="pb-field"><span>رسانه</span>
-                                    <select name="ImageId">
-                                        <option value="">بدون رسانه</option>
-                                        @foreach (var media in Model.Media)
-                                        {
-                                            <option value="@media.Id" selected="@(block.ImageId == media.Id)">@media.FileName</option>
-                                        }
-                                    </select>
-                                </label>
+                                <div class="pb-field"><span>رسانه</span>
+                                    <div class="pb-media-picker" data-media-picker>
+                                        <input type="hidden" name="ImageId" value="@block.ImageId" />
+                                        <div class="pb-media-selected">
+                                            @{ var chosen = Model.Media.FirstOrDefault(x => x.Id == block.ImageId); }
+                                            @if (chosen is not null && chosen.ContentType.StartsWith("image/"))
+                                            {
+                                                <img src="@chosen.Url" alt="@chosen.FileName" />
+                                            }
+                                            <span data-media-caption>@(chosen?.FileName ?? "بدون رسانه انتخاب شده")</span>
+                                        </div>
+                                        <div class="pb-media-search"><input type="search" data-media-search placeholder="جست‌وجوی تصویر…" /></div>
+                                        <div class="pb-media-grid">
+                                            <button type="button" class="pb-media-item @(block.ImageId is null ? "selected" : "")" data-media-id="" data-media-name="" title="بدون رسانه">
+                                                <span class="pb-media-none">بدون</span>
+                                            </button>
+                                            @foreach (var media in Model.Media)
+                                            {
+                                                <button type="button" class="pb-media-item @(block.ImageId == media.Id ? "selected" : "")" data-media-id="@media.Id" data-media-name="@media.FileName" title="@media.FileName">
+                                                    @if (media.ContentType.StartsWith("image/"))
+                                                    {
+                                                        <img src="@media.Url" alt="@media.FileName" loading="lazy" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="pb-media-video">▶</span>
+                                                    }
+                                                </button>
+                                            }
+                                        </div>
+                                        <a class="pb-media-manage" asp-area="Admin" asp-controller="Media" asp-action="Index" target="_blank">+ مدیریت و بارگذاری رسانه‌ها ↗</a>
+                                    </div>
+                                </div>
                             }
                             else { <input type="hidden" name="ImageId" value="@block.ImageId" /> }
 
