@@ -59,7 +59,8 @@
          data-duplicate-url="@Url.Action("Duplicate")"
          data-reorder-url="@Url.Action("Reorder")"
          data-publish-url="@Url.Action("PublishPage")"
-         data-upload-url="@Url.Action("UploadMedia")">
+         data-upload-url="@Url.Action("UploadMedia")"
+         data-delete-media-url="@Url.Action("DeleteMedia")">
 
         <header class="pb-topbar">
             <div class="pb-topbar__brand">
@@ -240,13 +241,13 @@
                                             <span>⬆ بارگذاری تصویر جدید</span>
                                         </label>
                                         <div class="pb-media-search"><input type="search" data-media-search placeholder="جست‌وجوی تصویر…" /></div>
-                                        <div class="pb-media-grid">
-                                            <button type="button" class="pb-media-item @(block.ImageId is null ? "selected" : "")" data-media-id="" data-media-name="" title="بدون رسانه">
+                                        <div class="pb-media-grid" data-media-dropzone>
+                                            <div class="pb-media-item @(block.ImageId is null ? "selected" : "")" data-media-id="" data-media-name="" role="button" tabindex="0" title="بدون رسانه">
                                                 <span class="pb-media-none">بدون</span>
-                                            </button>
+                                            </div>
                                             @foreach (var media in Model.Media)
                                             {
-                                                <button type="button" class="pb-media-item @(block.ImageId == media.Id ? "selected" : "")" data-media-id="@media.Id" data-media-name="@media.FileName" title="@media.FileName">
+                                                <div class="pb-media-item @(block.ImageId == media.Id ? "selected" : "")" data-media-id="@media.Id" data-media-name="@media.FileName" role="button" tabindex="0" title="@media.FileName">
                                                     @if (media.ContentType.StartsWith("image/"))
                                                     {
                                                         <img src="@media.Url" alt="@media.FileName" loading="lazy" />
@@ -255,9 +256,11 @@
                                                     {
                                                         <span class="pb-media-video">▶</span>
                                                     }
-                                                </button>
+                                                    <button type="button" class="pb-media-del" data-media-del title="حذف از کتابخانه">×</button>
+                                                </div>
                                             }
                                         </div>
+                                        <div class="pb-media-drophint">می‌توانید تصویر را همین‌جا بکشید و رها کنید.</div>
                                         <a class="pb-media-manage" asp-area="Admin" asp-controller="Media" asp-action="Index" target="_blank">+ مدیریت و بارگذاری رسانه‌ها ↗</a>
                                     </div>
                                 </div>

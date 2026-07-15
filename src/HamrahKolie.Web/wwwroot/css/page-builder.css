@@ -53,3 +53,11 @@
 .pb-media-upload { display: block; text-align: center; border: 1.5px dashed #86c99a; border-radius: 8px; padding: 8px; margin-bottom: 8px; cursor: pointer; color: #1f6f40; background: #f4fbf6; font-size: .82rem; font-weight: 700; }
 .pb-media-upload:hover { background: #eaf6ee; }
 .pb-media-upload.uploading { opacity: .6; pointer-events: none; }
+/* دکمهٔ حذف تصویر روی بندانگشتی */
+.pb-media-item { position: relative; }
+.pb-media-del { position: absolute; top: 2px; inset-inline-start: 2px; width: 18px; height: 18px; border: 0; border-radius: 50%; background: rgba(192,57,43,.9); color: #fff; font-size: .8rem; line-height: 1; cursor: pointer; display: none; place-items: center; padding: 0; z-index: 2; }
+.pb-media-item:hover .pb-media-del { display: grid; }
+.pb-media-del:hover { background: #a5281c; }
+/* حالت کشیدن‌ورهاکردن */
+.pb-media-grid.drag-over { outline: 2px dashed #2e9e5b; outline-offset: -2px; background: #eef7f0; border-radius: 8px; }
+.pb-media-drophint { font-size: .72rem; color: #9aa89f; text-align: center; margin-top: 4px; }

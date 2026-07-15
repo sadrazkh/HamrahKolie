@@ -28,6 +28,7 @@ public class PageBuilderController : Controller
     private readonly IHtmlSanitizerService _sanitizer;
     private readonly IAuditService _audit;
     private readonly HamrahKolie.Web.Services.IFileUploadService _uploads;
+    private readonly IStorageService _storage;
 
     public PageBuilderController(
         ApplicationDbContext db,
@@ -35,7 +36,8 @@ public class PageBuilderController : Controller
         IContentService content,
         IHtmlSanitizerService sanitizer,
         IAuditService audit,
-        HamrahKolie.Web.Services.IFileUploadService uploads)
+        HamrahKolie.Web.Services.IFileUploadService uploads,
+        IStorageService storage)
     {
         _db = db;
         _pageBuilder = pageBuilder;
@@ -43,6 +45,7 @@ public class PageBuilderController : Controller
         _sanitizer = sanitizer;
         _audit = audit;
         _uploads = uploads;
+        _storage = storage;
     }
 
     /// <summary>بارگذاری تصویر مستقیماً از داخل انتخابگر رسانه (خروجی JSON برای AJAX).</summary>
@@ -64,6 +67,23 @@ public class PageBuilderController : Controller
             fileName = result.Media.FileName,
             isImage = result.Media.ContentType.StartsWith("image/"),
         });
+    }
+
+    /// <summary>حذف یک تصویر از کتابخانه رسانه، از داخل انتخابگر صفحه‌ساز.</summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteMedia(long id)
+    {
+        var media = await _db.MediaFiles.FirstOrDefaultAsync(m => m.Id == id);
+        if (media is null) return NotFound(new { ok = false, message = "رسانه یافت نشد." });
+
+        var name = media.FileName;
+        await _storage.DeleteAsync(media.StoredPath);
+        _db.MediaFiles.Remove(media); // حذف نرم توسط Interceptor
+        await _db.SaveChangesAsync();
+        _pageBuilder.InvalidateCache("home"); // در صورت استفاده در صفحه اصلی
+        await _audit.LogAsync("Media.Delete", $"تصویر «{name}» از صفحه‌ساز حذف شد.", "Media", id.ToString());
+        return Json(new { ok = true });
     }
 
     /// <summary>ویرایشگر بصری چندصفحه‌ای.</summary>

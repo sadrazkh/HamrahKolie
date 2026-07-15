@@ -51,7 +51,7 @@
       .forEach(attachLive);
   }
 
-  // ── انتخابگر بصری تصویر (با بارگذاری داخلی) ────────────────────
+  // ── انتخابگر بصری تصویر (بارگذاری، کشیدن‌ورهاکردن، حذف) ─────────
   function enhanceMediaPickers(scope) {
     scope.querySelectorAll('[data-media-picker]').forEach(function (picker) {
       if (picker.dataset.mediaReady) return;
@@ -62,6 +62,7 @@
       var search = picker.querySelector('[data-media-search]');
       var grid = picker.querySelector('.pb-media-grid');
       var uploadBox = picker.querySelector('[data-media-upload]');
+      var noneItem = grid ? grid.querySelector('.pb-media-item[data-media-id=""]') : null;
 
       function selectItem(item) {
         picker.querySelectorAll('.pb-media-item').forEach(function (x) { x.classList.remove('selected'); });
@@ -77,9 +78,34 @@
         hidden.dispatchEvent(new Event('input', { bubbles: true }));
       }
 
-      picker.querySelectorAll('.pb-media-item').forEach(function (item) {
-        item.addEventListener('click', function () { selectItem(item); });
-      });
+      function deleteItem(item) {
+        var id = item.dataset.mediaId;
+        if (!id || !root.dataset.deleteMediaUrl) return;
+        if (!confirm('این تصویر برای همیشه از کتابخانه رسانه حذف شود؟')) return;
+        var body = new URLSearchParams({ id: id, __RequestVerificationToken: token });
+        fetch(root.dataset.deleteMediaUrl, { method: 'POST', headers: headers(false), body: body })
+          .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+          .then(function (res) {
+            if (res.ok && res.d.ok) {
+              var wasSelected = item.classList.contains('selected');
+              item.remove();
+              if (wasSelected && noneItem) selectItem(noneItem);
+              setStatus('تصویر حذف شد');
+            } else { setStatus((res.d && res.d.message) || 'حذف ناموفق بود.', 'error'); }
+          })
+          .catch(function (e) { setStatus(e.message, 'error'); });
+      }
+
+      function wireItem(item) {
+        item.addEventListener('click', function (e) {
+          if (e.target.closest('[data-media-del]')) return; // کلیک دکمهٔ حذف
+          selectItem(item);
+        });
+        var del = item.querySelector('[data-media-del]');
+        if (del) del.addEventListener('click', function (e) { e.stopPropagation(); deleteItem(item); });
+      }
+
+      picker.querySelectorAll('.pb-media-item').forEach(wireItem);
 
       if (search) {
         search.addEventListener('input', function () {
@@ -92,9 +118,10 @@
       }
 
       function addUploadedItem(data) {
-        var item = document.createElement('button');
-        item.type = 'button';
+        var item = document.createElement('div');
         item.className = 'pb-media-item';
+        item.setAttribute('role', 'button');
+        item.tabIndex = 0;
         item.dataset.mediaId = String(data.id);
         item.dataset.mediaName = data.fileName || '';
         item.title = data.fileName || '';
@@ -103,37 +130,56 @@
           img.src = data.url; img.alt = data.fileName || '';
           item.appendChild(img);
         } else {
-          item.innerHTML = '<span class="pb-media-video">▶</span>';
+          item.insertAdjacentHTML('beforeend', '<span class="pb-media-video">▶</span>');
         }
-        item.addEventListener('click', function () { selectItem(item); });
-        var first = grid.querySelector('.pb-media-item'); // «بدون»
-        if (first && first.nextSibling) grid.insertBefore(item, first.nextSibling); else grid.appendChild(item);
+        item.insertAdjacentHTML('beforeend', '<button type="button" class="pb-media-del" data-media-del title="حذف از کتابخانه">×</button>');
+        wireItem(item);
+        if (noneItem && noneItem.nextSibling) grid.insertBefore(item, noneItem.nextSibling); else grid.appendChild(item);
         selectItem(item);
       }
 
-      if (uploadBox && root.dataset.uploadUrl) {
+      function uploadFile(file) {
+        if (!file || !root.dataset.uploadUrl) return;
+        if (!/^image\//.test(file.type)) { setStatus('فقط فایل تصویری مجاز است.', 'error'); return; }
+        if (uploadBox) uploadBox.classList.add('uploading');
+        var label = uploadBox ? uploadBox.querySelector('span') : null;
+        var original = label ? label.textContent : '';
+        if (label) label.textContent = 'در حال بارگذاری…';
+        var fd = new FormData();
+        fd.append('file', file);
+        fetch(root.dataset.uploadUrl, { method: 'POST', headers: headers(false), body: fd })
+          .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+          .then(function (res) {
+            if (res.ok && res.d.ok) { addUploadedItem(res.d); setStatus('تصویر بارگذاری شد'); }
+            else { setStatus((res.d && res.d.message) || 'بارگذاری ناموفق بود.', 'error'); }
+          })
+          .catch(function (e) { setStatus(e.message, 'error'); })
+          .finally(function () {
+            if (uploadBox) uploadBox.classList.remove('uploading');
+            if (label) label.textContent = original;
+          });
+      }
+
+      if (uploadBox) {
         var fileInput = uploadBox.querySelector('input[type="file"]');
         fileInput.addEventListener('change', function () {
-          var file = fileInput.files && fileInput.files[0];
-          if (!file) return;
-          uploadBox.classList.add('uploading');
-          var label = uploadBox.querySelector('span');
-          var original = label ? label.textContent : '';
-          if (label) label.textContent = 'در حال بارگذاری…';
-          var fd = new FormData();
-          fd.append('file', file);
-          fetch(root.dataset.uploadUrl, { method: 'POST', headers: headers(false), body: fd })
-            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
-            .then(function (res) {
-              if (res.ok && res.d.ok) { addUploadedItem(res.d); }
-              else { setStatus((res.d && res.d.message) || 'بارگذاری ناموفق بود.', 'error'); }
-            })
-            .catch(function (e) { setStatus(e.message, 'error'); })
-            .finally(function () {
-              uploadBox.classList.remove('uploading');
-              if (label) label.textContent = original;
-              fileInput.value = '';
-            });
+          if (fileInput.files && fileInput.files[0]) uploadFile(fileInput.files[0]);
+          fileInput.value = '';
+        });
+      }
+
+      // کشیدن‌ورهاکردن روی شبکهٔ تصاویر
+      var dropzone = picker.querySelector('[data-media-dropzone]') || grid;
+      if (dropzone && root.dataset.uploadUrl) {
+        ['dragenter', 'dragover'].forEach(function (ev) {
+          dropzone.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); dropzone.classList.add('drag-over'); });
+        });
+        ['dragleave', 'drop'].forEach(function (ev) {
+          dropzone.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); dropzone.classList.remove('drag-over'); });
+        });
+        dropzone.addEventListener('drop', function (e) {
+          var files = e.dataTransfer && e.dataTransfer.files;
+          if (files) Array.prototype.forEach.call(files, uploadFile);
         });
       }
     });
