@@ -33,4 +33,13 @@ public class DialysisCenter : BaseEntity
     public bool SubmittedByPublic { get; set; }
 
     public DateTime? LastReviewedAt { get; set; }
+
+    /// <summary>امکانات فعال پورتال این مرکز (bitmask). توسط مدیر سامانه تعیین می‌شود.</summary>
+    public HospitalFeature Features { get; set; } = HospitalFeature.Default;
+
+    /// <summary>سقف ثبت بیمار در ماه برای این مرکز (خالی = بدون محدودیت).</summary>
+    public int? MonthlyPatientQuota { get; set; }
+
+    /// <summary>آیا امکان مشخص فعال است؟</summary>
+    public bool Has(HospitalFeature feature) => (Features & feature) == feature;
 }

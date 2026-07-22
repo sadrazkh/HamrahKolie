@@ -54,4 +54,6 @@ public enum MessageVisibility
     Internal = 0,
     /// <summary>پیام قابل مشاهده برای متقاضی.</summary>
     Applicant = 1,
+    /// <summary>گفتگوی بین مرکز درمانی معرفی‌کننده و کارشناسان خیریه.</summary>
+    Center = 2,
 }

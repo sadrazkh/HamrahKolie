@@ -1,15 +1,21 @@
 @using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
 @using HamrahKolie.Web.Helpers
 @model SupportRequest
 @{
     ViewData["Title"] = $"بیمار {Model.TrackingCode}";
+    var features = ViewData["Features"] as HospitalFeature? ?? HospitalFeature.None;
+    bool Has(HospitalFeature f) => (features & f) == f;
 }
-<div class="d-flex justify-between items-center" style="margin-bottom:1rem">
+<div class="d-flex justify-between items-center flex-wrap gap-2" style="margin-bottom:1rem">
     <div class="d-flex items-center gap-2">
         <h2 class="mb-0">@Model.ApplicantName</h2>
         <span class="badge badge-primary">@SupportRequestDisplay.Status(Model.Status)</span>
     </div>
-    <a class="btn btn-ghost" asp-action="Index">→ بازگشت</a>
+    <div class="d-flex gap-2">
+        @if (Has(HospitalFeature.EditPatient)) { <a class="btn btn-outline" asp-action="Edit" asp-route-id="@Model.Id">✎ ویرایش</a> }
+        <a class="btn btn-ghost" asp-action="Index">→ بازگشت</a>
+    </div>
 </div>
 
 <div class="grid" style="grid-template-columns: 1fr 340px; gap:1.5rem; align-items:start">
@@ -19,6 +25,10 @@
             <table class="table">
                 <tr><th>کد پیگیری</th><td dir="ltr">@Model.TrackingCode</td></tr>
                 <tr><th>موبایل</th><td dir="ltr">@Model.Mobile</td></tr>
+                @if (Has(HospitalFeature.ViewSensitive))
+                {
+                    <tr><th>کد ملی</th><td dir="ltr">@(string.IsNullOrWhiteSpace(Model.NationalId) ? "—" : Model.NationalId)</td></tr>
+                }
                 <tr><th>نوع دیالیز</th><td>@SupportRequestDisplay.Dialysis(Model.DialysisType)</td></tr>
                 <tr><th>نوع نیاز</th><td>@(Model.NeedType ?? "—")</td></tr>
                 <tr><th>محل</th><td>@Model.Province @Model.City @Model.Village</td></tr>
@@ -37,17 +47,28 @@
             }
         </div>
 
-        @if (Model.Messages.Any())
+        @if (Has(HospitalFeature.MessageExperts))
         {
             <div class="card">
-                <h3 class="mt-0">پیام‌های کارشناسان</h3>
-                @foreach (var m in Model.Messages)
+                <h3 class="mt-0">گفتگو با کارشناسان</h3>
+                @if (Model.Messages.Any())
                 {
-                    <div class="alert alert-success">
-                        <div style="font-size:.8rem" class="text-muted">@m.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</div>
-                        @m.Body
-                    </div>
+                    @foreach (var m in Model.Messages)
+                    {
+                        var mine = !m.IsFromApplicant && string.Equals(m.AuthorName, ViewData["CenterName"] as string, StringComparison.Ordinal);
+                        <div class="alert @(mine ? "alert-info" : "alert-success")">
+                            <div style="font-size:.8rem" class="text-muted">@(mine ? "شما" : (m.AuthorName ?? "کارشناس")) — @m.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</div>
+                            @m.Body
+                        </div>
+                    }
                 }
+                else { <p class="text-muted">هنوز پیامی رد و بدل نشده است.</p> }
+
+                <form asp-action="Message" asp-route-id="@Model.Id" method="post" style="border-top:1px solid var(--c-border);padding-top:1rem;margin-top:.5rem">
+                    @Html.AntiForgeryToken()
+                    <div class="form-group"><textarea class="form-control" name="body" rows="2" placeholder="پیام خود را برای کارشناسان بنویسید…" required></textarea></div>
+                    <button type="submit" class="btn btn-primary btn-block">ارسال پیام</button>
+                </form>
             </div>
         }
     </div>
@@ -65,11 +86,14 @@
         }
         else { <p class="text-muted">مدرکی بارگذاری نشده است.</p> }
 
-        <form asp-action="Upload" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" style="border-top:1px solid var(--c-border);padding-top:1rem;margin-top:.5rem">
-            @Html.AntiForgeryToken()
-            <div class="form-group"><label class="form-label">عنوان مدرک</label><input class="form-control" name="title" placeholder="مثلاً برگه آزمایش" /></div>
-            <div class="form-group"><input class="form-control" type="file" name="file" accept="image/*,application/pdf" required /></div>
-            <button type="submit" class="btn btn-outline btn-block">بارگذاری مدرک</button>
-        </form>
+        @if (Has(HospitalFeature.DocumentUpload))
+        {
+            <form asp-action="Upload" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" style="border-top:1px solid var(--c-border);padding-top:1rem;margin-top:.5rem">
+                @Html.AntiForgeryToken()
+                <div class="form-group"><label class="form-label">عنوان مدرک</label><input class="form-control" name="title" placeholder="مثلاً برگه آزمایش" /></div>
+                <div class="form-group"><input class="form-control" type="file" name="file" accept="image/*,application/pdf" required /></div>
+                <button type="submit" class="btn btn-outline btn-block">بارگذاری مدرک</button>
+            </form>
+        }
     </div>
 </div>

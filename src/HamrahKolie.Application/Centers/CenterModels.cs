@@ -27,6 +27,15 @@ public class CenterInput
     public string? DialysisTypes { get; set; }
     public string? AccessibilityNotes { get; set; }
     public string? Website { get; set; }
+
+    /// <summary>امکانات فعال پورتال این مرکز (bitmask). فقط در پنل مدیریت قابل ویرایش است.</summary>
+    public HospitalFeature Features { get; set; } = HospitalFeature.Default;
+
+    /// <summary>سقف ثبت بیمار در ماه (خالی = نامحدود).</summary>
+    public int? MonthlyPatientQuota { get; set; }
+
+    /// <summary>فلگ‌های انتخاب‌شده در فرم چک‌باکسی مدیریت (به Features تبدیل می‌شود).</summary>
+    public List<HospitalFeature> SelectedFeatures { get; set; } = new();
 }
 
 public interface ICenterService
@@ -45,4 +54,7 @@ public interface ICenterService
     Task<bool> UpdateAsync(CenterInput input, CancellationToken ct = default);
     Task<bool> SetApprovalAsync(long id, bool approved, CancellationToken ct = default);
     Task<bool> DeleteAsync(long id, CancellationToken ct = default);
+
+    /// <summary>به‌روزرسانی سریع امکانات پورتال و سقف ماهانهٔ یک مرکز (بدون ویرایش کامل).</summary>
+    Task<bool> SetFeaturesAsync(long id, HospitalFeature features, int? monthlyQuota, CancellationToken ct = default);
 }

@@ -37,3 +37,37 @@ public enum CenterType
     University = 3,   // دانشگاهی
     Other = 4,
 }
+
+/// <summary>
+/// امکانات پورتال مرکز درمانی. هر مرکز می‌تواند مجموعه‌ای دلخواه از این امکانات را
+/// (که توسط مدیر سامانه تعیین می‌شود) در پورتال خود داشته باشد. به‌صورت bitmask ذخیره می‌شود.
+/// </summary>
+[Flags]
+public enum HospitalFeature
+{
+    None = 0,
+
+    /// <summary>ثبت بیمار جدید توسط مرکز.</summary>
+    PatientRegistration = 1 << 0,
+
+    /// <summary>بارگذاری مدارک برای بیماران.</summary>
+    DocumentUpload = 1 << 1,
+
+    /// <summary>ویرایش اطلاعات بیمار پس از ثبت.</summary>
+    EditPatient = 1 << 2,
+
+    /// <summary>گفتگو/ارسال پیام به کارشناسان خیریه.</summary>
+    MessageExperts = 1 << 3,
+
+    /// <summary>مشاهده داشبورد و آمار بیماران مرکز.</summary>
+    ViewStatistics = 1 << 4,
+
+    /// <summary>خروجی گرفتن (CSV) از فهرست بیماران.</summary>
+    ExportPatients = 1 << 5,
+
+    /// <summary>مشاهده اطلاعات حساس بیمار (کد ملی و…).</summary>
+    ViewSensitive = 1 << 6,
+
+    /// <summary>مجموعهٔ پیش‌فرض برای مراکز جدید.</summary>
+    Default = PatientRegistration | DocumentUpload | ViewStatistics,
+}

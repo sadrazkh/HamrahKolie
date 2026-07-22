@@ -108,8 +108,85 @@ public sealed class SupportRequestService : ISupportRequestService
         => _db.SupportRequests
             .Include(r => r.Documents).ThenInclude(d => d.MediaFile)
             .Include(r => r.History.OrderBy(h => h.CreatedAt))
-            .Include(r => r.Messages.Where(m => m.Visibility == MessageVisibility.Applicant).OrderBy(m => m.CreatedAt))
+            .Include(r => r.Messages.Where(m => m.Visibility == MessageVisibility.Center).OrderBy(m => m.CreatedAt))
             .FirstOrDefaultAsync(r => r.Id == id && r.ReferringCenterId == centerId, ct);
+
+    public async Task<CenterPatientStats> GetCenterStatsAsync(long centerId, CancellationToken ct = default)
+    {
+        var q = _db.SupportRequests.AsNoTracking().Where(r => r.ReferringCenterId == centerId);
+        var byStatus = await q.GroupBy(r => r.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToListAsync(ct);
+
+        int Count(Func<SupportRequestStatus, bool> pred) => byStatus.Where(x => pred(x.Status)).Sum(x => x.Count);
+
+        var total = byStatus.Sum(x => x.Count);
+        var completed = Count(s => s == SupportRequestStatus.Completed);
+        var rejected = Count(s => s == SupportRequestStatus.Rejected);
+        var open = Count(s => !ClosedStatuses.Contains(s));
+        var inReview = Count(s => s is SupportRequestStatus.PendingReview or SupportRequestStatus.NeedsDocuments
+            or SupportRequestStatus.SocialWorkerReview or SupportRequestStatus.MedicalReview);
+        var thisMonth = await CountCenterThisMonthAsync(centerId, ct);
+
+        return new CenterPatientStats(total, open, inReview, completed, rejected, thisMonth);
+    }
+
+    public async Task<IReadOnlyList<SupportRequest>> GetAllForCenterAsync(long centerId, CancellationToken ct = default)
+        => await _db.SupportRequests.AsNoTracking()
+            .Where(r => r.ReferringCenterId == centerId)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync(ct);
+
+    public async Task<int> CountCenterThisMonthAsync(long centerId, CancellationToken ct = default)
+    {
+        var monthStart = new DateTime(_clock.UtcNow.Year, _clock.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        return await _db.SupportRequests.AsNoTracking()
+            .CountAsync(r => r.ReferringCenterId == centerId && r.CreatedAt >= monthStart, ct);
+    }
+
+    public async Task<bool> AddCenterMessageAsync(long requestId, long centerId, string authorName, string body, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(body)) return false;
+        var request = await _db.SupportRequests
+            .FirstOrDefaultAsync(r => r.Id == requestId && r.ReferringCenterId == centerId, ct);
+        if (request is null) return false;
+
+        _db.SupportRequestMessages.Add(new SupportRequestMessage
+        {
+            SupportRequestId = requestId,
+            Visibility = MessageVisibility.Center,
+            IsFromApplicant = false,
+            Body = body.Trim(),
+            AuthorName = string.IsNullOrWhiteSpace(authorName) ? "مرکز درمانی" : authorName.Trim(),
+        });
+        await _db.SaveChangesAsync(ct);
+
+        await _notifications.NotifyStaffAsync("پیام جدید از مرکز درمانی",
+            $"مرکز «{authorName}» دربارهٔ بیمار {request.TrackingCode} پیام گذاشت.",
+            $"/Admin/SupportRequests/Detail/{request.Id}", ct);
+        return true;
+    }
+
+    public async Task<bool> UpdateForCenterAsync(long id, long centerId, SupportRequestInput input, CancellationToken ct = default)
+    {
+        var r = await _db.SupportRequests.FirstOrDefaultAsync(x => x.Id == id && x.ReferringCenterId == centerId, ct);
+        if (r is null) return false;
+
+        r.ApplicantName = input.ApplicantName.Trim();
+        r.Mobile = input.Mobile.Trim();
+        r.NationalId = input.NationalId?.Trim();
+        r.Province = input.Province?.Trim();
+        r.City = input.City?.Trim();
+        r.Village = input.Village?.Trim();
+        r.ReferredBy = input.ReferredBy?.Trim();
+        r.DialysisType = input.DialysisType;
+        r.SessionsPerWeek = input.SessionsPerWeek;
+        r.NeedType = input.NeedType?.Trim();
+        r.EstimatedCost = input.EstimatedCost;
+        r.Description = input.Description?.Trim();
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
 
     public Task<SupportRequest?> GetForApplicantAsync(string trackingCode, string mobile, CancellationToken ct = default)
     {

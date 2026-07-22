@@ -1,3 +1,4 @@
+@using HamrahKolie.Application.Centers
 @using HamrahKolie.Domain.Enums
 @using HamrahKolie.Web.Helpers
 @model HamrahKolie.Application.Centers.CenterInput
@@ -46,6 +47,29 @@
         <div class="form-group"><label class="form-label">امکانات</label><input class="form-control" asp-for="Facilities" /></div>
         <div class="form-group"><label class="form-label">توضیحات دسترس‌پذیری</label><input class="form-control" asp-for="AccessibilityNotes" /></div>
         <div class="form-group"><label class="form-label">وب‌سایت</label><input class="form-control" asp-for="Website" dir="ltr" /></div>
+    </div>
+
+    <div class="card" style="max-width:760px">
+        <h3 class="mt-0">امکانات پورتال این مرکز</h3>
+        <p class="text-muted">هر امکان را که فعال کنید، در پورتال ورود کارکنان این مرکز درمانی نمایش داده و در دسترس خواهد بود.</p>
+        <div class="grid grid-2" style="gap:.4rem 1.5rem">
+            @foreach (var f in HospitalFeatureCatalog.All)
+            {
+                var isOn = (Model.Features & f.Flag) == f.Flag;
+                <label class="d-flex items-start gap-2" style="padding:.5rem;border:1px solid var(--c-border);border-radius:8px">
+                    <input type="checkbox" name="SelectedFeatures" value="@((int)f.Flag)" checked="@isOn" style="margin-top:.25rem" />
+                    <span>
+                        <strong>@f.Icon @f.Title</strong>
+                        <span class="text-muted" style="display:block;font-size:.82rem">@f.Description</span>
+                    </span>
+                </label>
+            }
+        </div>
+        <div class="form-group" style="margin-top:1rem;max-width:280px">
+            <label class="form-label">سقف ثبت بیمار در ماه (اختیاری)</label>
+            <input class="form-control" asp-for="MonthlyPatientQuota" type="number" min="0" dir="ltr" placeholder="بدون محدودیت" />
+            <p class="form-hint">خالی بگذارید تا محدودیتی اعمال نشود.</p>
+        </div>
 
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">ذخیره</button>

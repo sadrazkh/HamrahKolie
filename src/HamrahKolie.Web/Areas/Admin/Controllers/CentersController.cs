@@ -1,6 +1,7 @@
 using HamrahKolie.Application.Authorization;
 using HamrahKolie.Application.Centers;
 using HamrahKolie.Application.Common.Interfaces;
+using HamrahKolie.Domain.Enums;
 using HamrahKolie.Web.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,7 +35,11 @@ public class CentersController : Controller
     public IActionResult Create()
     {
         ViewData["Title"] = "مرکز جدید";
-        return View("Edit", new CenterInput());
+        return View("Edit", new CenterInput
+        {
+            Features = HospitalFeature.Default,
+            SelectedFeatures = HospitalFeatureCatalog.Enabled(HospitalFeature.Default).Select(f => f.Flag).ToList(),
+        });
     }
 
     [HttpPost]
@@ -42,6 +47,7 @@ public class CentersController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CenterInput input)
     {
+        input.Features = HospitalFeatureCatalog.Combine(input.SelectedFeatures);
         if (!ModelState.IsValid) return View("Edit", input);
         var id = await _centers.CreateAsync(input, approved: true);
         await _audit.LogAsync("Center.Create", $"مرکز «{input.Name}» ایجاد شد.", "Center", id.ToString());
@@ -64,8 +70,10 @@ public class CentersController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(CenterInput input)
     {
+        input.Features = HospitalFeatureCatalog.Combine(input.SelectedFeatures);
         if (!ModelState.IsValid) return View(input);
         var ok = await _centers.UpdateAsync(input);
+        if (ok) await _audit.LogAsync("Center.Update", $"مرکز «{input.Name}» ویرایش شد.", "Center", input.Id.ToString());
         if (!ok) return NotFound();
         TempData["Success"] = "تغییرات ذخیره شد.";
         return RedirectToAction(nameof(Edit), new { id = input.Id });
@@ -86,6 +94,21 @@ public class CentersController : Controller
     [HttpPost]
     [HasPermission(Permissions.CenterManage)]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetFeatures(long id, List<HospitalFeature>? selectedFeatures, int? monthlyQuota,
+        bool? approved, string? search, int page = 1)
+    {
+        var features = HospitalFeatureCatalog.Combine(selectedFeatures);
+        var ok = await _centers.SetFeaturesAsync(id, features, monthlyQuota);
+        if (!ok) return NotFound();
+        await _audit.LogAsync("Center.SetFeatures",
+            $"امکانات پورتال مرکز به {HospitalFeatureCatalog.Enabled(features).Count()} مورد تغییر کرد.", "Center", id.ToString());
+        TempData["Success"] = "امکانات مرکز به‌روزرسانی شد.";
+        return RedirectToAction(nameof(Index), new { approved, search, page });
+    }
+
+    [HttpPost]
+    [HasPermission(Permissions.CenterManage)]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(long id)
     {
         await _centers.DeleteAsync(id);
@@ -99,5 +122,7 @@ public class CentersController : Controller
         Latitude = c.Latitude, Longitude = c.Longitude, Phone = c.Phone, WorkingHours = c.WorkingHours,
         Services = c.Services, Facilities = c.Facilities, DialysisTypes = c.DialysisTypes,
         AccessibilityNotes = c.AccessibilityNotes, Website = c.Website,
+        Features = c.Features, MonthlyPatientQuota = c.MonthlyPatientQuota,
+        SelectedFeatures = HospitalFeatureCatalog.Enabled(c.Features).Select(f => f.Flag).ToList(),
     };
 }

@@ -1,6 +1,9 @@
+@using HamrahKolie.Domain.Enums
 @{
     var orgName = "همراه کلیه";
     var centerName = ViewData["CenterName"] as string;
+    var features = ViewData["Features"] as HospitalFeature? ?? HospitalFeature.None;
+    bool Has(HospitalFeature f) => (features & f) == f;
 }
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -21,7 +24,9 @@
             <span>پورتال مرکز درمانی@(string.IsNullOrEmpty(centerName) ? "" : $" — {centerName}")</span>
         </a>
         <div class="d-flex items-center gap-4">
-            <a class="btn btn-primary" asp-controller="Hospital" asp-action="New">+ ثبت بیمار جدید</a>
+            <a class="btn btn-ghost" asp-controller="Hospital" asp-action="Index">بیماران</a>
+            @if (Has(HospitalFeature.ExportPatients)) { <a class="btn btn-ghost" asp-controller="Hospital" asp-action="Export">خروجی CSV</a> }
+            @if (Has(HospitalFeature.PatientRegistration)) { <a class="btn btn-primary" asp-controller="Hospital" asp-action="New">+ ثبت بیمار جدید</a> }
             <form asp-controller="Account" asp-action="Logout" method="post" class="mb-0">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="btn btn-outline">خروج</button>

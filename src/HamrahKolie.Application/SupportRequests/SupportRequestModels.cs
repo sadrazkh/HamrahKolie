@@ -42,3 +42,12 @@ public class SupportRequestInput
     /// <summary>در صورت ثبت از پورتال بیمارستان، شناسه مرکز معرفی‌کننده.</summary>
     public long? ReferringCenterId { get; set; }
 }
+
+/// <summary>آمار بیماران معرفی‌شده توسط یک مرکز درمانی برای داشبورد پورتال.</summary>
+public record CenterPatientStats(
+    int Total,
+    int Open,
+    int InReview,
+    int Completed,
+    int Rejected,
+    int ThisMonth);

@@ -1,20 +1,60 @@
 @using HamrahKolie.Application.Common.Models
+@using HamrahKolie.Application.SupportRequests
 @using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
 @using HamrahKolie.Web.Helpers
 @model PagedResult<SupportRequest>
 @{
     ViewData["Title"] = "بیماران معرفی‌شده";
+    var features = ViewData["Features"] as HospitalFeature? ?? HospitalFeature.None;
+    bool Has(HospitalFeature f) => (features & f) == f;
+    var stats = ViewData["Stats"] as CenterPatientStats;
+    var quota = ViewData["MonthlyQuota"] as int?;
+    var thisMonthCount = ViewData["ThisMonthCount"] as int?;
+    var fa = new System.Globalization.CultureInfo("fa-IR");
+    string N(int v) => v.ToString("N0", fa);
 }
-<div class="d-flex justify-between items-center" style="margin-bottom:1rem">
+
+@if (quota is int q && q > 0 && thisMonthCount is int used)
+{
+    var pct = Math.Min(100, (int)Math.Round(used * 100.0 / q));
+    var full = used >= q;
+    var barColor = full ? "var(--c-danger)" : (pct >= 80 ? "#d97706" : "var(--c-primary-500)");
+    <div class="card" style="margin-bottom:1rem">
+        <div class="d-flex justify-between items-center flex-wrap gap-2" style="margin-bottom:.5rem">
+            <strong>سقف ثبت بیمار این ماه</strong>
+            <span class="@(full ? "text-danger" : "text-muted")">@N(used) از @N(q) بیمار@(full ? " — سقف تکمیل شد" : "")</span>
+        </div>
+        <div style="height:10px;border-radius:6px;background:var(--c-border);overflow:hidden">
+            <div style="height:100%;width:@(pct)%;background:@barColor;transition:width .3s"></div>
+        </div>
+    </div>
+}
+
+@if (Has(HospitalFeature.ViewStatistics) && stats is not null)
+{
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem">
+        <div class="card" style="text-align:center"><div style="font-size:1.9rem;font-weight:800">@N(stats.Total)</div><div class="text-muted">کل بیماران</div></div>
+        <div class="card" style="text-align:center"><div style="font-size:1.9rem;font-weight:800;color:var(--c-primary-600)">@N(stats.Open)</div><div class="text-muted">در جریان</div></div>
+        <div class="card" style="text-align:center"><div style="font-size:1.9rem;font-weight:800">@N(stats.InReview)</div><div class="text-muted">در حال بررسی</div></div>
+        <div class="card" style="text-align:center"><div style="font-size:1.9rem;font-weight:800;color:var(--c-success, #16a34a)">@N(stats.Completed)</div><div class="text-muted">تکمیل‌شده</div></div>
+        <div class="card" style="text-align:center"><div style="font-size:1.9rem;font-weight:800">@N(stats.ThisMonth)</div><div class="text-muted">این ماه</div></div>
+    </div>
+}
+
+<div class="d-flex justify-between items-center flex-wrap gap-2" style="margin-bottom:1rem">
     <h2 class="mb-0">بیماران معرفی‌شده</h2>
-    <a class="btn btn-primary" asp-action="New">+ ثبت بیمار جدید</a>
+    <div class="d-flex gap-2 flex-wrap">
+        @if (Has(HospitalFeature.ExportPatients)) { <a class="btn btn-outline" asp-action="Export">⤓ خروجی CSV</a> }
+        @if (Has(HospitalFeature.PatientRegistration)) { <a class="btn btn-primary" asp-action="New">+ ثبت بیمار جدید</a> }
+    </div>
 </div>
 <div class="card">
     @if (Model.Items.Count == 0)
     {
         <div class="empty-state">
             <p>هنوز بیماری ثبت نکرده‌اید.</p>
-            <a class="btn btn-primary" asp-action="New">ثبت اولین بیمار</a>
+            @if (Has(HospitalFeature.PatientRegistration)) { <a class="btn btn-primary" asp-action="New">ثبت اولین بیمار</a> }
         </div>
     }
     else

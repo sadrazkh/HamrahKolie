@@ -84,10 +84,21 @@
             <h3 class="mt-0">پیام‌ها و یادداشت‌ها</h3>
             @foreach (var m in Model.Messages)
             {
-                <div class="alert @(m.Visibility == MessageVisibility.Internal ? "alert-warning" : (m.IsFromApplicant ? "alert-info" : "alert-success"))">
+                var label = m.Visibility switch
+                {
+                    MessageVisibility.Internal => "یادداشت داخلی",
+                    MessageVisibility.Center => m.AuthorUserId is null ? "مرکز درمانی" : "کارشناس → مرکز درمانی",
+                    _ => m.IsFromApplicant ? "متقاضی" : "کارشناس → متقاضی"
+                };
+                var cssClass = m.Visibility switch
+                {
+                    MessageVisibility.Internal => "alert-warning",
+                    MessageVisibility.Center => "alert-info",
+                    _ => m.IsFromApplicant ? "alert-info" : "alert-success"
+                };
+                <div class="alert @cssClass">
                     <div style="font-size:.8rem" class="text-muted">
-                        @(m.Visibility == MessageVisibility.Internal ? "یادداشت داخلی" : (m.IsFromApplicant ? "متقاضی" : "کارشناس → متقاضی"))
-                        — @(m.AuthorName ?? "—") — @m.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")
+                        @label — @(m.AuthorName ?? "—") — @m.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")
                     </div>
                     @m.Body
                 </div>
@@ -102,6 +113,7 @@
                     <select class="form-control" name="visibility" style="max-width:220px">
                         <option value="0">یادداشت داخلی (فقط کارکنان)</option>
                         <option value="1">پیام برای متقاضی</option>
+                        <option value="2">پیام برای مرکز درمانی</option>
                     </select>
                     <button type="submit" class="btn btn-primary">ثبت</button>
                 </div>

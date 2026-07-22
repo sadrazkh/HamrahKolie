@@ -1,5 +1,7 @@
+@using HamrahKolie.Application.Centers
 @using HamrahKolie.Application.Common.Models
 @using HamrahKolie.Domain.Entities
+@using HamrahKolie.Domain.Enums
 @using HamrahKolie.Web.Helpers
 @model PagedResult<DialysisCenter>
 @{
@@ -9,6 +11,14 @@
     var fa = new System.Globalization.CultureInfo("fa-IR");
     bool Can(string p) => User.HasClaim("permission", "*") || User.HasClaim("permission", p);
 }
+<style>
+    .pb-features-pop { position: relative; display: inline-block; }
+    .pb-features-pop > summary { cursor: pointer; list-style: none; }
+    .pb-features-pop > summary::-webkit-details-marker { display: none; }
+    .pb-features-panel { position: absolute; z-index: 30; inset-inline-end: 0; margin-top: .4rem; width: 260px;
+        background: #fff; border: 1px solid var(--c-border); border-radius: 10px;
+        box-shadow: 0 12px 34px rgba(31,42,36,.14); padding: .8rem; text-align: start; }
+</style>
 <div class="d-flex justify-between items-center flex-wrap gap-2" style="margin-bottom:1rem">
     <div class="d-flex gap-2 flex-wrap">
         <a class="btn @(approved == null ? "btn-primary" : "btn-outline")" asp-action="Index">همه</a>
@@ -25,7 +35,7 @@
     else
     {
         <table class="table">
-            <thead><tr><th>نام</th><th>نوع</th><th>استان</th><th>وضعیت</th><th></th></tr></thead>
+            <thead><tr><th>نام</th><th>نوع</th><th>استان</th><th>امکانات پورتال</th><th>وضعیت</th><th></th></tr></thead>
             <tbody>
                 @foreach (var c in Model.Items)
                 {
@@ -33,6 +43,37 @@
                         <td>@c.Name @if (c.SubmittedByPublic) { <span class="badge">پیشنهاد کاربر</span> }</td>
                         <td>@Phase5Display.CenterType(c.Type)</td>
                         <td>@(c.Province ?? "—")</td>
+                        <td>
+                            @if (Can(Permissions.CenterManage))
+                            {
+                                <details class="pb-features-pop">
+                                    <summary class="btn btn-outline" style="list-style:none">
+                                        <span class="badge badge-primary">@HospitalFeatureCatalog.Enabled(c.Features).Count().ToString(fa)</span> از @HospitalFeatureCatalog.All.Count.ToString(fa) ▾
+                                    </summary>
+                                    <div class="pb-features-panel">
+                                        <form asp-action="SetFeatures" asp-route-id="@c.Id" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="approved" value="@(approved?.ToString().ToLower() ?? "")" />
+                                            @foreach (var f in HospitalFeatureCatalog.All)
+                                            {
+                                                var isOn = (c.Features & f.Flag) == f.Flag;
+                                                <label class="d-flex items-center gap-2" style="padding:.2rem 0">
+                                                    <input type="checkbox" name="selectedFeatures" value="@((int)f.Flag)" checked="@isOn" />
+                                                    <span>@f.Icon @f.Title</span>
+                                                </label>
+                                            }
+                                            <label class="form-label" style="margin-top:.5rem;display:block">سقف ماهانه</label>
+                                            <input class="form-control" name="monthlyQuota" type="number" min="0" dir="ltr" value="@(c.MonthlyPatientQuota?.ToString() ?? "")" placeholder="بدون محدودیت" />
+                                            <button type="submit" class="btn btn-primary btn-block" style="margin-top:.6rem">ذخیره امکانات</button>
+                                        </form>
+                                    </div>
+                                </details>
+                            }
+                            else
+                            {
+                                <span><span class="badge badge-primary">@HospitalFeatureCatalog.Enabled(c.Features).Count().ToString(fa)</span> از @HospitalFeatureCatalog.All.Count.ToString(fa)</span>
+                            }
+                        </td>
                         <td>@(c.IsApproved ? Html.Raw("<span class=\"badge badge-primary\">تأییدشده</span>") : Html.Raw("<span class=\"badge\">در انتظار</span>"))</td>
                         <td>
                             <div class="d-flex gap-2">

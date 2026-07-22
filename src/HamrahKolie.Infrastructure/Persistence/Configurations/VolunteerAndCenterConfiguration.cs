@@ -45,6 +45,7 @@ public class DialysisCenterConfiguration : IEntityTypeConfiguration<DialysisCent
         b.Property(x => x.DialysisTypes).HasMaxLength(300);
         b.Property(x => x.AccessibilityNotes).HasMaxLength(500);
         b.Property(x => x.Website).HasMaxLength(300);
+        b.Property(x => x.Features).HasConversion<int>().HasDefaultValue(HamrahKolie.Domain.Enums.HospitalFeature.Default);
         b.HasIndex(x => x.Slug).IsUnique();
         b.HasIndex(x => x.Province);
         b.HasIndex(x => x.IsApproved);

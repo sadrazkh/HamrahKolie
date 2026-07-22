@@ -1,0 +1,53 @@
+@model HamrahKolie.Application.SupportRequests.SupportRequestInput
+@{
+    ViewData["Title"] = "ویرایش بیمار";
+    var id = ViewData["PatientId"];
+}
+<div class="d-flex justify-between items-center" style="margin-bottom:1rem">
+    <h2 class="mb-0">ویرایش اطلاعات بیمار</h2>
+    <a class="btn btn-ghost" asp-action="Patient" asp-route-id="@id">→ بازگشت</a>
+</div>
+
+<form asp-action="Edit" asp-route-id="@id" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="@(ViewData.ModelState.ErrorCount == 0 ? "display:none" : "")"></div>
+
+    <div class="grid" style="grid-template-columns: 1fr 1fr; gap:1.5rem; align-items:start">
+        <div class="card">
+            <h3 class="mt-0">اطلاعات بیمار</h3>
+            <div class="form-group"><label class="form-label">نام و نام خانوادگی</label><input class="form-control" asp-for="ApplicantName" /><span class="field-validation-error" asp-validation-for="ApplicantName"></span></div>
+            <div class="grid grid-2">
+                <div class="form-group"><label class="form-label">موبایل</label><input class="form-control" asp-for="Mobile" dir="ltr" placeholder="09xxxxxxxxx" /><span class="field-validation-error" asp-validation-for="Mobile"></span></div>
+                <div class="form-group"><label class="form-label">کد ملی</label><input class="form-control" asp-for="NationalId" dir="ltr" maxlength="10" /><span class="field-validation-error" asp-validation-for="NationalId"></span></div>
+            </div>
+            <div class="grid grid-3">
+                <div class="form-group"><label class="form-label">استان</label><input class="form-control" asp-for="Province" /></div>
+                <div class="form-group"><label class="form-label">شهر</label><input class="form-control" asp-for="City" /></div>
+                <div class="form-group"><label class="form-label">روستا</label><input class="form-control" asp-for="Village" /></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="mt-0">اطلاعات درمان</h3>
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label class="form-label">نوع دیالیز</label>
+                    <select class="form-control" asp-for="DialysisType">
+                        <option value="0">نامشخص</option><option value="1">همودیالیز</option><option value="2">دیالیز صفاقی</option><option value="3">سایر</option>
+                    </select>
+                </div>
+                <div class="form-group"><label class="form-label">جلسه در هفته</label><input class="form-control" asp-for="SessionsPerWeek" type="number" min="0" max="21" /></div>
+            </div>
+            <div class="grid grid-2">
+                <div class="form-group"><label class="form-label">نوع نیاز</label><input class="form-control" asp-for="NeedType" placeholder="دارو، رفت‌وآمد" /></div>
+                <div class="form-group"><label class="form-label">هزینه تخمینی</label><input class="form-control" asp-for="EstimatedCost" type="number" dir="ltr" /></div>
+            </div>
+            <div class="form-group"><label class="form-label">پزشک معالج / معرف</label><input class="form-control" asp-for="ReferredBy" /></div>
+            <div class="form-group"><label class="form-label">توضیحات</label><textarea class="form-control" asp-for="Description" rows="2"></textarea></div>
+        </div>
+    </div>
+
+    <div style="margin-top:1.5rem">
+        <button type="submit" class="btn btn-primary btn-lg">ذخیره تغییرات</button>
+    </div>
+</form>

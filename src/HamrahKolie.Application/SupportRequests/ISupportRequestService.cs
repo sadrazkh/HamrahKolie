@@ -27,6 +27,21 @@ public interface ISupportRequestService
     Task<PagedResult<SupportRequest>> GetForCenterAsync(long centerId, int page, int pageSize, CancellationToken ct = default);
     Task<SupportRequest?> GetForCenterDetailAsync(long id, long centerId, CancellationToken ct = default);
 
+    /// <summary>آمار بیماران معرفی‌شده توسط یک مرکز (برای داشبورد پورتال).</summary>
+    Task<CenterPatientStats> GetCenterStatsAsync(long centerId, CancellationToken ct = default);
+
+    /// <summary>همهٔ بیماران یک مرکز (بدون صفحه‌بندی) برای خروجی گرفتن.</summary>
+    Task<IReadOnlyList<SupportRequest>> GetAllForCenterAsync(long centerId, CancellationToken ct = default);
+
+    /// <summary>ثبت پیام مرکز درمانی روی بیمار (نمایان برای کارشناسان خیریه).</summary>
+    Task<bool> AddCenterMessageAsync(long requestId, long centerId, string authorName, string body, CancellationToken ct = default);
+
+    /// <summary>ویرایش اطلاعات بیمار توسط مرکز معرفی‌کننده.</summary>
+    Task<bool> UpdateForCenterAsync(long id, long centerId, SupportRequestInput input, CancellationToken ct = default);
+
+    /// <summary>تعداد بیماران ثبت‌شدهٔ مرکز در ماه جاری (برای بررسی سقف).</summary>
+    Task<int> CountCenterThisMonthAsync(long centerId, CancellationToken ct = default);
+
     // ── مدیریت ───────────────────────────────────────────────────
     Task<PagedResult<SupportRequest>> GetAdminListAsync(
         SupportRequestStatus? status, RequestPriority? priority, string? assignedToUserId, string? search,

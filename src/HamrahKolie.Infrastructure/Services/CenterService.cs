@@ -105,6 +105,16 @@ public sealed class CenterService : ICenterService
         return true;
     }
 
+    public async Task<bool> SetFeaturesAsync(long id, Domain.Enums.HospitalFeature features, int? monthlyQuota, CancellationToken ct = default)
+    {
+        var c = await _db.DialysisCenters.FirstOrDefaultAsync(x => x.Id == id, ct);
+        if (c is null) return false;
+        c.Features = features;
+        c.MonthlyPatientQuota = monthlyQuota is > 0 ? monthlyQuota : null;
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
     public async Task<bool> DeleteAsync(long id, CancellationToken ct = default)
     {
         var c = await _db.DialysisCenters.FirstOrDefaultAsync(x => x.Id == id, ct);
@@ -130,6 +140,8 @@ public sealed class CenterService : ICenterService
         c.DialysisTypes = input.DialysisTypes?.Trim();
         c.AccessibilityNotes = input.AccessibilityNotes?.Trim();
         c.Website = input.Website?.Trim();
+        c.Features = input.Features;
+        c.MonthlyPatientQuota = input.MonthlyPatientQuota is > 0 ? input.MonthlyPatientQuota : null;
 
         var baseSlug = _slug.Generate(input.Name);
         if (isNew || string.IsNullOrEmpty(c.Slug))
