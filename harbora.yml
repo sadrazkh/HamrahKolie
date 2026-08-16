@@ -1,0 +1,3 @@
+# Written by `harbora deploy`. Full schema: docs/cli-deploy.md
+app: kousar-kolie
+server: https://platform.irnetfree.info
