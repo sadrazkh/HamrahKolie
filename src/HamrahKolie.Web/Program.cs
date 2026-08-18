@@ -2,6 +2,7 @@ using System.Globalization;
 using HamrahKolie.Application;
 using HamrahKolie.Application.Common.Interfaces;
 using HamrahKolie.Infrastructure;
+using HamrahKolie.Infrastructure.Configuration;
 using HamrahKolie.Infrastructure.Persistence;
 using HamrahKolie.Infrastructure.Seed;
 using HamrahKolie.Web.Infrastructure.Authorization;
@@ -33,6 +34,17 @@ try
 
     var services = builder.Services;
     var config = builder.Configuration;
+
+    // ── رشته اتصال از میزبان ─────────────────────────────────────────
+    // اپ همه‌جا ConnectionStrings:Default را می‌خواند، ولی هاربورا هنگام اتصال یک دیتابیس آن را
+    // زیر نام قراردادی .NET می‌نویسد. یک‌بار همین‌جا نرمال می‌شود تا بقیهٔ کد دست‌نخورده بماند.
+    var hostConnectionString = ConnectionStringSources.Resolve(config);
+    if (hostConnectionString is not null)
+    {
+        config.AddInMemoryCollection(
+            new Dictionary<string, string?> { [ConnectionStringSources.PrimaryKey] = hostConnectionString });
+    }
+
     var presentationMode = builder.Environment.IsDevelopment()
         && config.GetValue<bool>("PresentationMode:Enabled");
     var skipDatabase = presentationMode
